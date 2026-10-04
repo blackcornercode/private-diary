@@ -7,3 +7,6 @@ dist/
 # File di ambiente o configurazioni locali
 .env
 *.log
+
+# Grafo di Graphify (generato: si rigenera con venv/Scripts/graphify.exe update .)
+graphify-out/

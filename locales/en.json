@@ -25,6 +25,7 @@
     "import": "📥 Import",
     "folder": "📁 Folder",
     "sync": "🔄 Sync MCG",
+    "sync_all": "📜 Full MCG history",
     "close_details": "Close Details"
   },
   "tabs": {
@@ -94,7 +95,12 @@
     "colors_votes": "Rating of each show (model card and history): green 5, teal 4, amber 3, red 1-2, grey not yet rated.",
     "colors_missing": "Not available: duration not recorded or €/min not computable (shows without duration or gifts).",
     "search": "🔎 Search Model:",
-    "ph_search": "Enter name..."
+    "ph_search": "Enter name...",
+    "only_online": "Online only"
+  },
+  "online": {
+    "badge": "Online",
+    "tooltip": "Online now on MondoCamGirls (checked at {ora})"
   },
   "budget": {
     "title": "Monthly Target & Budget",

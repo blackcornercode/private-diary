@@ -98,6 +98,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Parte dopo caricaLingua, così i testi sono già tradotti.
     verificaStatoMCG();
     setInterval(verificaStatoMCG, 60000);
+
+    // Modelle online su MCG: subito, poi ogni 3 minuti
+    inizializzaStatoOnline();
     const mcgContainer = document.getElementById('mcgStatusContainer');
     if (mcgContainer) {
         mcgContainer.addEventListener('click', verificaStatoMCG);

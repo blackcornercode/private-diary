@@ -25,6 +25,7 @@
     "import": "📥 Importa",
     "folder": "📁 Cartella",
     "sync": "🔄 Sincronizza MCG",
+    "sync_all": "📜 Cronologia completa MCG",
     "close_details": "Chiudi Dettaglio"
   },
   "tabs": {
@@ -94,7 +95,12 @@
     "colors_votes": "Voto dei singoli show (scheda della modella e cronologia): verde 5, verde acqua 4, ambra 3, rosso 1-2, grigio da valutare.",
     "colors_missing": "Dato non disponibile: durata non registrata o €/min non calcolabile (show senza durata o regali).",
     "search": "🔎 Cerca Modella:",
-    "ph_search": "Inserisci il nome..."
+    "ph_search": "Inserisci il nome...",
+    "only_online": "Solo online"
+  },
+  "online": {
+    "badge": "Online",
+    "tooltip": "Online adesso su MondoCamGirls (verificato alle {ora})"
   },
   "budget": {
     "title": "Obiettivo e Budget Mensile",

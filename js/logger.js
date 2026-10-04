@@ -21,12 +21,8 @@ const logger = {
 
         // Invia all'API Electron per il salvataggio su file
         const logData = { timestamp, level, message, details: details ? JSON.stringify(details) : '' };
-        if (window.electronAPI) {
-            if (window.electronAPI.prependLog) {
-                window.electronAPI.prependLog(logData).catch(() => {});
-            } else if (window.electronAPI.appendLog) {
-                window.electronAPI.appendLog(logData).catch(() => {});
-            }
+        if (window.electronAPI && window.electronAPI.appendLog) {
+            window.electronAPI.appendLog(logData).catch(() => {});
         }
 
         // Renderizza nell'interfaccia grafica

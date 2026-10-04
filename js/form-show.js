@@ -47,32 +47,11 @@ function impostaDataOraAttuale() {
     }
 }
 
-function aggiornaDatalistModelle(datiShow) {
+// Suggerimenti del campo "Nome Modella" (elencoModelleUniche è calcolato da aggiornaViste)
+function aggiornaDatalistModelle() {
     const datalist = document.getElementById('listaModelleSuggerite');
     if (!datalist) return;
-
     datalist.innerHTML = '';
-    const mappaModelle = new Map();
-
-    const showsOrdinati = [...datiShow].sort((a, b) => timestampShow(a) - timestampShow(b));
-
-    showsOrdinati.forEach(show => {
-        if (show.nome && show.nome.trim() !== '') {
-            const nomeChiave = show.nome.trim().toLowerCase();
-            const esistente = mappaModelle.get(nomeChiave) || {};
-
-            mappaModelle.set(nomeChiave, {
-                nome: show.nome.trim(),
-                urlProfilo: show.urlProfilo || show.url || esistente.urlProfilo || '',
-                immagine: show.immagine || esistente.immagine || '',
-                piattaforma: show.piattaforma || esistente.piattaforma || 'Teams',
-                nickname: show.nickname || esistente.nickname || ''
-            });
-        }
-    });
-
-    elencoModelleUniche = Array.from(mappaModelle.values());
-
     elencoModelleUniche.forEach(modella => {
         const option = document.createElement('option');
         option.value = modella.nome;
@@ -192,21 +171,16 @@ if (showForm) {
         };
 
         try {
-            let shows = await window.electronAPI.readData();
-
+            // L'archivio salva su disco e ridisegna le viste (archivio.js)
             if (editId) {
-                const index = shows.findIndex(s => String(s.id) === String(editId));
-                if (index !== -1) shows[index] = showData;
+                await aggiornaShow(editId, showData);
                 logger.success(`Show aggiornato con successo [ID: ${showData.id}]`, showData);
             } else {
-                shows.push(showData);
+                await aggiungiShow(showData);
                 logger.success(`Nuovo show registrato con successo [ID: ${showData.id}]`, showData);
             }
-
-            await salvaOAvvisa(shows);
             resetForm();
             impostaFormAperto(false);
-            aggiornaInterfaccia();
         } catch (err) {
             logger.error("Errore durante il salvataggio dello show", err);
         }
@@ -215,8 +189,7 @@ if (showForm) {
 
 async function modificaShow(id) {
     logger.info(`Richiesta modifica per lo show ID: ${id}`);
-    let shows = await window.electronAPI.readData();
-    const item = shows.find(s => String(s.id) === String(id));
+    const item = trovaShow(id);
     if (!item) {
         logger.warn(`Show con ID ${id} non trovato per la modifica.`);
         return;
@@ -236,7 +209,7 @@ async function modificaShow(id) {
     if (inputNome) inputNome.value = item.nome || '';
 
     const inputUrlProfilo = document.getElementById('urlProfilo');
-    if (inputUrlProfilo) inputUrlProfilo.value = item.urlProfilo || item.url || '';
+    if (inputUrlProfilo) inputUrlProfilo.value = item.urlProfilo || '';
 
     const inputImmagine = document.getElementById('immagine');
     if (inputImmagine) inputImmagine.value = item.immagine || '';
@@ -246,7 +219,7 @@ async function modificaShow(id) {
 
     // Popolamento Durata Show
     const inputDurata = document.getElementById('durataShow');
-    if (inputDurata) inputDurata.value = item.durata || item.tempoShow || '';
+    if (inputDurata) inputDurata.value = item.durata || '';
 
     const piattaformaSelect = document.getElementById('piattaforma');
     const punteggioSelect = document.getElementById('punteggio');
@@ -267,7 +240,7 @@ async function modificaShow(id) {
     impostaPiattaformaCustom(valorePiattaforma);
 
     if (!item.isRegalo && punteggioSelect) {
-        punteggioSelect.value = (item.punteggio !== undefined && item.punteggio !== null) ? item.punteggio : (item.voto || '');
+        punteggioSelect.value = (item.punteggio !== undefined && item.punteggio !== null) ? item.punteggio : '';
     }
 
     const recensioneInput = document.getElementById('recensione');
@@ -382,11 +355,8 @@ async function eliminaShow(id) {
     if (!confirm("Sei sicuro di voler eliminare questo record?")) return;
     
     try {
-        let shows = await window.electronAPI.readData();
-        shows = shows.filter(s => String(s.id) !== String(id));
-        await salvaOAvvisa(shows);
+        await rimuoviShow(id);
         logger.success(`Show con ID ${id} eliminato.`);
-        aggiornaInterfaccia();
     } catch (err) {
         logger.error("Errore durante l'eliminazione dello show", err);
     }

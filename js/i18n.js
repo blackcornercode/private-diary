@@ -49,8 +49,8 @@ async function cambiaLingua(nuovaLingua) {
         logger.info(`Cambio lingua richiesto: ${nuovaLingua}`);
         // caricaLingua salva già la preferenza in localStorage ('appLang')
         await caricaLingua(nuovaLingua);
-        // Ricarica le viste che generano HTML dinamicamente tramite JS
-        await aggiornaInterfaccia();
+        // Ridisegna le viste generate da JS (dalla memoria, senza rileggere il disco)
+        aggiornaViste();
         aggiornaTestoStatoMCG();
         aggiornaPulsanteForm();
         logger.success(`Lingua aggiornata a: ${nuovaLingua}`);

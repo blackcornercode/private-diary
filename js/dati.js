@@ -1,47 +1,5 @@
-/* ==========================================================================
-   CARICAMENTO DATI E AGGIORNAMENTO INTERFACCIA
-   ========================================================================== */
-async function aggiornaInterfaccia() {
-    try {
-        tuttiGliShow = await window.electronAPI.readData();
-        costoMinutoRiferimento = costoMedioAlMinuto(tuttiGliShow);
-        tuttiGliShow.forEach(s => {
-            const idNum = Number(s.id);
-            if (Number.isFinite(idNum) && idNum > ultimoIdGenerato) ultimoIdGenerato = idNum;
-        });
-        logger.info(`Dati letti. Totale show caricati: ${tuttiGliShow.length}`);
-
-        aggiornaMappeModelle(tuttiGliShow);
-        aggiornaDatalistModelle(tuttiGliShow);
-        inizializzaFiltroAnni(tuttiGliShow);
-        popolaSelettoreAnni(tuttiGliShow);
-        
-        caricaCronologia(tuttiGliShow);
-        caricaStatisticheMensili(tuttiGliShow);
-        caricaMedieEStoricizzazione(tuttiGliShow);
-        // Mantiene l'eventuale ricerca attiva nella classifica
-        filtraClassificaModelle();
-
-        aggiornaIndicatoreBudgetHomepage(tuttiGliShow);
-    } catch (err) {
-        logger.error("Errore durante l'aggiornamento dell'interfaccia", err);
-        alert(`❌ Impossibile caricare i dati: ${err.message}`);
-    }
-}
-
-function aggiornaMappeModelle(shows) {
-    mappaImmaginiModelle = {};
-    mappaUrlModelle = {};
-    const showsOrdinatiPerData = [...shows].sort((a, b) => timestampShow(a) - timestampShow(b));
-    
-    showsOrdinatiPerData.forEach(show => {
-        if (show.nome) {
-            const chiave = show.nome.trim().toLowerCase();
-            if (show.immagine) mappaImmaginiModelle[chiave] = show.immagine;
-            if (show.urlProfilo || show.url) mappaUrlModelle[chiave] = show.urlProfilo || show.url;
-        }
-    });
-}
+/* Esportazione, importazione dei backup e cartella dati.
+   La lettura dell'archivio e l'aggiornamento delle viste sono in archivio.js. */
 
 /* ==========================================================================
    ESPORTAZIONE E IMPORTAZIONE BACKUP

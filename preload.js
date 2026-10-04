@@ -11,16 +11,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Logging & Utility di Sistema
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     appendLog: (logData) => ipcRenderer.invoke('append-log', logData),
-    relaunchApp: () => ipcRenderer.invoke('relaunch-app'),
 
     // Gestione Changelog & Aggiornamenti
     getChangelog: () => ipcRenderer.invoke('get-changelog'),
-    getChangelogData: () => ipcRenderer.invoke('get-changelog-data'),
     checkForUpdateChangelog: () => ipcRenderer.invoke('check-for-update-changelog'),
 
     // Web Scraping & Status Online
-    fetchTransazioniHtml: (url) => ipcRenderer.invoke('fetch-transazioni-html', url),
-    checkModelOnlineStatus: (url) => ipcRenderer.invoke('check-model-online-status', url),
+    fetchTransazioniHtml: (opzioni) => ipcRenderer.invoke('fetch-transazioni-html', opzioni),
+    salvaDumpMcg: (dump) => ipcRenderer.invoke('salva-dump-mcg', dump),
+    getModelleOnline: () => ipcRenderer.invoke('get-modelle-online'),
     fetchModellaFoto: (urlProfilo) => ipcRenderer.invoke('fetch-modella-foto', urlProfilo),
 
     // Apertura Link Esterni

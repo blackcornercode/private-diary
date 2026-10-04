@@ -60,16 +60,47 @@ function parseDataItaliana(testo) {
     return isNaN(d) ? null : d;
 }
 
-// Data di uno show come Date, o null se assente/illeggibile. I record vecchi
-// hanno solo "data"/"dataFormattata" in formato italiano.
+// Porta uno show salvato da una versione precedente al formato attuale.
+// Va applicata a ogni record letto dall'archivio (vedi leggiArchivio in dati.js),
+// così il resto del codice usa solo i campi correnti:
+//   tempoShow -> durata        url -> urlProfilo        voto -> punteggio
+//   dataOra / data -> dataOraISO (e data -> dataFormattata per la visualizzazione)
+// Restituisce una copia: l'oggetto originale non viene modificato.
+function normalizzaShow(originale) {
+    const s = { ...originale };
+
+    if ((s.durata === undefined || s.durata === null || s.durata === '') && s.tempoShow !== undefined) s.durata = s.tempoShow;
+    if (s.durata !== undefined) s.durata = parseInt(s.durata, 10) || 0;
+    delete s.tempoShow;
+
+    if (!s.urlProfilo && s.url) s.urlProfilo = s.url;
+    delete s.url;
+
+    if ((s.punteggio === undefined || s.punteggio === null || s.punteggio === '') && s.voto !== undefined && !s.isRegalo) s.punteggio = s.voto;
+    delete s.voto;
+
+    if (!s.dataOraISO || isNaN(new Date(s.dataOraISO))) {
+        const daIso = s.dataOra && !isNaN(new Date(s.dataOra)) ? new Date(s.dataOra) : null;
+        const d = daIso || parseDataItaliana(s.data) || parseDataItaliana(s.dataFormattata);
+        if (d) s.dataOraISO = d.toISOString();
+    }
+    if (!s.dataFormattata && s.data) s.dataFormattata = s.data;
+    delete s.dataOra;
+    delete s.data;
+
+    if (typeof s.costo !== 'number') s.costo = parseFloat(s.costo) || 0;
+    return s;
+}
+
+// Data di uno show come Date, o null se assente/illeggibile.
+// I record passano da normalizzaShow, quindi dataOraISO è il campo di riferimento.
 function dataDelloShow(show) {
     if (!show) return null;
-    const iso = show.dataOraISO || show.dataOra;
-    if (iso) {
-        const d = new Date(iso);
+    if (show.dataOraISO) {
+        const d = new Date(show.dataOraISO);
         if (!isNaN(d)) return d;
     }
-    return parseDataItaliana(show.data) || parseDataItaliana(show.dataFormattata);
+    return parseDataItaliana(show.dataFormattata);
 }
 
 function annoDelloShow(show) {
@@ -110,15 +141,25 @@ function formattaEuro(valore) {
     return `€ ${(isNaN(n) ? 0 : n).toFixed(2)}`;
 }
 
+// Cella del costo: attenuata per regali e show rimborsati; per questi ultimi il
+// tooltip riporta l'importo pagato prima del rimborso
+function cellaCosto(show) {
+    if (show.rimborsato) {
+        const titolo = `Rimborsato: pagato ${formattaEuro(show.costoOriginale)}`;
+        return `<td class="col-nowrap testo-attenuato" title="${escapeHtml(titolo)}">${formattaEuro(show.costo)} ↩</td>`;
+    }
+    return `<td class="col-nowrap${show.isRegalo ? ' testo-attenuato' : ''}">${formattaEuro(show.costo)}</td>`;
+}
+
 function minutiDelloShow(show) {
-    return parseInt(show.durata || show.tempoShow, 10) || 0;
+    return parseInt(show.durata, 10) || 0;
 }
 
 // Costo al minuto di un singolo show; null se manca la durata (show registrati
-// prima della 1.11.0) o se è un regalo, che non rappresenta un costo reale
+// prima della 1.11.0), se è un regalo o se è stato rimborsato
 function costoAlMinuto(show) {
     const minuti = minutiDelloShow(show);
-    if (minuti <= 0 || show.isRegalo) return null;
+    if (minuti <= 0 || show.isRegalo || show.rimborsato) return null;
     return (parseFloat(show.costo) || 0) / minuti;
 }
 

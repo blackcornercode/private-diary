@@ -18,29 +18,21 @@ function inizializzaFiltroAnni(shows) {
     const salvati = localStorage.getItem('anniSelezionatiFiltro');
     if (salvati) {
         try {
-            const arrAnni = JSON.parse(salvati);
-            anniSelezionati = new Set(arrAnni);
+            anniSelezionati = new Set(JSON.parse(salvati));
         } catch (e) {
             console.error("Errore nel ripristino degli anni dal localStorage", e);
         }
     }
 
-    const anniDisponibili = Array.from(new Set(
-        shows.map(annoDelloShow).filter(Boolean)
-    )).sort((a, b) => b - a);
-
-    if (anniDisponibili.length === 0) {
-        container.innerHTML = '<span style="font-size: 0.85rem; color: var(--text-muted);">Nessun anno disponibile</span>';
+    const anni = anniDisponibili(shows);
+    if (anni.length === 0) {
+        container.innerHTML = '<span class="filtro-anni-vuoto">Nessun anno disponibile</span>';
         return;
     }
 
-    anniDisponibili.forEach(anno => {
+    anni.forEach(anno => {
         const wrapper = document.createElement('label');
-        wrapper.style.display = 'inline-flex';
-        wrapper.style.alignItems = 'center';
-        wrapper.style.gap = '4px';
-        wrapper.style.fontSize = '0.85rem';
-        wrapper.style.cursor = 'pointer';
+        wrapper.className = 'filtro-anno';
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -48,14 +40,9 @@ function inizializzaFiltroAnni(shows) {
         checkbox.checked = anniSelezionati.has(anno);
 
         checkbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                anniSelezionati.add(anno);
-            } else {
-                anniSelezionati.delete(anno);
-            }
-            
+            if (e.target.checked) anniSelezionati.add(anno);
+            else anniSelezionati.delete(anno);
             localStorage.setItem('anniSelezionatiFiltro', JSON.stringify(Array.from(anniSelezionati)));
-
             paginaCorrente = 1;
             caricaCronologia(tuttiGliShow);
         });
@@ -66,128 +53,28 @@ function inizializzaFiltroAnni(shows) {
     });
 }
 
-function filtraShowPerAnni(shows) {
-    if (anniSelezionati.size === 0) {
-        return shows;
-    }
-
-    return shows.filter(s => anniSelezionati.has(annoDelloShow(s)));
-}
-
-function getPiattaformaFormatted(show) {
-    if (show.isRegalo) {
-        return `<span class="badge-regalo">${escapeHtml(t('form.gift'))}</span>`;
-    }
-    
-    const nomePiattaforma = show.piattaforma || 'Teams';
-    const iconaHtml = iconePiattaformaHTML[nomePiattaforma] || `<i class="fa-solid fa-globe"></i> ${escapeHtml(nomePiattaforma)}`;
-    
-    if (show.nickname) {
-        // I nickname sono spesso email lunghe: troncati con "…", completi nel tooltip
-        const nick = escapeHtml(show.nickname);
-        const urlChat = generaLinkChat(nomePiattaforma, show.nickname);
-        const nickHtml = urlChat
-            ? `<a href="#" class="link-web nick-troncato" style="font-size: 0.82rem;" title="${nick}" onclick="apriLinkEsterno(event, ${argJs(urlChat)})">💬 ${nick}</a>`
-            : `<small class="nick-troncato" title="${nick}">${nick}</small>`;
-        return `
-            <div style="display: flex; flex-direction: column; gap: 2px;">
-                <span>${iconaHtml}</span>
-                ${nickHtml}
-            </div>
-        `;
-    }
-
-    return iconaHtml;
-}
-
 /* ==========================================================================
    CRONOLOGIA E PAGINAZIONE
    ========================================================================== */
 function caricaCronologia(shows) {
     const listaShow = document.getElementById('listaShow');
     if (!listaShow) return;
-    listaShow.innerHTML = '';
-    
-    const limiteSelect = document.getElementById('limiteRisultati');
-    const ordineSelect = document.getElementById('ordineData');
-    
-    const limiteValore = limiteSelect ? limiteSelect.value : '5';
-    const ordine = ordineSelect ? ordineSelect.value : 'desc';
-    
-    // Il filtro per nome viene applicato qui, così resta attivo anche quando si
-    // cambia pagina, ordine, numero di risultati o anno (prima andava perso)
-    const inputRicerca = document.getElementById('searchModellaCronologia');
-    const filtroNome = inputRicerca ? inputRicerca.value.trim().toLowerCase() : '';
-    const showsPerNome = filtroNome
-        ? shows.filter(s => s.nome && s.nome.toLowerCase().includes(filtroNome))
-        : shows;
 
-    const showsFiltrati = filtraShowPerAnni(showsPerNome);
+    const limite = document.getElementById('limiteRisultati')?.value || '5';
 
-    let showsOrdinati = [...showsFiltrati];
-    showsOrdinati.sort((a, b) => {
-        const diff = timestampShow(a) - timestampShow(b);
-        return ordine === 'asc' ? diff : -diff;
+    // Il filtro per nome resta attivo anche cambiando pagina, ordine, numero di risultati o anno
+    const filtrati = filtraOrdinaShows(shows, {
+        nome: document.getElementById('searchModellaCronologia')?.value || '',
+        anni: [...anniSelezionati],
+        ordine: document.getElementById('ordineData')?.value || 'desc'
     });
+    const { elementi, pagina, totalePagine } = paginaDi(filtrati, limite, paginaCorrente);
+    paginaCorrente = pagina;
 
-    let showsDaMostrare = showsOrdinati;
-    let totalePagine = 1;
-
-    if (limiteValore !== 'all') {
-        const limitePerPagina = parseInt(limiteValore, 10);
-        totalePagine = Math.ceil(showsOrdinati.length / limitePerPagina) || 1;
-
-        if (paginaCorrente > totalePagine) paginaCorrente = totalePagine;
-        if (paginaCorrente < 1) paginaCorrente = 1;
-
-        const inizio = (paginaCorrente - 1) * limitePerPagina;
-        const fine = inizio + limitePerPagina;
-        showsDaMostrare = showsOrdinati.slice(inizio, fine);
-    }
-
-    const fragment = document.createDocumentFragment();
-
-    showsDaMostrare.forEach(function(item) {
-        const tr = document.createElement('tr');
-        
-        const fotoUrl = item.immagine || mappaImmaginiModelle[(item.nome || '').trim().toLowerCase()] || '';
-        const imgHtml = fotoUrl 
-            ? `<img src="${escapeHtml(fotoUrl)}" class="thumb-img" style="cursor: pointer;" alt="foto" title="Clicca per ingrandire" onclick="event.stopPropagation(); apriModalImmagine(${argJs(fotoUrl)})" onerror="this.outerHTML='<div class=\\'no-img\\'>No Foto</div>'">`
-            : `<div class="no-img">No Foto</div>`;
-
-        const piattaformaTxt = getPiattaformaFormatted(item);
-        
-        const votoTxt = formattaVoto(item);
-
-        const origineBadge = item.isAutoImport 
-            ? `<span class="badge-origine auto" title="Auto MCG">🤖 MCG</span>`
-            : `<span class="badge-origine manuale" title="Manuale">👤</span>`;
-
-        // Calcolo e formattazione durata dello show
-        const durataTxt = formattaDurata(item.durata || item.tempoShow);
-
-        tr.innerHTML = `
-            <td>${imgHtml}</td>
-            <td class="col-nowrap">${escapeHtml(item.dataFormattata || item.data)}</td>
-            <td><strong>${escapeHtml(item.nome)}</strong></td>
-            <td>${piattaformaTxt}</td>
-            <td class="col-nowrap col-centro" style="font-weight: bold;">${durataTxt}</td>
-            <td class="col-nowrap${item.isRegalo ? ' testo-attenuato' : ''}">${formattaEuro(item.costo)}</td>
-            <td class="col-nowrap col-centro">${formattaCostoAlMinuto(costoAlMinuto(item))}</td>
-            <td class="col-nowrap">${votoTxt}</td>
-            <td>${origineBadge}</td>
-            <td class="col-centro">${item.recensione ? '✅' : '❌'}</td>
-            ${cellaNote(item.note)}
-            <td class="col-azioni">
-                <button class="btn-edit" title="Modifica" aria-label="Modifica" onclick="modificaShow(${argJs(item.id)})"><i class="fa-solid fa-pen"></i></button>
-                <button class="btn-delete" title="Elimina" aria-label="Elimina" onclick="eliminaShow(${argJs(item.id)})"><i class="fa-solid fa-trash"></i></button>
-            </td>
-        `;
-        fragment.appendChild(tr);
-    });
-
-    listaShow.appendChild(fragment);
-    aggiornaControlliPaginazione(totalePagine, limiteValore === 'all');
+    const intestazione = document.getElementById('intestazioneCronologia');
+    if (intestazione) intestazione.innerHTML = intestazioneShow(COLONNE_CRONOLOGIA);
+    listaShow.innerHTML = righeShow(elementi, COLONNE_CRONOLOGIA);
+    aggiornaControlliPaginazione(totalePagine, limite === 'all');
 }
 
 function cambiaPagina(direzione) {
@@ -210,7 +97,7 @@ function aggiornaControlliPaginazione(totalePagine, mostraTutti) {
     }
 
     contenitorePaginazione.style.display = 'flex';
-    
+
     if (btnIndietro) btnIndietro.disabled = (paginaCorrente <= 1);
     if (btnAvanti) btnAvanti.disabled = (paginaCorrente >= totalePagine);
     if (infoPagina) {
@@ -226,7 +113,7 @@ function resetFiltriCronologia() {
     const limite = document.getElementById('limiteRisultati');
     if (ordine) ordine.value = 'desc';
     if (limite) limite.value = '5';
-    
+
     const searchInput = document.getElementById('searchModellaCronologia');
     if (searchInput) searchInput.value = '';
 

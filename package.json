@@ -5,7 +5,9 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "test": "node --test \"tests/**/*.test.js\"",
     "pack": "electron-builder --win --dir --publish never",
+    "predist": "npm test",
     "dist": "electron-builder --win portable --publish never"
   },
   "keywords": [],
@@ -30,6 +32,7 @@
     },
     "files": [
       "main.js",
+      "main/**/*",
       "preload.js",
       "index.html",
       "splash.html",

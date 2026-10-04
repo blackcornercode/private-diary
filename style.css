@@ -713,6 +713,30 @@ td.testo-attenuato {
 .badge-origine.auto { background-color: var(--info-bg); color: var(--info-text); }
 .badge-origine.manuale { background-color: var(--neutral-bg); color: var(--neutral-text); font-weight: 600; }
 
+/* Modella online su MCG (accanto al nome in classifica e nella scheda) */
+.badge-online {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-color: var(--success-bg);
+    color: var(--success-text);
+}
+
+.badge-online::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--success-color);
+}
+
 /* Nickname (spesso email lunghe) troncati: il testo completo è nel tooltip */
 .nick-troncato {
     display: inline-block;
@@ -1326,3 +1350,81 @@ tbody tr.riga-mese-corrente:hover {
 }
 .spesa-mese { color: var(--accent-color); }
 tr.riga-mese-corrente .spesa-mese { color: var(--highlight-text); }
+
+/* ==========================================================================
+   CLASSI DI SUPPORTO DELLE TABELLE (al posto degli stili inline nei template JS)
+   ========================================================================== */
+.cliccabile { cursor: pointer; }
+td.col-grassetto { font-weight: bold; }
+th.col-destra,
+td.col-destra { text-align: right; }
+
+/* Piattaforma con il nickname sotto (cronologia, classifica, scheda) */
+.piattaforma-con-nick {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.nick-chat { font-size: 0.82rem; }
+
+/* Filtro per anno della cronologia */
+.filtro-anno {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.filtro-anni-vuoto { font-size: 0.85rem; color: var(--text-muted); }
+
+/* Statistiche: tabella dei mesi e dettaglio del mese */
+.tabella-mesi,
+.tabella-dettaglio-mese {
+    width: 100%;
+    border-collapse: collapse;
+}
+.tabella-mesi thead tr,
+.tabella-dettaglio-mese thead tr { border-bottom: 2px solid var(--border-color); }
+.tabella-dettaglio-mese { font-size: 0.9rem; }
+
+.dettaglio-mese {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-card);
+}
+.dettaglio-mese-intestazione {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.dettaglio-mese-intestazione h3 { margin: 0; }
+.btn-chiudi-dettaglio {
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+/* Galleria foto nella scheda modella */
+.galleria-messaggio {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+.galleria-miniatura {
+    height: 100px;
+    width: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s;
+}
+.galleria-miniatura:hover { transform: scale(1.05); }
+.link-sottolineato {
+    font-weight: bold;
+    text-decoration: underline;
+}

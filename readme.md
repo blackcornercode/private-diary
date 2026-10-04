@@ -60,6 +60,7 @@ Elabora la cronologia salvata per generare indicatori prestazionali e statistici
 - **Media Voti**: Calcolo ponderato escludendo sessioni contrassegnate come regali o `TBD`.
 - **€/min Medio**: Costo medio al minuto per modella, presente anche nella scheda dettaglio. È calcolato come spesa ÷ minuti dei soli show con durata registrata, regali esclusi, così gli show più vecchi senza durata non gonfiano il risultato.
 - **Scheda Dettaglio (Modal)**: Cliccando su una riga si apre il resoconto storico dettagliato degli show effettuati con la singola modella.
+- **Modelle online**: accanto al nome compare il badge verde **● Online** se la modella è online su Mondo Cam Girls (anche nella scheda dettaglio); il filtro **Solo online** mostra solo quelle. Lo stato si aggiorna all'avvio e ogni 3 minuti, leggendo l'elenco delle modelle online dal servizio pubblico del sito (`getdata.html?online=si`, senza login). La modella viene riconosciuta dall'indirizzo del suo profilo (`https://<nome>.mondocamgirls.com`): senza un indirizzo valido lo stato non è verificabile e il badge non compare. Se il sito non risponde, i badge non compaiono e l'errore viene annotato nel log.
 
 ---
 
@@ -84,6 +85,14 @@ I menu si chiudono con un clic fuori o con `Esc`.
 - **🔄 Sincronizzazione Automatica MCG**: Scarica e importa in automatico le transazioni dal profilo Mondo Cam Girls non ancora registrate localmente.
   - **Anti-duplicato**: una transazione è considerata già salvata se esiste uno show con la stessa modella e la stessa data/ora (al minuto). Se nella pagina ci sono più transazioni con la stessa modella nello stesso minuto, vengono importate tutte quelle non ancora presenti.
   - Le righe della tabella senza una data valida (intestazioni, totali) vengono ignorate.
+  - **Solo i pagamenti diventano show**: il tipo di transazione (cella con il link al dettaglio) distingue "Pagamento da conto ricaricabile", "Ricarica con carta di credito" e "Rimborso su conto ricaricabile". Le ricariche vengono ignorate; i pagamenti in cui MCG mostra un codice numerico al posto della modella (profilo non più presente) vengono scartati.
+  - **Rimborsi**: un rimborso non crea uno show ma segna come rimborsato il pagamento della stessa modella con lo stesso importo. Lo show rimborsato ha costo 0 € (con il simbolo ↩ e l'importo pagato nel tooltip), è escluso dal €/min e la nota riporta la data del rimborso. Un rimborso già applicato non viene riapplicato alle sincronizzazioni successive.
+  - **Controllo della struttura**: se la pagina non contiene transazioni riconoscibili (link al dettaglio), l'importazione si ferma con un avviso e nessun dato viene salvato.
+  - **Doppioni**: una transazione è già presente se esiste uno show della stessa modella alla stessa data e ora; in mancanza, se esiste uno show della stessa modella con lo stesso importo entro ±3 ore (copre show importati in passato con l'orario spostato). Ogni show dell'archivio corrisponde al massimo a una transazione.
+- **📜 Cronologia completa MCG** (menu Dati): dopo il login legge tutte le pagine delle transazioni (`pagina_vis=1, 2, …`) invece della sola prima. Il passo tra le pagine viene ricavato dai link di paginazione della pagina. La lettura si ferma quando una pagina non contiene transazioni nuove (riconosciute dal codice della transazione), se MCG richiede di nuovo il login o dopo 300 pagine; l'avanzamento è mostrato nel titolo della finestra. Prima di salvare compare un riepilogo (pagine lette, show nuovi, rimborsi) da confermare. La sincronizzazione normale continua a leggere solo la prima pagina, che contiene le ultime 100 transazioni.
+  - Foto, nickname e piattaforma dei nuovi show vengono presi dagli show precedenti della stessa modella.
+  - **Link del profilo**: viene usato il link reale fornito da MCG nella tabella. Negli show già salvati, un indirizzo vuoto o indovinato dal nome viene sostituito con quello reale; un indirizzo diverso, inserito a mano, non viene toccato.
+  - **Copia diagnostica**: a ogni sincronizzazione viene salvato `mcg_ultima_sincronizzazione.json` nella cartella dati, con le tabelle lette dalla pagina di MCG e l'esito di ogni riga (importata, già presente o scartata con il motivo). Il file viene sovrascritto ogni volta, resta solo sul computer e serve a capire la struttura della pagina se l'importazione non si comporta come previsto.
 - **💾 Esportazione / Importazione Backup**: Ripristino e salvataggio dell'intero archivio in formato JSON, incluso il budget mensile. I backup delle versioni precedenti (solo elenco show) restano importabili; in quel caso il budget attuale non viene modificato.
 - **🎨 Accessibilità e Temi**:
   - **Dimensione Testo**: Pulsanti `A+` / `A-` per modificare al volo la grandezza dei font (12px - 26px).
@@ -102,8 +111,9 @@ I dati sono salvati nella cartella `userData` dell'applicazione (apribile dal pu
 | `shows_data.json` | Archivio degli show (array JSON). Scritto in modo atomico: un crash durante il salvataggio non lo lascia mai troncato. |
 | `shows_data.bak.json` | Copia della versione precedente, aggiornata a ogni salvataggio o importazione. |
 | `shows_data.corrotto-<timestamp>.json` | Copia di un archivio illeggibile, conservata invece di sovrascriverlo. |
-| `app.log` | Log dell'applicazione (righe più recenti in alto, massimo 5000). |
+| `app.log` | Log dell'applicazione, in ordine cronologico (righe più recenti in fondo). Oltre 1 MB diventa `app.log.1` e ne viene iniziato uno nuovo. |
 | `window_state.json` | Dimensione e posizione della finestra. |
+| `mcg_ultima_sincronizzazione.json` | Copia della tabella letta nell'ultima sincronizzazione MCG, con l'esito di ogni riga. |
 
 Il budget mensile, il tema, la lingua e i filtri sono salvati nel `localStorage` dell'interfaccia.
 
@@ -125,7 +135,14 @@ Formato del file di backup esportato:
 
 | Percorso | Ruolo |
 | :--- | :--- |
-| `main.js` | Processo principale Electron: finestre, salvataggio dati e backup, log, scaricamento pagine da Mondo Cam Girls. |
+| `main.js` | Processo principale Electron: ciclo di vita dell'app, finestre, menu e stato della finestra. Registra i gestori IPC di `main/`. |
+| `main/ipc-dati.js` | Archivio degli show: lettura, salvataggio (con copia `.bak`), esportazione e importazione dei backup. |
+| `main/ipc-sistema.js` | Versione, log, apertura di cartelle e link esterni, changelog e avviso "Novità". |
+| `main/ipc-mcg.js` | Mondo Cam Girls: lettura delle transazioni con login, copia diagnostica, modelle online, foto, raggiungibilità. |
+| `main/mcg-pagine.js` | Lettura pagina per pagina della cronologia transazioni di MCG. |
+| `main/canali.js` | Nomi dei canali IPC tra interfaccia e processo principale. |
+| `main/log.js`, `main/rete.js`, `main/file.js`, `main/percorsi.js` | Supporto: log, download e validazione degli URL MCG, scrittura atomica dei file, percorsi dei dati. |
+| `tests/` | Test automatici (`npm test`), esclusi dalla build. |
 | `preload.js` | Espone all'interfaccia le funzioni del processo principale (`window.electronAPI`). |
 | `index.html`, `style.css`, `splash.html` | Pagina principale, stili e schermata di avvio. |
 | `locales/` | Traduzioni `it.json` e `en.json`. |
@@ -139,11 +156,14 @@ I moduli in `js/` sono script classici caricati in ordine da `index.html` e cond
 | `logger.js` | Log a console, a file e nel pannello log. |
 | `i18n.js` | Caricamento lingue e funzione `t()`. |
 | `stato.js` | Variabili globali dell'applicazione. |
-| `utils.js` | Funzioni comuni: escape HTML, ID univoci, lettura delle date (anche formato italiano `gg/mm/aaaa`), formattazione importi e durate, link esterni. |
+| `utils.js` | Funzioni comuni: escape HTML, ID univoci, lettura delle date (anche formato italiano `gg/mm/aaaa`), normalizzazione dei record vecchi (`normalizzaShow`), formattazione importi, voti e durate, link esterni. |
+| `calcoli.js` | Calcoli puri sugli show, senza accesso alla pagina: classifica, totali di una modella, statistiche per anno, budget, filtri e pagine della cronologia, mappe di foto e profili. Verificati dai test. |
+| `righe-show.js` | Disegnatore unico delle righe degli show: ogni colonna (intestazione e cella) è definita una volta; cronologia, dettaglio del mese e scheda modella sono elenchi di colonne. |
+| `archivio.js` | Archivio in memoria: letto da disco solo all'avvio e dopo un'importazione; aggiunte, modifiche ed eliminazioni salvano su disco e ridisegnano le viste senza rileggere il file. |
 | `preferenze.js` | Schede, tema, dimensione font, budget, versione. |
 | `galleria.js` | Lightbox e navigazione foto. |
 | `form-show.js` | Form di inserimento/modifica, autocompilazione, eliminazione. |
-| `dati.js` | Caricamento dati, aggiornamento interfaccia, esportazione/importazione backup. |
+| `dati.js` | Esportazione e importazione dei backup, apertura della cartella dati. |
 | `cronologia.js` | Cronologia show, filtri e paginazione. |
 | `statistiche.js` | Statistiche mensili e indicatori budget. |
 | `classifica.js` | Classifica modelle. |
@@ -151,6 +171,7 @@ I moduli in `js/` sono script classici caricati in ordine da `index.html` e cond
 | `sincronizzazione.js` | Importazione transazioni da Mondo Cam Girls. |
 | `changelog.js` | Modale novità. |
 | `stato-mcg.js` | Indicatore di raggiungibilità di Mondo Cam Girls. |
+| `stato-online.js` | Modelle online su Mondo Cam Girls: badge e filtro in classifica e nella scheda. |
 | `menu-header.js` | Menu a tendina Dati e Impostazioni dell'intestazione. |
 | `app.js` | Avvio dell'applicazione. |
 
@@ -176,6 +197,17 @@ I moduli in `js/` sono script classici caricati in ordine da `index.html` e cond
    ```
    Il file viene creato in `dist/GestioneShowMCG-<versione>-portable.exe`.
    Per una prova veloce senza creare l'eseguibile, `npm run pack` prepara solo la cartella `dist/win-unpacked/` (circa 10 secondi invece di quasi 2 minuti); l'app si avvia da `dist/win-unpacked/Gestione Show MCG.exe`.
+
+### Test automatici
+```bash
+npm test
+```
+Esegue i test in `tests/` con il test runner integrato di Node (nessuna dipendenza aggiuntiva), in meno di un secondo:
+- **funzioni dell'interfaccia** (`utils.js`, `calcoli.js`, `righe-show.js`, `archivio.js`, parte di `sincronizzazione.js`): date, normalizzazione dei record vecchi, €/min, voti, durate, importi e tipi delle transazioni MCG. Gli script classici di `js/` vengono caricati in un contesto isolato come nel browser;
+- **funzioni del processo principale** (`main/rete.js`, `main/mcg-pagine.js`);
+- **coerenza dei canali IPC**: ogni canale usato in `preload.js` deve essere definito in `main/canali.js` e avere un gestore registrato (il preload, in sandbox, non può importare `canali.js`).
+
+`npm run dist` esegue automaticamente i test prima della build (`predist`): se un test fallisce, l'eseguibile non viene creato.
 
 ### Cosa include la build
 La configurazione è nella sezione `build` di `package.json` ed è pensata per tenere l'eseguibile leggero:
