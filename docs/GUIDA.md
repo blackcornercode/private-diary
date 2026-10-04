@@ -109,8 +109,10 @@ Dal menu **⚙️ Impostazioni › 🔒 Privacy**:
 
 ## ⚙️ Funzioni di Sistema e Utility
 
-L'intestazione mostra sempre **🔄 Sincronizza MCG** e l'indicatore di raggiungibilità del sito. Le altre funzioni sono raccolte in due menu a tendina:
-- **💾 Dati**: Esporta, Importa, Cartella.
+L'intestazione mostra l'indicatore di raggiungibilità di Mondo Cam Girls; le funzioni sono raccolte in due menu a tendina:
+- **💾 Dati**, in due sezioni:
+  - **🌐 Importa da Mondo Cam Girls** (evidenziata): **🔄 Sincronizza MCG** (ultime transazioni, rapida: da usare dopo ogni show) e **📜 Cronologia completa MCG** (tutte le pagine, più lenta: la prima volta o per recuperare show vecchi). Sotto ogni voce c'è una descrizione breve; il tooltip spiega la differenza per intero.
+  - **💾 Backup e dati**: Esporta, Importa, Cartella.
 - **⚙️ Impostazioni**: dimensione del testo, lingua, tema, gestione dei tag, privacy.
 
 I menu si chiudono con un clic fuori o con `Esc`.
@@ -159,7 +161,7 @@ Formato del file di backup esportato:
 {
   "formato": "gestioneshow-backup",
   "versione": 1,
-  "versioneApp": "1.12.2",
+  "versioneApp": "1.12.3",
   "shows": [ ... ],
   "tag": [ { "id": "lush", "nome": "Lush", "colore": "viola" } ],
   "impostazioni": { "monthly_budget": "300" }

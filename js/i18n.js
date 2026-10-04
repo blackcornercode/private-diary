@@ -27,7 +27,7 @@ export function t(key) {
     return key.split('.').reduce((obj, i) => (obj ? obj[i] : null), traduzioniCorrenti) || key;
 }
 
-// Aggiorna tutti gli elementi con data-i18n e data-i18n-ph
+// Aggiorna tutti gli elementi con data-i18n, data-i18n-ph e data-i18n-title
 export function aggiornaTestiDOM() {
     // Testi generici
     document.querySelectorAll('[data-i18n]').forEach(elem => {
@@ -39,6 +39,11 @@ export function aggiornaTestiDOM() {
     document.querySelectorAll('[data-i18n-ph]').forEach(elem => {
         const key = elem.getAttribute('data-i18n-ph');
         elem.placeholder = t(key);
+    });
+
+    // Tooltip (attributo title)
+    document.querySelectorAll('[data-i18n-title]').forEach(elem => {
+        elem.title = t(elem.getAttribute('data-i18n-title'));
     });
 }
 

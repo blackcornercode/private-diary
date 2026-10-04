@@ -6,7 +6,7 @@
 
 **Il tuo diario privato degli show: ogni incontro registrato, ogni euro sotto controllo, ogni modella al posto giusto in classifica.**
 
-[![Versione](https://img.shields.io/badge/versione-1.12.2-6d2336)](https://github.com/blackcornercode/private-diary/releases)
+[![Versione](https://img.shields.io/badge/versione-1.12.3-6d2336)](https://github.com/blackcornercode/private-diary/releases)
 ![Piattaforma](https://img.shields.io/badge/piattaforma-Windows-0078d4)
 [![Test](https://github.com/blackcornercode/private-diary/actions/workflows/test.yml/badge.svg)](https://github.com/blackcornercode/private-diary/actions/workflows/test.yml)
 [![Licenza](https://img.shields.io/badge/licenza-ISC-c5a05a)](LICENSE)
@@ -46,7 +46,7 @@
 
 ## 🚀 Primi passi
 
-1. **Registra il primo show** con **＋ Nuovo show**, oppure importa la tua cronologia da Mondo Cam Girls con **🔄 Sincronizza MCG** (il menu **Dati › Cronologia completa MCG** legge tutte le pagine).
+1. **Registra il primo show** con **＋ Nuovo show**, oppure importa la tua cronologia da Mondo Cam Girls dal menu **💾 Dati**: **🔄 Sincronizza MCG** legge le ultime transazioni, **📜 Cronologia completa MCG** tutte le pagine.
 2. **Imposta un budget mensile** in **Statistiche Mensili**: il badge accanto alla scheda ti dice a colpo d'occhio se lo stai rispettando.
 3. **Proteggi l'app** da **⚙️ Impostazioni › 🔒 Privacy**: PIN, foto sfocate, nome neutro e tasto rapido per nasconderla (predefinito **Ctrl+Shift+H**).
 

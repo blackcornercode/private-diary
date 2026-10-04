@@ -19,7 +19,9 @@
   },
   "menu": {
     "data": "💾 Data ▾",
-    "settings": "⚙️ Settings ▾"
+    "settings": "⚙️ Settings ▾",
+    "mcg_title": "🌐 Import from Mondo Cam Girls",
+    "backup_title": "💾 Backup and data"
   },
   "actions": {
     "export": "💾 Export",
@@ -27,7 +29,11 @@
     "folder": "📁 Folder",
     "sync": "🔄 Sync MCG",
     "sync_all": "📜 Full MCG history",
-    "close_details": "Close Details"
+    "close_details": "Close Details",
+    "sync_desc": "Latest transactions · quick",
+    "sync_all_desc": "All pages · slower",
+    "sync_hint": "Reads only the first page of your MCG transactions (the latest 100) and imports the new shows. It is quick: use it after every show. You need to log in in the MCG window.",
+    "sync_all_hint": "Reads every page of your MCG transactions, from newest to oldest, and imports everything that is missing. Use it the first time or to recover old shows: it can take a few minutes and shows a summary to confirm before saving. You need to log in in the MCG window."
   },
   "tabs": {
     "dashboard": "📝 Form & History",

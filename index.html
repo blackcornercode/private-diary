@@ -26,23 +26,36 @@
             </h1>
 
             <div class="header-controls">
-                <!-- Azione principale sempre visibile -->
-                <button type="button" class="btn-sync" data-azione="sincronizza-mcg" title="Sincronizza da MondoCamGirls" data-i18n="actions.sync">🔄 Sincronizza MCG</button>
-
                 <!-- Stato raggiungibilità Mondo Cam Girls (clic = nuova verifica) -->
                 <div class="mcg-status-container" id="mcgStatusContainer" role="button" tabindex="0">
                     <span class="status-dot yellow" id="mcgStatusDot"></span>
                     <span class="status-text" id="mcgStatusText">MCG: Verifica...</span>
                 </div>
 
-                <!-- MENU DATI: backup e cartella -->
+                <!-- MENU DATI: importazione da Mondo Cam Girls, backup e cartella -->
                 <div class="menu-header" id="menuDati">
                     <button type="button" class="btn-data menu-header-toggle" aria-haspopup="true" aria-expanded="false" data-i18n="menu.data">💾 Dati ▾</button>
                     <div class="menu-header-pannello" role="menu">
-                        <button type="button" class="btn-data" role="menuitem" data-azione="esporta-backup" title="Esporta Backup" data-i18n="actions.export">💾 Esporta</button>
-                        <button type="button" class="btn-data" role="menuitem" data-azione="importa-backup" title="Importa Backup" data-i18n="actions.import">📥 Importa</button>
-                        <button type="button" class="btn-data" role="menuitem" data-azione="apri-cartella-dati" title="Apri Cartella Dati" data-i18n="actions.folder">📁 Cartella</button>
-                        <button type="button" class="btn-data" role="menuitem" data-azione="cronologia-completa-mcg" title="Legge tutte le pagine delle transazioni di MondoCamGirls" data-i18n="actions.sync_all">📜 Cronologia completa MCG</button>
+                        <!-- Le due importazioni da MCG: descrizione breve sempre visibile, differenza completa nel tooltip -->
+                        <div class="menu-sezione menu-sezione-mcg" role="group" aria-labelledby="titoloSezioneMcg">
+                            <span class="titolo-sezione-menu" id="titoloSezioneMcg" data-i18n="menu.mcg_title">🌐 Importa da Mondo Cam Girls</span>
+                            <button type="button" class="btn-data voce-menu-mcg" role="menuitem" data-azione="sincronizza-mcg"
+                                title="Legge solo la prima pagina delle transazioni (le ultime 100) e importa gli show nuovi." data-i18n-title="actions.sync_hint">
+                                <span class="voce-menu-titolo" data-i18n="actions.sync">🔄 Sincronizza MCG</span>
+                                <small class="voce-menu-descrizione" data-i18n="actions.sync_desc">Ultime transazioni · rapida</small>
+                            </button>
+                            <button type="button" class="btn-data voce-menu-mcg" role="menuitem" data-azione="cronologia-completa-mcg"
+                                title="Legge tutte le pagine delle transazioni e importa tutto ciò che manca." data-i18n-title="actions.sync_all_hint">
+                                <span class="voce-menu-titolo" data-i18n="actions.sync_all">📜 Cronologia completa MCG</span>
+                                <small class="voce-menu-descrizione" data-i18n="actions.sync_all_desc">Tutte le pagine · più lenta</small>
+                            </button>
+                        </div>
+                        <div class="menu-sezione" role="group" aria-labelledby="titoloSezioneBackup">
+                            <span class="titolo-sezione-menu" id="titoloSezioneBackup" data-i18n="menu.backup_title">💾 Backup e dati</span>
+                            <button type="button" class="btn-data" role="menuitem" data-azione="esporta-backup" title="Esporta Backup" data-i18n="actions.export">💾 Esporta</button>
+                            <button type="button" class="btn-data" role="menuitem" data-azione="importa-backup" title="Importa Backup" data-i18n="actions.import">📥 Importa</button>
+                            <button type="button" class="btn-data" role="menuitem" data-azione="apri-cartella-dati" title="Apri Cartella Dati" data-i18n="actions.folder">📁 Cartella</button>
+                        </div>
                     </div>
                 </div>
 

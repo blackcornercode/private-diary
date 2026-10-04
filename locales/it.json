@@ -19,7 +19,9 @@
   },
   "menu": {
     "data": "💾 Dati ▾",
-    "settings": "⚙️ Impostazioni ▾"
+    "settings": "⚙️ Impostazioni ▾",
+    "mcg_title": "🌐 Importa da Mondo Cam Girls",
+    "backup_title": "💾 Backup e dati"
   },
   "actions": {
     "export": "💾 Esporta",
@@ -27,7 +29,11 @@
     "folder": "📁 Cartella",
     "sync": "🔄 Sincronizza MCG",
     "sync_all": "📜 Cronologia completa MCG",
-    "close_details": "Chiudi Dettaglio"
+    "close_details": "Chiudi Dettaglio",
+    "sync_desc": "Ultime transazioni · rapida",
+    "sync_all_desc": "Tutte le pagine · più lenta",
+    "sync_hint": "Legge solo la prima pagina delle transazioni di MCG (le ultime 100) e importa gli show nuovi. È rapida: usala dopo ogni show. Serve il login nella finestra di MCG.",
+    "sync_all_hint": "Legge tutte le pagine delle transazioni di MCG, dalla più recente alla più vecchia, e importa tutto ciò che manca. Usala la prima volta o per recuperare show vecchi: può richiedere qualche minuto e prima di salvare mostra un riepilogo da confermare. Serve il login nella finestra di MCG."
   },
   "tabs": {
     "dashboard": "📝 Form & Cronologia",

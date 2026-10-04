@@ -6,7 +6,7 @@
 
 **Your private cam-show diary: every session logged, every euro under control, every model in the right place in the ranking.**
 
-[![Version](https://img.shields.io/badge/version-1.12.2-6d2336)](https://github.com/blackcornercode/private-diary/releases)
+[![Version](https://img.shields.io/badge/version-1.12.3-6d2336)](https://github.com/blackcornercode/private-diary/releases)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078d4)
 [![Tests](https://github.com/blackcornercode/private-diary/actions/workflows/test.yml/badge.svg)](https://github.com/blackcornercode/private-diary/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/license-ISC-c5a05a)](LICENSE)
@@ -46,7 +46,7 @@
 
 ## 🚀 Getting started
 
-1. **Add your first show** with **＋ New show**, or import your history from Mondo Cam Girls with **🔄 Sync MCG** (menu **Data › Full MCG history** reads every page).
+1. **Add your first show** with **＋ New show**, or import your history from Mondo Cam Girls from the **💾 Data** menu: **🔄 Sync MCG** reads your latest transactions, **📜 Full MCG history** reads every page.
 2. **Set a monthly budget** in **Monthly Stats**: the badge next to the tab tells you at a glance whether you are within it.
 3. **Protect the app** from **⚙️ Settings › 🔒 Privacy**: PIN, blurred photos, neutral name and the hide hotkey (default **Ctrl+Shift+H**).
 

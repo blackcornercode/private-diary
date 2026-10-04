@@ -1,6 +1,6 @@
 {
   "name": "gestioneshow",
-  "version": "1.12.2",
+  "version": "1.12.3",
   "description": "Private Diary (Diario Privato): il diario privato degli show",
   "main": "main.js",
   "scripts": {

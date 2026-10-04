@@ -1382,13 +1382,6 @@ a.modella-url:hover { text-decoration: underline; }
     width: 100%;
 }
 
-.btn-sync {
-    background: var(--primary-color);
-    color: #fff;
-    padding: 7px 14px;
-    font-size: 0.85rem;
-}
-.btn-sync:hover { background: var(--primary-hover); }
 
 /* ==========================================================================
    FORM A SCOMPARSA
@@ -1956,3 +1949,25 @@ kbd.tasto-rapido.in-registrazione { border-color: var(--primary-color); color: v
 .riquadro-blocco h2 { margin: 0; font-size: 1.2rem; }
 .riquadro-blocco input { text-align: center; font-size: 1.3rem; letter-spacing: 0.3em; }
 .riquadro-blocco button { width: 100%; }
+
+/* Menu Dati: sezioni (importazione da MCG evidenziata, backup) */
+.menu-sezione { display: flex; flex-direction: column; gap: 6px; }
+.menu-sezione + .menu-sezione { padding-top: 10px; border-top: 1px solid var(--border-color); }
+.menu-sezione-mcg {
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 9%, var(--bg-card));
+}
+.menu-header-pannello .voce-menu-mcg {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+}
+.voce-menu-descrizione { color: var(--text-muted); font-size: 0.75rem; font-weight: 500; }
+/* Pannello largo abbastanza per titoli e descrizioni su una riga */
+#menuDati .menu-header-pannello { min-width: 320px; }
+.menu-sezione-mcg .titolo-sezione-menu,
+.voce-menu-titolo,
+.voce-menu-descrizione { white-space: nowrap; }

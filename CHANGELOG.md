@@ -3,6 +3,12 @@
 Novità di ogni versione di **Diario Privato** (*Private Diary*, già *Gestione Show MCG*).
 Generato da `changelog.json` con `npm run changelog`: per modificarlo, modificare `changelog.json`.
 
+## 1.12.3
+
+### 🎨 Interfaccia
+
+- Sincronizza MCG e Cronologia completa MCG sono nel menu Dati, in una sezione evidenziata «Importa da Mondo Cam Girls», con una descrizione sotto ogni voce e un tooltip che spiega la differenza; il pulsante Sincronizza MCG non è più nell'intestazione
+
 ## 1.12.2
 
 ### 🐛 Correzioni
