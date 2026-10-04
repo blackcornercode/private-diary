@@ -48,3 +48,41 @@ test('profilo sospeso riconosciuto dall\'avviso della pagina MCG', () => {
     assert.equal(profiloSospeso(''), null);
     assert.equal(profiloSospeso('<html>pagina di errore</html>'), null, 'pagina non riconosciuta');
 });
+
+test('privacy: PIN di 4-8 cifre, verificato senza conservarlo in chiaro', () => {
+    const p = require('../main/privacy');
+    assert.ok(p.pinValido('1234') && p.pinValido('12345678'));
+    assert.ok(!p.pinValido('123') && !p.pinValido('123456789') && !p.pinValido('12a4') && !p.pinValido(1234));
+    const salvato = p.calcolaHashPin('2468');
+    assert.ok(!JSON.stringify(salvato).includes('2468'));
+    assert.ok(p.pinCorretto('2468', salvato));
+    assert.ok(!p.pinCorretto('2469', salvato));
+    assert.ok(!p.pinCorretto('2468', null));
+    assert.notEqual(p.calcolaHashPin('2468').hash, salvato.hash, 'sale diverso ogni volta');
+});
+
+test('privacy: preferenze normalizzate, e l\'interfaccia non riceve mai il PIN', () => {
+    const p = require('../main/privacy');
+    assert.deepEqual(p.normalizzaPreferenze(null), { aspettoNeutro: false, pin: null, bloccoMinuti: 0 });
+    const pin = p.calcolaHashPin('1357');
+    assert.deepEqual(p.normalizzaPreferenze({ aspettoNeutro: true, pin, bloccoMinuti: 15 }), { aspettoNeutro: true, pin, bloccoMinuti: 15 });
+    // minuti non previsti o blocco senza PIN -> 0; hash malformato -> nessun PIN
+    assert.equal(p.normalizzaPreferenze({ pin, bloccoMinuti: 7 }).bloccoMinuti, 0);
+    assert.equal(p.normalizzaPreferenze({ bloccoMinuti: 15 }).bloccoMinuti, 0);
+    assert.equal(p.normalizzaPreferenze({ pin: { sale: 'x', hash: 'corto' } }).pin, null);
+    const pubbliche = p.preferenzePubbliche(p.normalizzaPreferenze({ pin, bloccoMinuti: 5 }));
+    assert.deepEqual(pubbliche, { aspettoNeutro: false, pinImpostato: true, bloccoMinuti: 5 });
+});
+
+test('privacy: dopo 5 PIN errati si attende 30 secondi', () => {
+    const p = require('../main/privacy');
+    const c = p.contatoreTentativi();
+    const t0 = 1_000_000;
+    for (let i = 0; i < p.MAX_TENTATIVI - 1; i++) c.registraErrore(t0);
+    assert.equal(c.attesaResidua(t0), 0);
+    c.registraErrore(t0);
+    assert.equal(c.attesaResidua(t0), p.ATTESA_MS);
+    assert.equal(c.attesaResidua(t0 + p.ATTESA_MS), 0);
+    c.registraSuccesso();
+    assert.equal(c.attesaResidua(t0), 0);
+});

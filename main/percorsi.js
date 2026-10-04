@@ -12,6 +12,8 @@ module.exports = {
     // Catalogo dei tag degli show (main/catalogo-tag.js)
     catalogoTag: path.join(cartellaDati, 'tags.json'),
     statoFinestra: path.join(cartellaDati, 'window_state.json'),
+    // Preferenze di privacy: aspetto neutro, PIN, blocco automatico (main/privacy.js)
+    preferenze: path.join(cartellaDati, 'preferenze.json'),
     log: path.join(cartellaDati, 'app.log'),
     logPrecedente: path.join(cartellaDati, 'app.log.1'),
     // Copia dell'ultima pagina transazioni letta da MCG, per analizzarne la struttura

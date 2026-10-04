@@ -74,6 +74,21 @@ export function riepilogoShow(shows) {
     };
 }
 
+// Mini-scheda della modella nel form: totali, ultimo show vero (non regalo) per
+// "Ripeti ultimo show" e il costo suggerito, tag usati più spesso (al massimo 5).
+// null se la modella non ha show registrati.
+export function schedaRapidaModella(shows, nome) {
+    const elenco = showsDiModella(shows, nome);
+    if (elenco.length === 0) return null;
+    const riepilogo = riepilogoShow(elenco);
+    return {
+        totaleShow: riepilogo.totaleShow,
+        mediaTxt: riepilogo.mediaTxt,
+        ultimoShow: elenco.find(s => !s.isRegalo) || null,
+        tagFrequenti: conteggioTag(elenco).slice(0, 5).map(({ id }) => id)
+    };
+}
+
 // Classifica delle modelle: 1° media voti, 2° numero di show (entrambi decrescenti);
 // a pari merito viene prima la modella con lo show più recente (ordine dei gruppi,
 // mantenuto dall'ordinamento stabile).

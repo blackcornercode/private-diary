@@ -73,6 +73,33 @@ body.theme-grey {
     --link-color: #0369a1;          /* #0284c7 qui era a 3.3:1 */
 }
 
+/* --- TEMA BORDEAUX & ORO: i colori di mondocamgirls.com (crema, bordeaux, oro).
+   Contrasti dei testi verificati ad almeno 5:1 su tutti gli sfondi --- */
+body.theme-mcg {
+    --bg-main: #f4f0e8;
+    --bg-card: #faf7f1;
+    --bg-input: #ffffff;
+    --text-color: #221d1a;
+    --text-muted: #5c5048;
+    --border-color: #e2d8c6;
+    --primary-color: #6d2336;
+    --primary-hover: #4d1b28;
+    --secondary-color: #7a6a5c;
+    --secondary-hover: #5c5048;
+    --accent-color: #7a5a1c;
+    --bg-card-secondary: rgba(109, 35, 54, 0.04);
+    --focus-ring: rgba(109, 35, 54, 0.18);
+    --info-bg: #f3e3ea;
+    --info-text: #6d2336;
+    --highlight-bg: #f6e9c9;
+    --highlight-border: #c5a05a;
+    --highlight-text: #221d1a;
+    --selected-bg: rgba(197, 160, 90, 0.22);
+    --rating-color: #8a4b0a;
+    --link-color: #a3134f;
+    --caro-text: #a8182e;
+}
+
 /* --- TEMA SCURO --- */
 body.theme-dark {
     --bg-main: #0f172a;
@@ -117,6 +144,9 @@ body.theme-dark {
     margin: 0;
     padding: 0;
 }
+
+/* L'attributo hidden deve vincere sulle regole che impostano display (es. button) */
+[hidden] { display: none !important; }
 
 html {
     font-size: 18px !important; 
@@ -387,6 +417,7 @@ input[type="text"],
 input[type="datetime-local"],
 input[type="number"],
 input[type="url"],
+input[type="password"],
 select,
 textarea,
 .custom-select-trigger {
@@ -644,8 +675,13 @@ td.col-centro {
 
 /* Note lunghe troncate con "…": il testo completo è nel tooltip (title).
    Il limite sta sul div interno perché max-width sulle celle non è affidabile. */
+/* Tag e note prendono tutto lo spazio che resta nella tabella: la colonna chiede
+   il 40% e la cella ha max-width 0, così le altre colonne si fermano alla
+   larghezza del loro contenuto e la nota si tronca sulla larghezza reale */
+th.col-note { width: 40%; }
+td.col-note { max-width: 0; }
 td.col-note .testo-note {
-    max-width: 140px;
+    max-width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -712,6 +748,12 @@ td.testo-attenuato {
 }
 .badge-origine.auto { background-color: var(--info-bg); color: var(--info-text); }
 .badge-origine.manuale { background-color: var(--neutral-bg); color: var(--neutral-text); font-weight: 600; }
+
+/* Data sopra e ora sotto (righe-show.js, cellaData) */
+td.col-data { white-space: nowrap; }
+td.col-data .data-giorno { display: block; }
+td.col-data .data-ora { display: block; font-size: 0.8rem; color: var(--text-muted); }
+td.col-data .badge-origine { font-size: 0.66rem; padding: 1px 6px; margin-left: 2px; }
 
 /* Modella online su MCG (accanto al nome in classifica e nella scheda) */
 .badge-online {
@@ -871,6 +913,9 @@ td.costo-cell {
     overflow-y: auto;
     border: 1px solid var(--border-color);
 }
+
+/* Scheda della modella un po' più larga delle altre finestre */
+#modalModella .modal-content { max-width: 1200px; width: 94%; }
 
 #changelogModal .modal-content {
     color: var(--text-color);
@@ -1639,7 +1684,7 @@ body.theme-dark .tag-colore-grigio { --tag-sfondo: #334155; --tag-testo: #e2e8f0
     border: 1px solid transparent;
 }
 /* Nelle celle: i tag oltre i primi tre compaiono solo con la cella espansa */
-td.col-note .tag-show { display: flex; flex-wrap: wrap; max-width: 160px; }
+td.col-note .tag-show { display: flex; flex-wrap: wrap; }
 td.col-note .tag-show + .testo-note { margin-top: 2px; }
 td.col-note:not(.espansa) .tag-extra,
 td.col-note.espansa .tag-altri { display: none; }
@@ -1730,3 +1775,184 @@ button.campione-colore {
 }
 button.campione-colore.attivo { box-shadow: 0 0 0 2px var(--text-color); }
 .uso-tag { color: var(--text-muted); font-size: 0.85rem; text-align: right; }
+
+/* ==========================================================================
+   FORM ASSISTITO (js/form-assistito.js)
+   ========================================================================== */
+.form-riga-tipo {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.selettore-tipo button { padding: 8px 18px; font-size: 0.9rem; }
+.campo-data { width: 230px; }
+
+.form-riga-modella {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) 1fr;
+    gap: 15px;
+    align-items: end;
+}
+.mini-scheda {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-main);
+    font-size: 0.85rem;
+}
+.mini-scheda-foto { flex-shrink: 0; }
+.mini-scheda-testo { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.mini-scheda-ultimo { color: var(--text-muted); }
+.mini-scheda-tag .etichetta-tag { font-size: 0.7rem; }
+.mini-scheda-nuova { color: var(--text-muted); font-style: italic; }
+.mini-scheda-ripeti { flex-shrink: 0; padding: 7px 12px; }
+
+.riga-durata-costo { align-items: flex-start; flex-wrap: wrap; }
+.riga-durata-costo > .form-group { flex: 1; min-width: 240px; }
+/* La durata ha 6 pulsanti e il campo libero: le serve più spazio di costo e voto */
+.riga-durata-costo > .form-group:first-child { flex: 1.35; }
+.durata-rapida { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.durata-rapida button { padding: 7px 8px; min-width: 38px; }
+.durata-rapida button.attivo,
+.selettore-tipo button.attivo { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+.durata-rapida input { width: 72px; flex: 0 0 auto; }
+.costo-con-azione { display: flex; gap: 8px; align-items: center; }
+.costo-con-azione input { max-width: 160px; }
+.costo-con-azione button { padding: 7px 12px; white-space: nowrap; }
+.anteprima-costo-minuto { min-height: 1.3em; font-size: 0.9rem; font-weight: 700; }
+.anteprima-media { color: var(--text-muted); font-weight: 500; }
+
+/* Voto: stessi badge colorati della cronologia; tenui finché non scelti */
+.campo-voto { flex: 0 1 auto; min-width: 250px; }
+.scelta-voto { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+button.voto-pulsante {
+    min-width: 40px;
+    height: 34px;
+    padding: 0 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    opacity: 0.55;
+}
+button.voto-pulsante:hover { opacity: 0.8; }
+button.voto-pulsante.scelto { opacity: 1; border-color: currentColor; box-shadow: var(--shadow-sm); }
+.casella-recensione { height: auto; margin-top: 4px; }
+
+/* Etichette dei campi senza <label> (voto, tag) con lo stesso stile delle altre */
+.show-form-grid .etichetta-campo { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+
+button.etichetta-tag.suggerito { opacity: 0.8; border-style: dashed; border-color: var(--tag-testo); }
+.nota-tag-suggeriti { color: var(--text-muted); font-weight: 500; margin-left: 6px; }
+
+/* Campi che non valgono per i regali (durata, voto, piattaforma) */
+.show-form-grid.modalita-regalo .solo-show { display: none; }
+
+.dettagli-form {
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--primary-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    background: var(--bg-main);
+}
+.dettagli-form > summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    list-style: none;
+}
+.dettagli-form > summary::-webkit-details-marker { display: none; }
+.dettagli-form > summary { color: var(--text-color); }
+.riepilogo-dettagli { color: var(--text-muted); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dettagli-form[open] > summary { margin-bottom: 12px; }
+.griglia-dettagli {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px 15px;
+}
+.form-actions { align-items: center; }
+.suggerimento-scorciatoie { color: var(--text-muted); margin-right: auto; }
+
+/* ==========================================================================
+   PRIVACY (js/privacy.js)
+   ========================================================================== */
+/* Foto sfocate finché non ci si passa sopra con il mouse */
+body.modalita-discreta img.thumb-img,
+body.modalita-discreta img.modella-avatar,
+body.modalita-discreta img.galleria-miniatura,
+body.modalita-discreta #imgIngrandita {
+    filter: blur(10px);
+    transition: filter 0.2s ease;
+}
+body.modalita-discreta img.thumb-img:hover,
+body.modalita-discreta img.modella-avatar:hover,
+body.modalita-discreta img.galleria-miniatura:hover,
+body.modalita-discreta #imgIngrandita:hover { filter: none; }
+
+.impostazioni-privacy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+.titolo-sezione-menu { font-weight: 700; font-size: 0.85rem; }
+.impostazioni-privacy .checkbox-label { height: auto; }
+.riga-pin { display: flex; gap: 8px; flex-wrap: wrap; }
+.riga-tasto-rapido { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+/* Più specifica di .menu-header-pannello .btn-data, che allarga i pulsanti del menu */
+.menu-header-pannello .riga-tasto-rapido .btn-data { width: auto; padding: 5px 10px; font-size: 0.8rem; }
+.riga-tasto-rapido > span:first-child { margin-right: auto; }
+kbd.tasto-rapido {
+    padding: 3px 8px;
+    border: 1px solid var(--border-color);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    background: var(--bg-main);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+kbd.tasto-rapido.in-registrazione { border-color: var(--primary-color); color: var(--primary-color); }
+.avviso-tasto-rapido { color: var(--danger-text); font-size: 0.78rem; }
+.avviso-tasto-rapido:empty { display: none; }
+
+.modal-pin { max-width: 440px; }
+.modal-pin .form-group { margin-top: 10px; }
+.errore-sblocco { min-height: 1.3em; color: var(--danger-text); font-weight: 600; font-size: 0.88rem; }
+
+.schermata-blocco {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-main);
+}
+.riquadro-blocco {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 300px;
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-lg);
+}
+.icona-blocco { font-size: 2.4rem; }
+.riquadro-blocco h2 { margin: 0; font-size: 1.2rem; }
+.riquadro-blocco input { text-align: center; font-size: 1.3rem; letter-spacing: 0.3em; }
+.riquadro-blocco button { width: 100%; }

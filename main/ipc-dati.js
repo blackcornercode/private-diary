@@ -165,7 +165,7 @@ function registra({ finestraPrincipale }) {
                     if (Array.isArray(parsedData?.tag)) await salvaCatalogoTag(parsedData.tag);
                     return { success: true, impostazioni: filtraImpostazioni(parsedData?.impostazioni) };
                 }
-                return { success: false, error: 'Formato del file non valido (atteso un backup di Gestione Show).' };
+                return { success: false, error: 'Formato del file non valido (atteso un backup di Private Diary / Gestione Show).' };
             }
             return { success: false, cancelled: true, error: 'Importazione annullata' };
         } catch (error) {

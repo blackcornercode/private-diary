@@ -1,4 +1,6 @@
-# Gestione Show MCG
+# Private Diary (Diario Privato), già Gestione Show MCG
+
+- Nome visibile: "Diario Privato" in italiano e "Private Diary" in inglese (`app_title` nelle traduzioni); titolo della finestra ed eseguibile "Private Diary". Il nome tecnico `gestioneshow` in package.json e la cartella dati `%APPDATA%\gestioneshow` non vanno cambiati (main.js la fissa con `app.setPath`).
 
 ## Verifiche
 - `npm test`: test automatici in `tests/` (node:test, nessuna dipendenza). Eseguirli dopo ogni modifica; `npm run dist` li esegue comunque prima della build.
@@ -10,6 +12,7 @@
 - Niente JavaScript nell'HTML (vietato dalla Content-Security-Policy): niente onclick/onchange/onerror né <script> inline. Usare `data-azione`/`data-al-cambio`/`data-al-input` e registrare la funzione in `registraAzioni` (js/app.js); per le immagini usare `data-sostituto`.
 - Nuovi file usati dall'app vanno aggiunti a `build.files` in package.json (la build include solo i file elencati).
 - Nuovi canali IPC: definirli in `main/canali.js`, registrarli in `main/ipc-*.js` ed esporli in `preload.js`; il test `canali-ipc` verifica la coerenza.
+- Privacy: il PIN si verifica solo nel processo principale (main/ipc-privacy.js), l'interfaccia riceve solo `pinImpostato`. Le foto delle modelle vanno disegnate come `img` con le classi già sfocate in modalità discreta (`thumb-img`, `modella-avatar`, `galleria-miniatura`).
 
 ## Graphify
 - Graphify (pacchetto `graphifyy`) è installato **solo nel venv del progetto**, non nel PATH di sistema.

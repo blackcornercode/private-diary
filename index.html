@@ -6,7 +6,7 @@
          (onclick, onerror...). Le azioni dell'interfaccia passano da js/azioni.js. -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="app_title">Gestione Show MCG</title>
+    <title data-i18n="app_title">Diario Privato</title>
     <!-- Font e icone inclusi in locale: l'app li mostra anche senza connessione -->
     <link rel="stylesheet" href="node_modules/@fontsource/inter/400.css">
     <link rel="stylesheet" href="node_modules/@fontsource/inter/500.css">
@@ -21,7 +21,7 @@
     <header>
         <div class="header-container">
             <h1>
-                <span>♀️ <span data-i18n="app_title">Gestione Show MCG</span></span>
+                <span>📔 <span data-i18n="app_title">Diario Privato</span></span>
                 <span id="appVersion" class="version-badge"></span>
             </h1>
 
@@ -73,10 +73,46 @@
                                 <option value="grey" data-i18n="themes.grey">Neve & Nebbia</option>
                                 <option value="light" data-i18n="themes.light">Luce Chiara</option>
                                 <option value="dark" data-i18n="themes.dark">Eclissi Scura</option>
+                                <option value="mcg" data-i18n="themes.mcg">Bordeaux & Oro (MCG)</option>
                             </select>
                         </div>
 
                         <button type="button" class="btn-data" data-azione="apri-gestione-tag" data-i18n="tags.manage">🏷️ Gestisci tag</button>
+
+                        <!-- Privacy (js/privacy.js, main/ipc-privacy.js) -->
+                        <div class="impostazioni-privacy">
+                            <span class="titolo-sezione-menu" data-i18n="privacy.section">🔒 Privacy</span>
+                            <label class="checkbox-label" for="opzSfocatura">
+                                <input type="checkbox" id="opzSfocatura" data-al-cambio="cambia-sfocatura">
+                                <span data-i18n="privacy.blur">Sfoca le foto</span>
+                            </label>
+                            <label class="checkbox-label" for="opzAspettoNeutro">
+                                <input type="checkbox" id="opzAspettoNeutro" data-al-cambio="cambia-aspetto-neutro">
+                                <span data-i18n="privacy.neutral">Nome e icona neutri</span>
+                            </label>
+                            <div class="riga-pin">
+                                <button type="button" id="btnPin" class="btn-data" data-azione="apri-finestra-pin" data-modo="imposta" data-i18n="privacy.pin_set">Imposta PIN</button>
+                                <button type="button" id="btnRimuoviPin" class="btn-data" data-azione="apri-finestra-pin" data-modo="rimuovi" data-i18n="privacy.pin_remove" hidden>Rimuovi PIN</button>
+                            </div>
+                            <div class="lang-selector">
+                                <label for="selectBloccoMinuti" data-i18n="privacy.autolock">Blocco automatico:</label>
+                                <select id="selectBloccoMinuti" data-al-cambio="cambia-blocco-minuti">
+                                    <option value="0" data-i18n="privacy.never">Mai</option>
+                                    <option value="5">5 min</option>
+                                    <option value="15">15 min</option>
+                                    <option value="30">30 min</option>
+                                    <option value="60">60 min</option>
+                                </select>
+                            </div>
+                            <!-- Tasto rapido per bloccare e ridurre a icona l'app (personalizzabile) -->
+                            <div class="riga-tasto-rapido">
+                                <span data-i18n="privacy.hotkey">Nascondi l'app:</span>
+                                <kbd id="tastoRapidoAttuale" class="tasto-rapido">Ctrl+Shift+H</kbd>
+                                <button type="button" class="btn-data" data-azione="registra-tasto-rapido" data-i18n="privacy.hotkey_change">Cambia</button>
+                                <button type="button" id="btnTastoRapidoPredefinito" class="btn-data" data-azione="ripristina-tasto-rapido" title="Ctrl+Shift+H" aria-label="Ripristina" hidden>↺</button>
+                            </div>
+                            <small id="avvisoTastoRapido" class="avviso-tasto-rapido" role="alert"></small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -106,116 +142,86 @@
                 <form id="showForm" class="show-form-grid">
     <input type="hidden" id="editId" value="">
 
-    <!-- Riga 1: Data/Ora, Nome Modella, Sito Web -->
-    <div class="form-row flex-3">
-        <div class="form-group">
+    <!-- Riga 1: tipo (show o regalo) e data. La casella nascosta isRegalo resta
+         il valore usato dal salvataggio; i due pulsanti la impostano (form-assistito.js) -->
+    <div class="form-riga-tipo">
+        <div class="selettore-vista selettore-tipo" role="group" aria-label="Tipo">
+            <button type="button" class="btn-data attivo" data-azione="tipo-show" data-tipo="show" aria-pressed="true" data-i18n="form.type_show">🎥 Show</button>
+            <button type="button" class="btn-data" data-azione="tipo-show" data-tipo="regalo" aria-pressed="false" data-i18n="form.gift">🎁 Regalo</button>
+        </div>
+        <input type="checkbox" id="isRegalo" hidden data-al-cambio="gestisci-regalo">
+        <div class="form-group campo-data">
             <label for="dataOra" data-i18n="form.date">Data e Ora</label>
             <input type="datetime-local" id="dataOra" required>
         </div>
+    </div>
 
-        <div class="form-group">
+    <!-- Riga 2: modella e, se già conosciuta, la sua mini-scheda -->
+    <div class="form-riga-modella">
+        <div class="form-group campo-modella">
             <label for="nome" data-i18n="form.model_name">Nome Modella</label>
             <input type="text" id="nome" list="listaModelleSuggerite" placeholder="Es. Anna" data-i18n-ph="form.ph_name" required autocomplete="off">
             <datalist id="listaModelleSuggerite"></datalist>
         </div>
-
-        <div class="form-group">
-            <label for="urlProfilo" data-i18n="form.profile_url">Link Profilo Web</label>
-            <input type="url" id="urlProfilo" placeholder="https://...">
-        </div>
-
-        <div class="form-group">
-            <label for="durataShow" data-i18n="form.duration">Durata Show (in minuti):</label>
-            <!-- Facoltativo: senza durata lo show non entra nel calcolo del €/min -->
-            <input type="number" id="durataShow" min="0" placeholder="Es. 45" data-i18n-ph="form.ph_duration">
-        </div>
-
+        <div id="miniSchedaModella" class="mini-scheda" hidden></div>
     </div>
 
-    <!-- Riga 2: Piattaforma, Nickname, Costo, Punteggio, Checkbox Regalo -->
-    <div class="form-row flex-5">
-        <div class="form-group">
-            <label for="piattaforma" data-i18n="form.platform">Piattaforma</label>
-            <div class="custom-select-wrapper">
-                <select id="piattaforma" style="display: none;">
-                    <option value="Teams">Teams</option>
-                    <option value="Telegram">Telegram</option>
-                    <option value="Skype">Skype</option>
-                    <option value="Zoom">Zoom</option>
-                    <option value="Altro" data-i18n="options.other">Altro</option>
-                </select>
-                <div class="custom-select-trigger">
-                    <span id="customSelectSelected"><i class="fa-solid fa-users-rectangle" style="color: #6264A7;"></i> Teams</span>
-                    <i class="fa-solid fa-chevron-down"></i>
-                </div>
-                <div class="custom-options" id="customPiattaformaDropdown">
-                    <div class="custom-option" data-value="Teams"><i class="fa-solid fa-users-rectangle" style="color: #6264A7;"></i> Teams</div>
-                    <div class="custom-option" data-value="Telegram"><i class="fa-brands fa-telegram" style="color: #2AABEE;"></i> Telegram</div>
-                    <div class="custom-option" data-value="Skype"><i class="fa-brands fa-skype" style="color: #00AFF0;"></i> Skype</div>
-                    <div class="custom-option" data-value="Zoom"><i class="fa-solid fa-video" style="color: #2D8CFF;"></i> Zoom</div>
-                    <div class="custom-option" data-value="Altro"><i class="fa-solid fa-globe" style="color: #6c757d;"></i> <span data-i18n="options.other">Altro</span></div>
-                </div>
+    <!-- Riga 3: durata (con valori rapidi), costo con il €/min calcolato mentre si scrive,
+         voto e recensione -->
+    <div class="form-row riga-durata-costo">
+        <div class="form-group solo-show">
+            <label for="durataShow" data-i18n="form.label_duration">Durata Show (minuti)</label>
+            <div class="durata-rapida" role="group" aria-label="Durata rapida">
+                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="10">10</button>
+                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="15">15</button>
+                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="20">20</button>
+                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="30">30</button>
+                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="45">45</button>
+                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="60">60</button>
+                <!-- Facoltativo: senza durata lo show non entra nel calcolo del €/min -->
+                <input type="number" id="durataShow" min="0" placeholder="min" data-i18n-ph="form.ph_minutes" data-al-input="anteprima-costo-minuto">
             </div>
         </div>
-
-        <div class="form-group">
-            <label for="nickname" data-i18n="form.nickname">Nickname Chat</label>
-            <input type="text" id="nickname" placeholder="@username">
-        </div>
-
-        <div class="form-group">
+        <div class="form-group campo-costo">
             <label for="costo" data-i18n="form.cost">Costo (€)</label>
-            <input type="number" id="costo" step="0.01" min="0" placeholder="0.00">
+            <div class="costo-con-azione">
+                <input type="number" id="costo" step="0.01" min="0" placeholder="0.00" data-al-input="anteprima-costo-minuto">
+                <button type="button" id="btnCostoUltimo" class="btn-data" data-azione="costo-ultimo" hidden></button>
+            </div>
+            <div id="anteprimaCostoMinuto" class="anteprima-costo-minuto" aria-live="polite"></div>
         </div>
-
-        <div class="form-group">
-            <label for="punteggio" data-i18n="form.rating">Valutazione</label>
-            <select id="punteggio" required>
-                <option value="" data-i18n="options.select">Seleziona...</option>
-                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                <option value="3">⭐⭐⭐ (3/5)</option>
-                <option value="2">⭐⭐ (2/5)</option>
-                <option value="1">⭐ (1/5)</option>
-                <option value="TBD" data-i18n="options.tbd">TBD (Da valutare)</option>
+        <!-- Voto con gli stessi badge colorati della cronologia (nessuno = TBD al salvataggio).
+             La select nascosta punteggio resta il valore usato dal salvataggio -->
+        <div class="form-group campo-voto">
+            <span class="etichetta-campo" data-i18n="form.rating">Valutazione</span>
+            <div class="scelta-voto" role="group" aria-label="Valutazione">
+                <button type="button" class="badge-voto voto-pulsante voto-basso" data-azione="voto-stelle" data-voto="1" aria-label="1/5">1</button>
+                <button type="button" class="badge-voto voto-pulsante voto-basso" data-azione="voto-stelle" data-voto="2" aria-label="2/5">2</button>
+                <button type="button" class="badge-voto voto-pulsante voto-3" data-azione="voto-stelle" data-voto="3" aria-label="3/5">3</button>
+                <button type="button" class="badge-voto voto-pulsante voto-4" data-azione="voto-stelle" data-voto="4" aria-label="4/5">4</button>
+                <button type="button" class="badge-voto voto-pulsante voto-5" data-azione="voto-stelle" data-voto="5" aria-label="5/5">5</button>
+                <button type="button" class="badge-tbd voto-pulsante" data-azione="voto-stelle" data-voto="TBD">TBD</button>
+            </div>
+            <select id="punteggio" hidden>
+                <option value=""></option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+                <option value="1">1</option>
+                <option value="TBD">TBD</option>
             </select>
-        </div>
-
-        <div class="form-group checkbox-group">
-            <label class="checkbox-label" for="isRegalo">
-                <input type="checkbox" id="isRegalo" data-al-cambio="gestisci-regalo">
-                <span data-i18n="form.gift">🎁 Regalo</span>
-            </label>
-        </div>
-    </div>
-
-    <!-- Riga 3: URL Immagine, Checkbox Recensione -->
-    <div class="form-row flex-2-auto">
-        <div class="form-group">
-            <label for="immagine" data-i18n="form.image_url">URL Immagine / Foto</label>
-            <input type="url" id="immagine" placeholder="https://.../foto.jpg">
-        </div>
-
-        <div class="form-group checkbox-group">
-            <label class="checkbox-label" for="recensione">
+            <label class="checkbox-label casella-recensione" for="recensione">
                 <input type="checkbox" id="recensione">
                 <span data-i18n="form.review_done">✅ Recensione Fatta</span>
             </label>
         </div>
     </div>
 
-    <!-- Riga 4: Note -->
+    <!-- Riga 5: tag (js/tag.js); quelli usati di solito con la modella sono segnati -->
     <div class="form-row">
         <div class="form-group full-width">
-            <label for="note" data-i18n="form.notes">Note / Dettagli Show</label>
-            <textarea id="note" rows="2" placeholder="Inserisci note aggiuntive..." data-i18n-ph="form.ph_notes"></textarea>
-        </div>
-    </div>
-
-    <!-- Riga 4b: Tag (js/tag.js) -->
-    <div class="form-row">
-        <div class="form-group full-width">
-            <span class="etichetta-campo" data-i18n="tags.label">🏷️ Tag</span>
+            <span class="etichetta-campo"><span data-i18n="tags.label">🏷️ Tag</span> <small id="notaTagSuggeriti" class="nota-tag-suggeriti" data-i18n="form.tags_suggested" hidden>☆ = usati di solito con lei</small></span>
             <div id="tagForm" class="selettore-tag"></div>
             <div class="nuovo-tag">
                 <input type="text" id="nuovoTagForm" maxlength="40" placeholder="Nuovo tag..." data-i18n-ph="tags.ph_new" aria-label="Nuovo tag">
@@ -224,10 +230,66 @@
         </div>
     </div>
 
-    <!-- Riga 5: Pulsanti d'azione -->
+    <!-- Riga 6: note -->
+    <div class="form-row">
+        <div class="form-group full-width">
+            <label for="note" data-i18n="form.notes">Note / Dettagli Show</label>
+            <textarea id="note" rows="2" placeholder="Inserisci note aggiuntive..." data-i18n-ph="form.ph_notes"></textarea>
+        </div>
+    </div>
+
+    <!-- Riga 7: dettagli che si compilano da soli (ultimo show della modella, MCG) -->
+    <details id="dettagliForm" class="dettagli-form">
+        <summary>
+            <span data-i18n="form.details">Dettagli</span>
+            <span id="riepilogoDettagli" class="riepilogo-dettagli"></span>
+            <i class="fa-solid fa-chevron-down riquadro-freccia" aria-hidden="true"></i>
+        </summary>
+        <div class="griglia-dettagli">
+            <div class="form-group solo-show">
+                <label for="piattaforma" data-i18n="form.platform">Piattaforma</label>
+                <div class="custom-select-wrapper">
+                    <select id="piattaforma" hidden>
+                        <option value="Teams">Teams</option>
+                        <option value="Telegram">Telegram</option>
+                        <option value="Skype">Skype</option>
+                        <option value="Zoom">Zoom</option>
+                        <option value="Altro" data-i18n="options.other">Altro</option>
+                    </select>
+                    <div class="custom-select-trigger">
+                        <span id="customSelectSelected"><i class="fa-solid fa-users-rectangle" style="color: #6264A7;"></i> Teams</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="custom-options" id="customPiattaformaDropdown">
+                        <div class="custom-option" data-value="Teams"><i class="fa-solid fa-users-rectangle" style="color: #6264A7;"></i> Teams</div>
+                        <div class="custom-option" data-value="Telegram"><i class="fa-brands fa-telegram" style="color: #2AABEE;"></i> Telegram</div>
+                        <div class="custom-option" data-value="Skype"><i class="fa-brands fa-skype" style="color: #00AFF0;"></i> Skype</div>
+                        <div class="custom-option" data-value="Zoom"><i class="fa-solid fa-video" style="color: #2D8CFF;"></i> Zoom</div>
+                        <div class="custom-option" data-value="Altro"><i class="fa-solid fa-globe" style="color: #6c757d;"></i> <span data-i18n="options.other">Altro</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="nickname" data-i18n="form.nickname">Nickname Chat</label>
+                <input type="text" id="nickname" placeholder="@username" data-al-input="riepilogo-dettagli">
+            </div>
+            <div class="form-group">
+                <label for="urlProfilo" data-i18n="form.profile_url">Link Profilo Web</label>
+                <input type="url" id="urlProfilo" placeholder="https://..." data-al-input="riepilogo-dettagli">
+            </div>
+            <div class="form-group">
+                <label for="immagine" data-i18n="form.image_url">URL Immagine / Foto</label>
+                <input type="url" id="immagine" placeholder="https://.../foto.jpg" data-al-input="riepilogo-dettagli">
+            </div>
+        </div>
+    </details>
+
+    <!-- Pulsanti d'azione -->
     <div class="form-actions">
-        <button type="submit" id="btnSalva" class="btn-primary" data-i18n="form.btn_save">Salva Record</button>
+        <small class="suggerimento-scorciatoie" data-i18n="form.shortcuts">Ctrl+Invio salva · Esc chiude</small>
+        <button type="button" class="btn-data" data-azione="svuota-form" title="Svuota tutti i campi" data-i18n="form.clear">🧹 Svuota</button>
         <button type="button" id="btnAnnulla" class="btn-secondary" style="display: none;" data-azione="annulla-modifica" data-i18n="form.btn_cancel">Annulla</button>
+        <button type="submit" id="btnSalva" class="btn-primary" data-i18n="form.btn_save">Salva Record</button>
     </div>
 </form>
             </section>
@@ -556,6 +618,43 @@
             <div class="modal-footer">
                 <button type="button" class="btn-primary" data-azione="chiudi-gestione-tag" data-i18n="tags.done">Fatto</button>
             </div>
+        </div>
+    </div>
+
+    <!-- PIN DI SBLOCCO: imposta, cambia, rimuovi (js/privacy.js) -->
+    <div id="modalPin" class="modal">
+        <div class="modal-content modal-pin">
+            <button type="button" class="close-btn" aria-label="Chiudi" data-azione="chiudi-finestra-pin">&times;</button>
+            <h2 id="titoloFinestraPin">Imposta PIN</h2>
+            <p class="nota-modifica-multipla" data-i18n="privacy.pin_note">Il PIN blocca l'app all'avvio, dopo il tempo di inattività scelto e con il tasto rapido.</p>
+            <div class="form-group" id="gruppoPinAttuale">
+                <label for="pinAttuale" data-i18n="privacy.pin_current">PIN attuale</label>
+                <input type="password" id="pinAttuale" inputmode="numeric" maxlength="8" autocomplete="off">
+            </div>
+            <div class="form-group gruppo-pin-nuovo">
+                <label for="pinNuovo" data-i18n="privacy.pin_new">Nuovo PIN (4-8 cifre)</label>
+                <input type="password" id="pinNuovo" inputmode="numeric" maxlength="8" autocomplete="off">
+            </div>
+            <div class="form-group gruppo-pin-nuovo">
+                <label for="pinConferma" data-i18n="privacy.pin_confirm">Ripeti il nuovo PIN</label>
+                <input type="password" id="pinConferma" inputmode="numeric" maxlength="8" autocomplete="off">
+            </div>
+            <p id="errorePin" class="errore-sblocco" role="alert"></p>
+            <div class="modal-footer">
+                <button type="button" class="btn-data" data-azione="chiudi-finestra-pin" data-i18n="form.btn_cancel">Annulla</button>
+                <button type="button" class="btn-primary" data-azione="salva-pin" data-i18n="privacy.pin_save">Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHERMATA DI BLOCCO (js/privacy.js): copre tutta l'app finché non si inserisce il PIN -->
+    <div id="schermataBlocco" class="schermata-blocco" hidden>
+        <div class="riquadro-blocco">
+            <div class="icona-blocco" aria-hidden="true">🔒</div>
+            <h2 data-i18n="privacy.locked">App bloccata</h2>
+            <input type="password" id="pinSblocco" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="PIN" aria-label="PIN">
+            <button type="button" class="btn-primary" data-azione="sblocca-app" data-i18n="privacy.unlock">Sblocca</button>
+            <p id="erroreSblocco" class="errore-sblocco" role="alert"></p>
         </div>
     </div>
 

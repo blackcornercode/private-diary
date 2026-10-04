@@ -76,8 +76,19 @@ export function disegnaSelettoreTagForm() {
     // Tolti i tag eliminati nel frattempo dal catalogo
     [...stato.tagForm].forEach(id => { if (!tagDaId(id)) stato.tagForm.delete(id); });
     contenitore.innerHTML = stato.catalogoTag.length
-        ? stato.catalogoTag.map(tag => pulsanteTag(tag, AZIONE_FORM, { premuto: stato.tagForm.has(tag.id), classe: stato.tagForm.has(tag.id) ? 'attivo' : '' })).join('')
+        ? stato.catalogoTag.map(tag => {
+            const scelto = stato.tagForm.has(tag.id);
+            // ☆ sui tag usati di solito con la modella (form-assistito.js), finché non sono scelti
+            const suggerito = !scelto && tagSuggeriti.has(tag.id);
+            return pulsanteTag(tag, AZIONE_FORM, { premuto: scelto, classe: scelto ? 'attivo' : suggerito ? 'suggerito' : '', prefisso: suggerito ? '☆ ' : '' });
+        }).join('')
         : `<span class="tag-vuoto">${escapeHtml(t('tags.empty_form'))}</span>`;
+}
+
+let tagSuggeriti = new Set();
+export function impostaTagSuggeriti(ids = []) {
+    tagSuggeriti = new Set(ids);
+    disegnaSelettoreTagForm();
 }
 
 export function impostaTagForm(ids = []) {

@@ -26,6 +26,13 @@ module.exports = Object.freeze({
     PROFILO_SOSPESO: 'get-profilo-sospeso',
     PING_MCG: 'ping-mcg',
 
+    // Privacy (ipc-privacy.js)
+    LEGGI_PREFERENZE: 'read-preferences',
+    SALVA_PREFERENZA: 'save-preference',
+    IMPOSTA_PIN: 'set-pin',
+    VERIFICA_PIN: 'verify-pin',
+    RIDUCI_FINESTRA: 'minimize-window',
+
     // Evento dal menu dell'applicazione verso l'interfaccia (main.js)
     EVENTO_APRI_CHANGELOG: 'open-changelog-trigger'
 });

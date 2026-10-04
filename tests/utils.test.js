@@ -100,3 +100,24 @@ test('importi e tipi delle transazioni MCG', () => {
     assert.equal(f.tipoTransazione('Ricarica con carta di credito'), 'ricarica');
     assert.equal(f.tipoTransazione('Altro'), 'altro');
 });
+
+test('tasto rapido per nascondere l\'app: combinazione dal tasto premuto e combinazioni non ammesse', async () => {
+    const p = await import('../js/privacy.js');
+    const ev = (code, mod = {}) => ({ code, ctrlKey: false, altKey: false, shiftKey: false, ...mod });
+    assert.equal(p.combinazioneDaEvento(ev('KeyH', { ctrlKey: true, shiftKey: true })), 'Ctrl+Shift+H');
+    assert.equal(p.combinazioneDaEvento(ev('Digit5', { altKey: true })), 'Alt+5');
+    assert.equal(p.combinazioneDaEvento(ev('Numpad7', { ctrlKey: true })), 'Ctrl+7');
+    assert.equal(p.combinazioneDaEvento(ev('F9')), 'F9');
+    assert.equal(p.combinazioneDaEvento(ev('ShiftLeft', { shiftKey: true })), null, 'solo modificatore');
+    assert.equal(p.combinazioneDaEvento(ev('Space', { ctrlKey: true })), null);
+    assert.equal(p.problemaCombinazione('Ctrl+Shift+H'), null);
+    assert.equal(p.problemaCombinazione('Alt+5'), null);
+    assert.equal(p.problemaCombinazione('F9'), null);
+    assert.equal(p.problemaCombinazione('H'), 'modificatore');
+    assert.equal(p.problemaCombinazione('Shift+H'), 'modificatore', 'con il solo Shift scatterebbe scrivendo una maiuscola');
+    assert.equal(p.problemaCombinazione('Shift+F2'), null);
+    assert.equal(p.problemaCombinazione('Ctrl+C'), 'riservata');
+    assert.equal(p.problemaCombinazione('Ctrl+Invio'), 'riservata', 'Ctrl+Invio salva il form');
+    assert.equal(p.problemaCombinazione('F5'), 'riservata');
+    assert.equal(p.tastoRapido(), p.TASTO_RAPIDO_PREDEFINITO);
+});

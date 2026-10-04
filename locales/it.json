@@ -1,5 +1,5 @@
 {
-  "app_title": "Gestione Show MCG",
+  "app_title": "Diario Privato",
   "controls": {
     "font": "Testo:",
     "language": "Lingua:",
@@ -14,7 +14,8 @@
   "themes": {
     "grey": "Neve & Nebbia",
     "light": "Luce Chiara",
-    "dark": "Eclissi Scura"
+    "dark": "Eclissi Scura",
+    "mcg": "Bordeaux & Oro (MCG)"
   },
   "menu": {
     "data": "💾 Dati ▾",
@@ -56,7 +57,24 @@
     "btn_cancel": "Annulla",
     "btn_update": "Aggiorna Record",
     "btn_new": "＋ Nuovo show",
-    "btn_close": "✖ Chiudi"
+    "btn_close": "✖ Chiudi",
+    "type_show": "🎥 Show",
+    "ph_minutes": "min",
+    "per_minute": "al minuto",
+    "per_min_avg": "tua media {media}",
+    "cost_last": "= ultimo ({costo})",
+    "mini_new": "Nuova modella: nessuno show registrato",
+    "mini_shows": "{n} show",
+    "mini_avg": "media {media}",
+    "mini_last": "Ultimo: {data} · {costo} · {durata} · {piattaforma}",
+    "repeat_last": "↻ Ripeti ultimo show",
+    "repeat_last_hint": "Compila durata, costo, tag e dettagli come nell'ultimo show con lei",
+    "tags_suggested": "☆ = usati di solito con lei",
+    "details": "Dettagli",
+    "details_profile": "profilo",
+    "details_photo": "foto",
+    "shortcuts": "Ctrl+Invio salva · Esc chiude",
+    "clear": "🧹 Svuota"
   },
   "options": {
     "other": "Altro",
@@ -122,6 +140,35 @@
     "bulk_hint": "Clic su un tag: + aggiungi, poi − togli, poi di nuovo non modificare.",
     "bulk_add": "Verrà aggiunto",
     "bulk_remove": "Verrà tolto"
+  },
+  "privacy": {
+    "section": "🔒 Privacy",
+    "blur": "Sfoca le foto",
+    "neutral": "Nome e icona neutri",
+    "pin_set": "Imposta PIN",
+    "pin_change": "Cambia PIN",
+    "pin_remove": "Rimuovi PIN",
+    "autolock": "Blocco automatico:",
+    "autolock_needs_pin": "Imposta prima un PIN",
+    "never": "Mai",
+    "pin_note": "Il PIN blocca l'app all'avvio, dopo il tempo di inattività scelto e con il tasto rapido per nascondere l'app. Protegge l'app aperta, ma non cifra i file dei dati. Se lo dimentichi, elimina il file preferenze.json dalla cartella dei dati.",
+    "pin_current": "PIN attuale",
+    "pin_new": "Nuovo PIN (4-8 cifre)",
+    "pin_confirm": "Ripeti il nuovo PIN",
+    "pin_save": "Conferma",
+    "pin_invalid": "Il PIN deve avere da 4 a 8 cifre.",
+    "pin_mismatch": "I due PIN non coincidono.",
+    "pin_wrong": "PIN errato.",
+    "wait": "Troppi tentativi: riprova tra {s} secondi.",
+    "save_error": "Impostazione non salvata",
+    "locked": "App bloccata",
+    "unlock": "Sblocca",
+    "hotkey": "Nascondi l'app:",
+    "hotkey_change": "Cambia",
+    "hotkey_press": "Premi i tasti… (Esc annulla)",
+    "hotkey_modificatore": "{tasti}: usa almeno Ctrl o Alt insieme a una lettera o a un numero (oppure un tasto da F1 a F12).",
+    "hotkey_riservata": "{tasti} è già usata dall'app o dal sistema.",
+    "hotkey_non_valida": "{tasti}: usa una lettera, un numero o un tasto F."
   },
   "pagination": {
     "prev": "⬅️ Precedente",

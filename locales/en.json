@@ -1,5 +1,5 @@
 {
-  "app_title": "MCG Show Management",
+  "app_title": "Private Diary",
   "controls": {
     "font": "Text:",
     "language": "Language:",
@@ -14,7 +14,8 @@
   "themes": {
     "grey": "Snow & Fog",
     "light": "Clear Light",
-    "dark": "Dark Eclipse"
+    "dark": "Dark Eclipse",
+    "mcg": "Burgundy & Gold (MCG)"
   },
   "menu": {
     "data": "💾 Data ▾",
@@ -56,7 +57,24 @@
     "btn_cancel": "Cancel",
     "btn_update": "Update Record",
     "btn_new": "＋ New show",
-    "btn_close": "✖ Close"
+    "btn_close": "✖ Close",
+    "type_show": "🎥 Show",
+    "ph_minutes": "min",
+    "per_minute": "per minute",
+    "per_min_avg": "your average {media}",
+    "cost_last": "= last ({costo})",
+    "mini_new": "New model: no shows recorded",
+    "mini_shows": "{n} shows",
+    "mini_avg": "average {media}",
+    "mini_last": "Last: {data} · {costo} · {durata} · {piattaforma}",
+    "repeat_last": "↻ Repeat last show",
+    "repeat_last_hint": "Fill duration, cost, tags and details as in the last show with her",
+    "tags_suggested": "☆ = usually used with her",
+    "details": "Details",
+    "details_profile": "profile",
+    "details_photo": "photo",
+    "shortcuts": "Ctrl+Enter saves · Esc closes",
+    "clear": "🧹 Clear"
   },
   "options": {
     "other": "Other",
@@ -122,6 +140,35 @@
     "bulk_hint": "Click a tag: + add, then − remove, then back to no change.",
     "bulk_add": "Will be added",
     "bulk_remove": "Will be removed"
+  },
+  "privacy": {
+    "section": "🔒 Privacy",
+    "blur": "Blur photos",
+    "neutral": "Neutral name and icon",
+    "pin_set": "Set PIN",
+    "pin_change": "Change PIN",
+    "pin_remove": "Remove PIN",
+    "autolock": "Auto-lock:",
+    "autolock_needs_pin": "Set a PIN first",
+    "never": "Never",
+    "pin_note": "The PIN locks the app at startup, after the chosen idle time and with the hide shortcut. It protects the open app but does not encrypt the data files. If you forget it, delete preferenze.json from the data folder.",
+    "pin_current": "Current PIN",
+    "pin_new": "New PIN (4-8 digits)",
+    "pin_confirm": "Repeat the new PIN",
+    "pin_save": "Confirm",
+    "pin_invalid": "The PIN must have 4 to 8 digits.",
+    "pin_mismatch": "The two PINs do not match.",
+    "pin_wrong": "Wrong PIN.",
+    "wait": "Too many attempts: try again in {s} seconds.",
+    "save_error": "Setting not saved",
+    "locked": "App locked",
+    "unlock": "Unlock",
+    "hotkey": "Hide the app:",
+    "hotkey_change": "Change",
+    "hotkey_press": "Press the keys… (Esc cancels)",
+    "hotkey_modificatore": "{tasti}: use Ctrl or Alt with a letter or a number (or a key from F1 to F12).",
+    "hotkey_riservata": "{tasti} is already used by the app or the system.",
+    "hotkey_non_valida": "{tasti}: use a letter, a number or an F key."
   },
   "pagination": {
     "prev": "⬅️ Previous",

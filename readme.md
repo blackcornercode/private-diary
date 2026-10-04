@@ -1,9 +1,9 @@
-# Gestione Show MCG V2
+# 📔 Private Diary (Diario Privato)
 
 ![Version](https://img.shields.io/badge/version-v1.12.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Electron-brightgreen.svg)
 
-**Gestione Show MCG** è un'applicazione desktop basata sull'architettura **Electron**, progettata per il monitoraggio, l'organizzazione e la storicizzazione degli show con **camgirl**. Il sistema offre un tracciamento avanzato delle sessioni e della spesa rispetto a budget mensili prefissati, fornendo metriche, statistiche economiche e classifiche automatiche. È nativamente integrata con il portale web **Mondo Cam Girls**.
+**Private Diary** (in italiano **Diario Privato**, già *Gestione Show MCG*) è un'applicazione desktop basata sull'architettura **Electron**, progettata per il monitoraggio, l'organizzazione e la storicizzazione degli show con **camgirl**. Il sistema offre un tracciamento avanzato delle sessioni e della spesa rispetto a budget mensili prefissati, fornendo metriche, statistiche economiche e classifiche automatiche. È nativamente integrata con il portale web **Mondo Cam Girls**.
 
 ---
 
@@ -28,21 +28,30 @@ Consente l'inserimento manuale, la modifica e la consultazione dell'archivio sto
 
 Il form è chiuso di default per lasciare spazio alla cronologia: si apre con **＋ Nuovo show** oppure con il pulsante ✏️ (Modifica) di una riga. Dopo il salvataggio si richiude; chiudendolo durante una modifica, la modifica viene annullata, mentre una bozza di nuovo show resta compilata.
 
-| Campo | Tipo Dato | Descrizione |
-| :--- | :--- | :--- |
-| **Data e Ora** | Data/Ora ISO | Data e orario esatto della sessione. Una data non valida blocca il salvataggio con un avviso. |
-| **Nome Modella** | Testo (Autocompletamento) | Nome della camgirl. Recupera automaticamente link e foto salvati. |
-| **Piattaforma** | Menù a tendina custom | Opzioni: *Teams, Telegram, Skype, Zoom, Altro*. Disabilitato se "Regalo". |
-| **Costo (€)** | Numerico (Decimali) | Importo economico speso per lo show. |
-| **Durata Show** | Numerico (minuti) | Durata della sessione, usata anche per il costo al minuto. |
-| **Voto / Punteggio** | Selezione (1-5 o TBD) | Valutazione qualitativa (1-5) o `TBD` (*To Be Decided*) per revisioni rinviate. |
-| **Regalo / Recensione**| Checkbox | Contrassegna eventi gratuiti/regalo o presenza di recensione lasciata. |
-| **URL Foto / Profilo** | URL Web | Link esterni per la foto e il profilo web della performer. |
+Il form segue l'ordine in cui si registra uno show:
+
+| Parte | Descrizione |
+| :--- | :--- |
+| **Show / 🎁 Regalo** | Scelta in alto. Con «Regalo» spariscono piattaforma, voto e durata, che non valgono per i regali. |
+| **Data e Ora** | Preimpostata all'ora attuale. Una data non valida blocca il salvataggio con un avviso. |
+| **Nome Modella** | Con autocompletamento. Se la modella è già nell'archivio compare una **mini-scheda**: foto, numero di show, media voti, ultimo show (data, costo, durata, piattaforma), badge Online/Sospesa e tag usati più spesso. Il pulsante **↻ Ripeti ultimo show** compila durata, costo, tag e dettagli come nell'ultimo show con lei (data, voto, recensione e note restano da compilare). |
+| **Durata** | Pulsanti rapidi 10/15/20/30/45/60 minuti oppure valore libero. Facoltativa: senza durata lo show resta fuori dal calcolo del €/min. |
+| **Costo (€)** | Con il pulsante **= ultimo** per riusare il prezzo dell'ultimo show. Sotto compare subito il **€/min**, verde o rosso rispetto alla tua media. |
+| **Valutazione** | Accanto al costo, con gli stessi badge colorati della cronologia (1-2 rosso, 3 ambra, 4 verde acqua, 5 verde, TBD grigio): quelli non scelti restano tenui. Un secondo clic sullo stesso voto lo toglie; senza voto lo show viene salvato come TBD. |
+| **Recensione fatta** | Casella sotto il voto. |
+| **Tag** | I tag usati di solito con la modella sono segnati con ☆ come suggerimento. |
+| **Note** | Testo libero. |
+| **Dettagli** | Sezione chiusa con piattaforma, nickname, link al profilo e URL della foto: si compilano da soli dall'ultimo show o da MCG; il titolo ne mostra il riepilogo. |
+
+Il pulsante **🧹 Svuota** azzera in un colpo tutti i campi e lascia il form aperto (in modifica equivale ad annullare: i dati salvati non cambiano).
+
+Scorciatoie: **Ctrl+Invio** salva, **Esc** chiude il form (in modifica equivale ad Annulla).
 
 #### Funzionalità avanzate della Cronologia:
 - **Paginazione Dinamica**: Selezione di vista a 5, 10, 20 elementi o elenco completo.
 - **Filtri e Ricerca**: Filtro per anno (generato dinamicamente, con la casella **Seleziona tutti** che spunta o toglie tutti gli anni e appare parzialmente spuntata se ne sono scelti solo alcuni), filtro per tag e ricerca istantanea per testo.
-- **Badge Origine**: Distinzione visiva tra record ad inserimento manuale (`👤`) o importati da MCG (`🤖 MCG`).
+- **Badge Origine**: Distinzione visiva tra record ad inserimento manuale (`👤`) o importati da MCG (`🤖 MCG`), mostrata accanto all'ora dello show.
+- **Spazio per tag e note**: in tutte le tabelle degli show (cronologia, dettaglio del mese, scheda modella) data e ora stanno su due righe e la colonna **Tag e note** prende tutto lo spazio che avanza, quindi le note troncate si leggono molto di più.
 - **Righe compatte**: Modifica (✏️) ed Elimina (🗑️) sono pulsanti a icona; nickname e note lunghi sono troncati con "…" e il testo completo compare al passaggio del mouse. Cliccando su una nota (o premendo Invio quando è selezionata) la si espande per leggerla tutta; un secondo clic la richiude. Se la finestra è stretta, la tabella scorre in orizzontale invece di tagliare le colonne.
 - **Selezione multipla**: una casella all'inizio di ogni riga seleziona lo show; quella nell'intestazione seleziona l'intera pagina. La selezione resta valida cambiando pagina, ordine o filtri. Con almeno uno show selezionato compare una barra con il conteggio (e quanti selezionati sono nascosti dai filtri attuali) e i pulsanti:
   - **Seleziona tutti i risultati**: tutti gli show che passano i filtri, anche nelle altre pagine.
@@ -93,11 +102,20 @@ Fornisce il controllo finanziario sulle uscite e sui costi degli show:
 
 ---
 
+## 🔒 Privacy
+
+Dal menu **⚙️ Impostazioni › 🔒 Privacy**:
+
+- **Sfoca le foto**: le foto delle modelle (cronologia, classifica, scheda, galleria, foto ingrandita, mini-scheda del form) restano sfocate e tornano nitide solo passandoci sopra con il mouse.
+- **Nome e icona neutri**: la finestra si chiama «Agenda» e usa un'icona generica (un calendario) nella barra delle applicazioni e in Alt+Tab; all'avvio non compare la schermata con il nome dell'app. L'icona del file eseguibile e dei collegamenti non cambia.
+- **PIN di sblocco** (4-8 cifre): con un PIN l'app parte bloccata e si blocca con il **tasto rapido per nascondere l'app** (che la riduce anche a icona) e, se scelto, dopo 5/15/30/60 minuti di inattività. Dopo 5 tentativi errati bisogna attendere 30 secondi. Il PIN non viene salvato in chiaro (hash scrypt con sale in `preferenze.json`); per cambiarlo o rimuoverlo serve quello attuale. **Protegge l'app aperta, ma non cifra i file dei dati.** Se lo dimentichi, chiudi l'app ed elimina `preferenze.json` dalla cartella dei dati.
+- **Tasto rapido per nascondere l'app** (predefinito **Ctrl+Shift+H**): riduce subito a icona l'app, e la blocca se c'è un PIN. Mentre è nascosta la finestra usa anche nome e icona neutri, pure con l'opzione spenta: tornano quelli veri alla riapertura o, con un PIN, dopo lo sblocco (l'impostazione salvata non cambia). Si cambia con **Cambia** premendo la nuova combinazione (Esc annulla) e si ripristina con ↺. Lettere e numeri richiedono Ctrl o Alt (con il solo Shift scatterebbe scrivendo una maiuscola); i tasti F1-F12 si possono usare anche da soli. Le combinazioni già usate dall'app o dal sistema (Ctrl+C/V/X/A/Z/Y, Ctrl+Invio, Alt+F4, F5…) vengono rifiutate. Il tasto viene riconosciuto per posizione, quindi funziona con qualsiasi layout di tastiera.
+
 ## ⚙️ Funzioni di Sistema e Utility
 
 L'intestazione mostra sempre **🔄 Sincronizza MCG** e l'indicatore di raggiungibilità del sito. Le altre funzioni sono raccolte in due menu a tendina:
 - **💾 Dati**: Esporta, Importa, Cartella.
-- **⚙️ Impostazioni**: dimensione del testo, lingua, tema, gestione dei tag.
+- **⚙️ Impostazioni**: dimensione del testo, lingua, tema, gestione dei tag, privacy.
 
 I menu si chiudono con un clic fuori o con `Esc`.
 
@@ -116,7 +134,7 @@ I menu si chiudono con un clic fuori o con `Esc`.
 - **💾 Esportazione / Importazione Backup**: Ripristino e salvataggio dell'intero archivio in formato JSON, incluso il budget mensile. I backup delle versioni precedenti (solo elenco show) restano importabili; in quel caso il budget attuale non viene modificato.
 - **🎨 Accessibilità e Temi**:
   - **Dimensione Testo**: Pulsanti `A+` / `A-` per modificare al volo la grandezza dei font (12px - 26px).
-  - **Temi Visivi**: Selezione tra *Neve & Nebbia*, *Luce Chiara* ed *Eclissi Scura*. I colori di stato (budget, mese corrente, badge) sono definiti come variabili CSS per ogni tema in `style.css`.
+  - **Temi Visivi**: Selezione tra *Neve & Nebbia*, *Luce Chiara*, *Eclissi Scura* e *Bordeaux & Oro (MCG)*, con i colori di mondocamgirls.com (crema, bordeaux, oro). I colori di stato (budget, mese corrente, badge) sono definiti come variabili CSS per ogni tema in `style.css`.
   - **Font e icone in locale**: il font Inter e le icone Font Awesome sono inclusi tra le dipendenze (`@fontsource/inter`, `@fortawesome/fontawesome-free`), quindi l'interfaccia si vede correttamente anche offline.
 - **📁 Gestione Cartella Dati**: Collegamento rapido alla cartella `userData` di sistema per consultare file JSON e log.
 
@@ -134,6 +152,7 @@ I dati sono salvati nella cartella `userData` dell'applicazione (apribile dal pu
 | `app.log` | Log dell'applicazione, in ordine cronologico (righe più recenti in fondo). Oltre 1 MB diventa `app.log.1` e ne viene iniziato uno nuovo. |
 | `tags.json` | Catalogo dei tag (`id`, `nome`, `colore`). Gli show salvano solo gli ID dei tag nel campo `tag`, quindi rinominare un tag non modifica l'archivio. |
 | `window_state.json` | Dimensione e posizione della finestra. |
+| `preferenze.json` | Preferenze di privacy: nome e icona neutri, PIN di sblocco (solo hash e sale), minuti del blocco automatico. |
 | `mcg_ultima_sincronizzazione.json` | Copia della tabella letta nell'ultima sincronizzazione MCG, con l'esito di ogni riga. |
 
 Il budget mensile, il tema, la lingua e i filtri sono salvati nel `localStorage` dell'interfaccia.
@@ -161,6 +180,7 @@ Formato del file di backup esportato:
 | `main/ipc-dati.js` | Archivio degli show e catalogo dei tag: lettura, salvataggio (con copia `.bak`), esportazione e importazione dei backup. |
 | `main/catalogo-tag.js` | Validazione del catalogo dei tag, colori disponibili e tag iniziali. |
 | `main/ipc-sistema.js` | Versione, log, apertura di cartelle e link esterni, changelog e avviso "Novità". |
+| `main/ipc-privacy.js`, `main/privacy.js` | Privacy: nome e icona neutri della finestra, PIN di sblocco (verificato solo nel processo principale), riduzione a icona rapida. |
 | `main/ipc-mcg.js` | Mondo Cam Girls: lettura delle transazioni con login, copia diagnostica, modelle online, foto, raggiungibilità. |
 | `main/mcg-pagine.js` | Lettura pagina per pagina della cronologia transazioni di MCG. |
 | `main/canali.js` | Nomi dei canali IPC tra interfaccia e processo principale. |
@@ -204,6 +224,8 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
 | `stato-mcg.js` | Indicatore di raggiungibilità di Mondo Cam Girls. |
 | `profili-sospesi.js` | Profili sospesi o rimossi su Mondo Cam Girls: verifica in background e badge in classifica e nella scheda. |
 | `stato-online.js` | Modelle online su Mondo Cam Girls: badge e filtro in classifica e nella scheda. |
+| `privacy.js` | Sfocatura delle foto, schermata di blocco con PIN, blocco per inattività, tasto rapido personalizzabile per nascondere l'app, opzioni di privacy del menu Impostazioni. |
+| `form-assistito.js` | Parti assistite del form: show/regalo, stelle, durate rapide, €/min mentre si scrive, mini-scheda della modella, riepilogo dei dettagli. |
 | `menu-header.js` | Menu a tendina Dati e Impostazioni dell'intestazione. |
 | `app.js` | Punto di ingresso: importa i moduli, registra le azioni dell'interfaccia, collega l'archivio alle viste, avvia l'applicazione. |
 
@@ -227,7 +249,7 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
    ```bash
    npm run dist
    ```
-   Il file viene creato in `dist/GestioneShowMCG-<versione>-portable.exe`.
+   Il file viene creato in `dist/PrivateDiary-<versione>-portable.exe`.
    Per una prova veloce senza creare l'eseguibile, `npm run pack` prepara solo la cartella `dist/win-unpacked/` (circa 10 secondi invece di quasi 2 minuti); l'app si avvia da `dist/win-unpacked/Gestione Show MCG.exe`.
 
 ### Test automatici
@@ -255,3 +277,11 @@ La configurazione è nella sezione `build` di `package.json` ed è pensata per t
 | Lingue di Chromium | 49 MB | 1.3 MB |
 
 La parte restante dell'eseguibile è il runtime di Electron, che non si può ridurre.
+
+---
+
+## ✉️ Contatti
+
+Idee, segnalazioni di problemi o richieste: **blackcornermail@gmail.com** (anche dal menu **? › ✉️ Contatti** dell'app, che apre il programma di posta o copia l'indirizzo).
+
+© 2026 The Black Corner

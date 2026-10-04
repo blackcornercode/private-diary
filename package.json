@@ -1,7 +1,7 @@
 {
   "name": "gestioneshow",
   "version": "1.12.0",
-  "description": "Gestione Show MCG",
+  "description": "Private Diary (Diario Privato): il diario privato degli show",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -11,7 +11,7 @@
     "dist": "electron-builder --win portable --publish never"
   },
   "keywords": [],
-  "author": "",
+  "author": "The Black Corner <blackcornermail@gmail.com>",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
@@ -25,8 +25,9 @@
   },
   "build": {
     "appId": "com.gestioneshow.app",
-    "productName": "Gestione Show MCG",
-    "artifactName": "GestioneShowMCG-${version}-portable.${ext}",
+    "productName": "Private Diary",
+    "copyright": "© 2026 The Black Corner",
+    "artifactName": "PrivateDiary-${version}-portable.${ext}",
     "directories": {
       "output": "dist"
     },
@@ -38,6 +39,7 @@
       "splash.html",
       "style.css",
       "icon.ico",
+      "icon-neutra.png",
       "changelog.json",
       "js/**/*",
       "locales/**/*",

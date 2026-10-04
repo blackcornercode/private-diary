@@ -38,6 +38,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
         };
     },
 
+    // Privacy: preferenze, PIN di sblocco, riduzione a icona rapida
+    leggiPreferenze: () => ipcRenderer.invoke('read-preferences'),
+    salvaPreferenza: (chiave, valore) => ipcRenderer.invoke('save-preference', chiave, valore),
+    impostaPin: (dati) => ipcRenderer.invoke('set-pin', dati),
+    verificaPin: (pin) => ipcRenderer.invoke('verify-pin', pin),
+    riduciFinestra: () => ipcRenderer.invoke('minimize-window'),
+
     // Stato raggiungibilità Mondo Cam Girls
     pingMCG: () => ipcRenderer.invoke('ping-mcg')
 });

@@ -63,6 +63,17 @@ export function cellaTagNote(show) {
         <div class="tag-show">${etichette}</div>${nota ? `<div class="testo-note">${nota}</div>` : ''}</td>`;
 }
 
+// Data sopra e ora sotto: più stretta di "gg/mm/aaaa hh:mm" su una riga.
+// extra: HTML aggiunto dopo l'ora (in cronologia, l'origine del record).
+function cellaData(show, extra = '') {
+    const [giorno, ora = ''] = String(show.dataFormattata || '').split(' ');
+    return `<td class="col-data"><span class="data-giorno">${escapeHtml(giorno)}</span><span class="data-ora">${escapeHtml(ora)}${extra}</span></td>`;
+}
+
+const badgeOrigine = (show) => show.isAutoImport
+    ? '<span class="badge-origine auto" title="Importato da MCG">🤖 MCG</span>'
+    : '<span class="badge-origine manuale" title="Inserito a mano">👤</span>';
+
 const selezionato = (show) => stato.selezioneCronologia.has(String(show.id));
 
 // chiave: [chiave della traduzione dell'intestazione, classe dell'intestazione, cella,
@@ -74,28 +85,28 @@ export const COLONNE_SHOW = {
                     () => `<input type="checkbox" id="selezionaPaginaCronologia" class="casella-selezione"
                         title="${escapeHtml(t('selection.select_page'))}" aria-label="${escapeHtml(t('selection.select_page'))}" data-al-cambio="seleziona-pagina">`],
     foto:          ['table.photo', '', cellaFoto],
-    data:          ['table.date', '', s => `<td class="col-nowrap">${escapeHtml(s.dataFormattata)}</td>`],
-    nome:          ['table.name', '', s => `<td><strong>${escapeHtml(s.nome)}</strong></td>`],
-    nomeCliccabile:['table.name', '', s => `<td><strong class="cliccabile" data-azione="apri-scheda-modella" data-nome="${escapeHtml(s.nome)}">${escapeHtml(s.nome)}</strong></td>`],
+    data:          ['table.date', '', s => cellaData(s)],
+    // Cronologia: l'origine (MCG o manuale) sta accanto all'ora invece che in una colonna a sé
+    dataOrigine:   ['table.date', '', s => cellaData(s, ` ${badgeOrigine(s)}`)],
+    nome:          ['table.name', '', s => `<td class="col-nowrap"><strong>${escapeHtml(s.nome)}</strong></td>`],
+    nomeCliccabile:['table.name', '', s => `<td class="col-nowrap"><strong class="cliccabile" data-azione="apri-scheda-modella" data-nome="${escapeHtml(s.nome)}">${escapeHtml(s.nome)}</strong></td>`],
     piattaforma:   ['table.platform', '', s => `<td>${getPiattaformaFormatted(s)}</td>`],
     durata:        ['table.duration', 'col-centro', s => `<td class="col-nowrap col-centro col-grassetto">${formattaDurata(s.durata)}</td>`],
     costo:         ['table.cost', '', s => cellaCosto(s)],
     costoMinuto:   ['table.cost_per_minute', 'col-centro', s => `<td class="col-nowrap col-centro">${formattaCostoAlMinuto(costoAlMinuto(s))}</td>`],
     voto:          ['table.rating', '', s => `<td class="col-nowrap">${formattaVoto(s)}</td>`],
-    origine:       ['table.source', '', s => `<td>${s.isAutoImport
-                        ? '<span class="badge-origine auto" title="Auto MCG">🤖 MCG</span>'
-                        : '<span class="badge-origine manuale" title="Manuale">👤</span>'}</td>`],
     // Intestazione abbreviata (nome completo nel tooltip): la colonna contiene solo ✅/❌
     recensione:    ['table.review', 'col-centro', s => `<td class="col-centro">${s.recensione ? '✅' : '❌'}</td>`,
                     () => `<span title="${escapeHtml(t('table.review'))}">${escapeHtml(t('table.review_short'))}</span>`],
-    note:          ['table.tags_notes', '', cellaTagNote],
+    // col-note: la colonna prende tutto lo spazio che avanza (style.css)
+    note:          ['table.tags_notes', 'col-note', cellaTagNote],
     azioni:        ['table.actions', '', s => `<td class="col-azioni">
                         <button class="btn-edit" title="Modifica" aria-label="Modifica" data-azione="modifica-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn-delete" title="Elimina" aria-label="Elimina" data-azione="elimina-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-trash"></i></button>
                     </td>`]
 };
 
-export const COLONNE_CRONOLOGIA = ['selezione', 'foto', 'data', 'nome', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'origine', 'recensione', 'note', 'azioni'];
+export const COLONNE_CRONOLOGIA = ['selezione', 'foto', 'dataOrigine', 'nome', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note', 'azioni'];
 export const COLONNE_DETTAGLIO_MESE = ['foto', 'data', 'nomeCliccabile', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note'];
 export const COLONNE_SCHEDA = ['data', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note'];
 

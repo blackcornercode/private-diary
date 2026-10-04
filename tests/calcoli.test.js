@@ -261,3 +261,18 @@ test('grafico a barre: una barra per voce, linea del budget e barre oltre il bud
     assert.doesNotMatch(graficoBarre(voci), /linea-soglia|oltre-soglia/);
     assert.doesNotMatch(graficoBarre([{ etichetta: 'X', valore: 0, dettaglio: '' }]), /NaN|Infinity/);
 });
+
+test('scheda rapida della modella nel form: ultimo show vero e tag più usati', () => {
+    const shows = [
+        { id: 1, nome: 'Loca', dataOraISO: iso(2026, 8, 27), costo: 100, durata: 60, punteggio: 5, piattaforma: 'Teams', tag: ['lush', 'anal'] },
+        { id: 2, nome: 'Loca', dataOraISO: iso(2026, 7, 24), costo: 80, durata: 30, punteggio: 4, tag: ['lush'] },
+        { id: 3, nome: 'loca ', dataOraISO: iso(2026, 9, 9), costo: 30, isRegalo: true, punteggio: null }
+    ];
+    const s = f.schedaRapidaModella(shows, 'LOCA');
+    assert.equal(s.totaleShow, 3);
+    assert.equal(s.mediaTxt, '4.50');
+    assert.equal(s.ultimoShow.id, 1, 'il regalo più recente non conta come ultimo show');
+    assert.deepEqual(s.tagFrequenti, ['lush', 'anal']);
+    assert.equal(f.schedaRapidaModella(shows, 'Sconosciuta'), null);
+    assert.equal(f.schedaRapidaModella([shows[2]], 'Loca').ultimoShow, null);
+});

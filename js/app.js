@@ -10,7 +10,8 @@ import { initChangelogCheck, inizializzaListenerChangelogMenu, apriModalChangelo
 import { caricaMedieEStoricizzazione, filtraClassificaModelle } from './classifica.js';
 import { inizializzaFiltriCronologia, inizializzaFiltroAnni, caricaCronologia, cambiaPagina, resetFiltriCronologia, filtraCronologiaPerNome } from './cronologia.js';
 import { esportaDati, importaDati, apriCartellaDati } from './dati.js';
-import { impostaDataOraAttuale, autocompilaDatiModella, aggiornaPulsanteForm, aggiornaDatalistModelle, toggleForm, annullaModifica, gestisciStatoRegalo, modificaShow, eliminaShow } from './form-show.js';
+import { impostaTipo, cliccaVoto, durataRapida, aggiornaAnteprimaCostoMinuto, aggiornaRiepilogoDettagli, sincronizzaFormAssistito, ultimoShowModella } from './form-assistito.js';
+import { impostaDataOraAttuale, autocompilaDatiModella, aggiornaPulsanteForm, aggiornaDatalistModelle, toggleForm, annullaModifica, gestisciStatoRegalo, modificaShow, eliminaShow, ripetiUltimoShow, inizializzaScorciatoieForm, svuotaForm } from './form-show.js';
 import { apriModalImmagine, chiudiModalImmagine, navigaGalleria } from './galleria.js';
 import { impostaVistaGraficoSpesa } from './grafico-spesa.js';
 import { caricaLingua, linguaCorrente } from './i18n.js';
@@ -18,6 +19,7 @@ import { logger } from './logger.js';
 import { inizializzaMenuHeader } from './menu-header.js';
 import { apriModalModella, chiudiModalModella, aggiornaBadgeSchedaModella } from './modale-modella.js';
 import { verificaProfiliSospesi, inizializzaProfiliSospesi } from './profili-sospesi.js';
+import { inizializzaPrivacy, aggiornaTestiPrivacy, cambiaSfocatura, cambiaAspettoNeutro, cambiaBloccoMinuti, apriFinestraPin, chiudiFinestraPin, salvaPin, sblocca, registraTastoRapido, ripristinaTastoRapido } from './privacy.js';
 import { mostraVersioneApp, inizializzaTema, inizializzaFont, inizializzaGestioneBudget, apriTab, cambiaTema, aumentaFont, riduciFont } from './preferenze.js';
 import { selezionaShow, selezionaPagina, selezionaTuttiFiltrati, deselezionaTutti, eliminaSelezionati, apriModificaMultipla, applicaModificaMultipla, chiudiModificaMultipla } from './selezione.js';
 import { sincronizzaTransazioniMondoCamGirls, importaCronologiaCompletaMcg } from './sincronizzazione.js';
@@ -48,6 +50,19 @@ registraAzioni({
     'toggle-form': () => toggleForm(),
     'annulla-modifica': () => annullaModifica(),
     'gestisci-regalo': () => gestisciStatoRegalo(),
+    'tipo-show': (el) => { impostaTipo(el.dataset.tipo); gestisciStatoRegalo(); },
+    'voto-stelle': (el) => cliccaVoto(el),
+    'durata-rapida': (el) => durataRapida(el),
+    'costo-ultimo': () => {
+        const ultimo = ultimoShowModella();
+        const costo = document.getElementById('costo');
+        if (ultimo && costo) costo.value = ultimo.costo;
+        aggiornaAnteprimaCostoMinuto();
+    },
+    'anteprima-costo-minuto': () => aggiornaAnteprimaCostoMinuto(),
+    'riepilogo-dettagli': () => aggiornaRiepilogoDettagli(),
+    'ripeti-ultimo-show': () => ripetiUltimoShow(),
+    'svuota-form': () => svuotaForm(),
     'modifica-show': (el) => modificaShow(el.dataset.id),
     'elimina-show': (el) => eliminaShow(el.dataset.id),
     'filtra-cronologia': () => filtraCronologiaPerNome(),
@@ -83,6 +98,17 @@ registraAzioni({
     'seleziona-mese': (el) => selezionaMeseDettaglio(el.dataset.mese === '' ? null : Number(el.dataset.mese)),
     'apri-scheda-modella': (el) => apriModalModella(el.dataset.nome),
     'chiudi-scheda-modella': () => chiudiModalModella(),
+
+    // Privacy
+    'cambia-sfocatura': (el) => cambiaSfocatura(el),
+    'cambia-aspetto-neutro': (el) => cambiaAspettoNeutro(el),
+    'cambia-blocco-minuti': (el) => cambiaBloccoMinuti(el),
+    'apri-finestra-pin': (el) => apriFinestraPin(el),
+    'chiudi-finestra-pin': () => chiudiFinestraPin(),
+    'salva-pin': () => salvaPin(),
+    'sblocca-app': () => sblocca(),
+    'registra-tasto-rapido': () => registraTastoRapido(),
+    'ripristina-tasto-rapido': () => ripristinaTastoRapido(),
 
     // Foto, link e lightbox
     'ingrandisci-foto': (el) => apriModalImmagine(el.dataset.url),
@@ -138,6 +164,8 @@ async function cambiaLingua(nuovaLingua) {
         aggiornaViste();
         aggiornaTestoStatoMCG();
         aggiornaPulsanteForm();
+        aggiornaTestiPrivacy();
+        sincronizzaFormAssistito();
         logger.success(`Lingua aggiornata a: ${nuovaLingua}`);
     } catch (err) {
         logger.error(`Errore durante il cambio lingua a "${nuovaLingua}"`, err);
@@ -164,6 +192,7 @@ function inizializzaSelectPiattaforma() {
             const selectedSpan = document.getElementById('customSelectSelected');
             if (selectedSpan) selectedSpan.innerHTML = option.innerHTML;
             customDropdown.classList.remove('open');
+            aggiornaRiepilogoDettagli();
         });
     });
 
@@ -222,6 +251,8 @@ async function avvia() {
     logger.info("Inizializzazione applicazione...");
     inizializzaAzioni();
     await caricaLingua(linguaCorrente);
+    // Prima dei dati: con un PIN l'app parte già bloccata
+    await inizializzaPrivacy();
 
     mostraVersioneApp();
     impostaDataOraAttuale();
@@ -236,6 +267,8 @@ async function avvia() {
     inizializzaControlliCronologia();
     inizializzaModali();
     inizializzaTag();
+    inizializzaScorciatoieForm();
+    sincronizzaFormAssistito();
 
     // Mostra automaticamente le novità al primo avvio dopo un aggiornamento
     initChangelogCheck();

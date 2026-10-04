@@ -96,12 +96,9 @@ export function cambiaTema(nomeTema) {
 }
 
 export function applicatema(nomeTema) {
-    document.body.classList.remove('theme-grey', 'theme-dark');
-    if (nomeTema === 'grey') {
-        document.body.classList.add('theme-grey');
-    } else if (nomeTema === 'dark') {
-        document.body.classList.add('theme-dark');
-    }
+    document.body.classList.remove('theme-grey', 'theme-dark', 'theme-mcg');
+    // "light" è il tema di base (:root), gli altri aggiungono una classe al body
+    if (['grey', 'dark', 'mcg'].includes(nomeTema)) document.body.classList.add(`theme-${nomeTema}`);
 }
 
 export async function mostraVersioneApp() {

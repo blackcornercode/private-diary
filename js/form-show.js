@@ -1,4 +1,5 @@
 import { aggiungiShow, aggiornaShow, rimuoviShow, trovaShow } from './archivio.js';
+import { aggiornaVistaTipo, aggiornaStelle, aggiornaMiniScheda, aggiornaRiepilogoDettagli, sincronizzaFormAssistito, ultimoShowModella } from './form-assistito.js';
 import { t } from './i18n.js';
 import { logger } from './logger.js';
 import { stato, iconePiattaformaHTML } from './stato.js';
@@ -8,41 +9,28 @@ import { escapeHtml, generaIdUnico } from './utils.js';
 /* ==========================================================================
    GESTIONE FORM E AUTOCOMPILAZIONE
    ========================================================================== */
+// Show o regalo: i regali non hanno piattaforma, voto e durata (i campi .solo-show
+// vengono nascosti da aggiornaVistaTipo). Il voto non è obbligatorio: senza
+// stelle lo show viene salvato come TBD.
 export function gestisciStatoRegalo() {
     const piattaformaSelect = document.getElementById('piattaforma');
     const punteggioSelect = document.getElementById('punteggio');
     const isRegaloCheckbox = document.getElementById('isRegalo');
-    const dropdownWrapper = document.getElementById('customPiattaformaDropdown');
-    const costoInput = document.getElementById('costo');
-    
     if (!isRegaloCheckbox) return;
 
-    if (isRegaloCheckbox.checked) {
-        if (piattaformaSelect) {
-            piattaformaSelect.disabled = true;
-            piattaformaSelect.value = '';
-        }
-        if (dropdownWrapper) {
-            dropdownWrapper.style.pointerEvents = 'none';
-            dropdownWrapper.style.opacity = '0.5';
-        }
-        if (punteggioSelect) {
-            punteggioSelect.disabled = true;
-            punteggioSelect.required = false;
-            punteggioSelect.value = '';
-        }
-    } else {
-        if (piattaformaSelect) piattaformaSelect.disabled = false;
-        if (dropdownWrapper) {
-            dropdownWrapper.style.pointerEvents = 'auto';
-            dropdownWrapper.style.opacity = '1';
-        }
-        if (punteggioSelect) {
-            punteggioSelect.disabled = false;
-            punteggioSelect.required = true;
-        }
-        if (costoInput) costoInput.disabled = false;
+    const regalo = isRegaloCheckbox.checked;
+    if (piattaformaSelect) {
+        piattaformaSelect.disabled = regalo;
+        if (regalo) piattaformaSelect.value = '';
+        // Tornando a "Show" la piattaforma è quella dell'ultimo show con la modella
+        else if (!piattaformaSelect.value) impostaPiattaformaCustom(ultimoShowModella()?.piattaforma || 'Teams');
     }
+    if (punteggioSelect) {
+        punteggioSelect.disabled = regalo;
+        if (regalo) punteggioSelect.value = '';
+    }
+    aggiornaVistaTipo();
+    aggiornaStelle();
 }
 
 export function impostaDataOraAttuale() {
@@ -80,6 +68,7 @@ export function impostaPiattaformaCustom(valorePiattaforma) {
 }
 
 export function autocompilaDatiModella() {
+    aggiornaMiniScheda();
     const editIdInput = document.getElementById('editId');
     if (editIdInput && editIdInput.value) return;
 
@@ -116,6 +105,27 @@ export function autocompilaDatiModella() {
             inputUrlProfilo.value = stato.mappaUrlModelle[nomeInserito];
         }
     }
+    aggiornaRiepilogoDettagli();
+}
+
+// "Ripeti ultimo show": stessi dettagli, durata, costo e tag dell'ultimo show con la
+// modella; data, voto, recensione e note restano da compilare
+export function ripetiUltimoShow() {
+    const ultimo = ultimoShowModella();
+    if (!ultimo) return;
+    const imposta = (id, valore) => { const campo = document.getElementById(id); if (campo) campo.value = valore ?? ''; };
+    const regalo = document.getElementById('isRegalo');
+    if (regalo) regalo.checked = false;
+    gestisciStatoRegalo();
+    impostaPiattaformaCustom(ultimo.piattaforma || 'Teams');
+    imposta('nickname', ultimo.nickname);
+    imposta('urlProfilo', ultimo.urlProfilo);
+    imposta('immagine', ultimo.immagine);
+    imposta('durataShow', ultimo.durata || '');
+    imposta('costo', ultimo.costo);
+    impostaTagForm(ultimo.tag || []);
+    sincronizzaFormAssistito();
+    logger.info(`Form precompilato dall'ultimo show con ${ultimo.nome}`);
 }
 
 export const showForm = document.getElementById('showForm');
@@ -267,6 +277,7 @@ export async function modificaShow(id) {
     }
     if (btnAnnulla) btnAnnulla.style.display = 'block';
 
+    sincronizzaFormAssistito();
     impostaFormAperto(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -359,6 +370,35 @@ export function resetForm() {
     const nickInput = document.getElementById('nickname');
     if (nickInput) nickInput.value = '';
     impostaTagForm([]);
+    const dettagli = document.getElementById('dettagliForm');
+    if (dettagli) dettagli.open = false;
+    sincronizzaFormAssistito();
+}
+
+// "Svuota": tutti i campi tornano vuoti (data all'ora attuale), il form resta aperto.
+// In modifica equivale ad annullare la modifica: i dati salvati non cambiano.
+export function svuotaForm() {
+    const inModifica = Boolean(document.getElementById('editId')?.value);
+    resetForm();
+    impostaFormAperto(true);
+    document.getElementById('nome')?.focus();
+    logger.info(inModifica ? 'Form svuotato: modifica annullata' : 'Form svuotato');
+}
+
+// Scorciatoie del form: Ctrl+Invio salva, Esc chiude (in modifica equivale ad Annulla)
+export function inizializzaScorciatoieForm() {
+    const sezione = document.getElementById('sezioneForm');
+    if (!sezione) return;
+    sezione.addEventListener('keydown', (e) => {
+        if (!formAperto()) return;
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            document.getElementById('showForm')?.requestSubmit();
+        } else if (e.key === 'Escape' && !document.getElementById('customPiattaformaDropdown')?.classList.contains('open')) {
+            e.preventDefault();
+            toggleForm();
+        }
+    });
 }
 
 export async function eliminaShow(id) {
