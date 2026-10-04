@@ -39,7 +39,7 @@ export async function apriModalModella(nomeModella) {
 
     const urlHtml = urlProfilo
         ? `<a href="#" class="modella-url" title="${escapeHtml(urlProfilo)}" data-azione="apri-link" data-url="${escapeHtml(urlProfilo)}">🌐 ${escapeHtml(urlProfilo)}</a>`
-        : `<span class="modella-url modella-url-vuoto">Nessun sito web collegato</span>`;
+        : `<span class="modella-url modella-url-vuoto">${escapeHtml(t('modal.no_website'))}</span>`;
 
     // Tipi di show proposti dalla modella: i suoi tag, dal più usato
     const tipiShow = conteggioTag(showsModella)
@@ -95,7 +95,7 @@ export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
     const contenitoreFoto = document.getElementById('contenitoreFotoDinamiche');
     if (!contenitoreFoto) return;
 
-    contenitoreFoto.innerHTML = '<span class="galleria-messaggio">🔄 Caricamento foto da MondoCamGirls...</span>';
+    contenitoreFoto.innerHTML = `<span class="galleria-messaggio">${escapeHtml(t('modal.loading_photos_mcg'))}</span>`;
 
     let rawUrl = mappaUrl[nomeChiave.trim().toLowerCase()] || urlProfiloPredefinito(nomeChiave);
     let profileUrl = rawUrl.replace(/\/+$/, '');
@@ -109,9 +109,9 @@ export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
             result.images.forEach((imgUrl, index) => {
                 const img = document.createElement('img');
                 img.src = imgUrl;
-                img.alt = "Foto modella";
+                img.alt = t('modal.photo_alt');
                 img.className = 'galleria-miniatura';
-                img.title = "Clicca per ingrandire";
+                img.title = t('modal.click_to_enlarge');
                 
 
                 img.onclick = () => apriModalImmagine(imgUrl, result.images, index);
@@ -123,12 +123,12 @@ export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
             
             contenitoreFoto.innerHTML = `
                 <div class="galleria-messaggio">
-                    ⚠️ Nessuna foto trovata analizzando la pagina: <br>
+                    ${escapeHtml(t('modal.no_photos'))} <br>
                     ${targetUrlHtml}
                 </div>
             `;
         }
     } else {
-        contenitoreFoto.innerHTML = '<span class="galleria-messaggio">Funzione recupero foto non disponibile.</span>';
+        contenitoreFoto.innerHTML = `<span class="galleria-messaggio">${escapeHtml(t('modal.photos_unavailable'))}</span>`;
     }
 }

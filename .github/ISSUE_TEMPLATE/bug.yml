@@ -1,0 +1,52 @@
+name: 🐛 Segnala un problema / Report a bug
+description: Qualcosa non funziona come dovrebbe / Something does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione! **Non incollare dati personali**: nomi, nickname, email o foto di persone reali.
+        Thanks for reporting! **Do not paste personal data**: names, nicknames, emails or photos of real people.
+  - type: textarea
+    id: descrizione
+    attributes:
+      label: Cosa succede / What happens
+      description: Descrivi il problema e cosa ti aspettavi / Describe the problem and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: passi
+    attributes:
+      label: Come riprodurlo / Steps to reproduce
+      placeholder: |
+        1. Apri / Open ...
+        2. Clicca / Click ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: versione
+    attributes:
+      label: Versione / Version
+      description: Menu ? › Informazioni
+      placeholder: "1.12.2"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Parte dell'app / App area
+      options:
+        - Form e cronologia / Form and history
+        - Classifica e scheda modella / Ranking and model card
+        - Statistiche e budget / Statistics and budget
+        - Sincronizzazione MCG / MCG sync
+        - Privacy (PIN, sfocatura, nome neutro)
+        - Backup, dati / Backup, data
+        - Altro / Other
+  - type: textarea
+    id: log
+    attributes:
+      label: Log (facoltativo / optional)
+      description: Ultime righe di app.log (menu Dati › Cartella). Togli eventuali nomi reali. / Last lines of app.log (Data › Folder). Remove any real names.
+      render: text

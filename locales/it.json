@@ -271,7 +271,13 @@
   "modal": {
     "gallery": "🖼️ Galleria Foto Profilo",
     "loading_photos": "Caricamento foto in corso...",
-    "history_title": "Storico Show Effettuati"
+    "history_title": "Storico Show Effettuati",
+    "no_website": "Nessun sito web collegato",
+    "loading_photos_mcg": "🔄 Caricamento foto da MondoCamGirls...",
+    "photo_alt": "Foto della modella",
+    "click_to_enlarge": "Clicca per ingrandire",
+    "no_photos": "⚠️ Nessuna foto trovata analizzando la pagina:",
+    "photos_unavailable": "Recupero delle foto non disponibile."
   },
   "changelog": {
     "title": "📜 Changelog / Novità",

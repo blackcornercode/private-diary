@@ -1,0 +1,20 @@
+name: 💡 Proponi un'idea / Suggest an idea
+description: Una nuova funzione o un miglioramento / A new feature or an improvement
+labels: ["idea"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: L'idea / The idea
+      description: Cosa vorresti poter fare? / What would you like to be able to do?
+    validations:
+      required: true
+  - type: textarea
+    id: perche
+    attributes:
+      label: Perché ti servirebbe / Why it would help
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Come fai oggi / How you do it today
+      description: Facoltativo / Optional

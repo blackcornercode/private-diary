@@ -1,4 +1,8 @@
 {
+  "1.12.2": [
+    "Fix: alcuni testi della scheda modella (sito web e galleria foto) restavano in italiano con l'interfaccia in inglese",
+    "Tecnico: progetto presentato su GitHub come Private Diary: README in inglese e in italiano con screenshot, guida completa e documentazione per lo sviluppo in docs/, licenza ISC, CHANGELOG.md generato da changelog.json, modelli per le segnalazioni e test automatici a ogni push"
+  ],
   "1.12.0": [
     "Novità: nuovo nome, Diario Privato (Private Diary in inglese e nel titolo della finestra); i dati e le impostazioni restano quelli di prima",
     "Novità: selezione multipla nella cronologia, con una casella per riga e una per tutta la pagina, per eliminare o modificare più show insieme (piattaforma, voto, recensione, durata, nickname); la selezione resta attiva cambiando pagina o filtri",

@@ -271,7 +271,13 @@
   "modal": {
     "gallery": "🖼️ Profile Photo Gallery",
     "loading_photos": "Loading photos...",
-    "history_title": "Show History Log"
+    "history_title": "Show History Log",
+    "no_website": "No website linked",
+    "loading_photos_mcg": "🔄 Loading photos from MondoCamGirls...",
+    "photo_alt": "Model photo",
+    "click_to_enlarge": "Click to enlarge",
+    "no_photos": "⚠️ No photos found on the page:",
+    "photos_unavailable": "Photo retrieval not available."
   },
   "changelog": {
     "title": "📜 Changelog / What's New",

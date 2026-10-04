@@ -1,0 +1,182 @@
+# Changelog
+
+Novità di ogni versione di **Diario Privato** (*Private Diary*, già *Gestione Show MCG*).
+Generato da `changelog.json` con `npm run changelog`: per modificarlo, modificare `changelog.json`.
+
+## 1.12.2
+
+### 🐛 Correzioni
+
+- Alcuni testi della scheda modella (sito web e galleria foto) restavano in italiano con l'interfaccia in inglese
+
+### 🛠️ Tecnico
+
+- Progetto presentato su GitHub come Private Diary: README in inglese e in italiano con screenshot, guida completa e documentazione per lo sviluppo in docs/, licenza ISC, CHANGELOG.md generato da changelog.json, modelli per le segnalazioni e test automatici a ogni push
+
+## 1.12.0
+
+### ✨ Novità
+
+- Nuovo nome, Diario Privato (Private Diary in inglese e nel titolo della finestra); i dati e le impostazioni restano quelli di prima
+- Selezione multipla nella cronologia, con una casella per riga e una per tutta la pagina, per eliminare o modificare più show insieme (piattaforma, voto, recensione, durata, nickname); la selezione resta attiva cambiando pagina o filtri
+- Tag personalizzabili per indicare il tipo di show (es. Anal, Lush, Squirt), con nome e colore modificabili da Impostazioni › Gestisci tag
+- Tag mostrati nella colonna Tag e note di cronologia, dettaglio del mese e scheda modella (i primi tre, gli altri con un clic), filtro per tag nella cronologia e aggiunta o rimozione di tag nella modifica multipla
+- Nella scheda modella la riga Tipi di show riassume i tag dei suoi show, dal più usato
+- Badge Sospesa per le modelle con il profilo temporaneamente sospeso su MCG e Rimossa per quelle il cui profilo non esiste più, in classifica e nella scheda modella (verifica in background, ripetuta ogni 12 ore per profilo)
+- Grafico dell'andamento della spesa nelle Statistiche, per mese (con la linea del budget) o per anno
+- Form Aggiungi / Modifica Show riorganizzato: scelta Show/Regalo in alto, mini-scheda della modella con il pulsante Ripeti ultimo show, durate rapide, €/min calcolato mentre si scrive, valutazione accanto al costo con gli stessi badge colorati della cronologia, tag suggeriti, dettagli raccolti in una sezione chiusa, pulsante Svuota per azzerare tutti i campi, Ctrl+Invio per salvare ed Esc per chiudere
+- Tema Bordeaux & Oro con i colori di mondocamgirls.com
+- Privacy dal menu Impostazioni: foto sfocate finché non ci si passa sopra, nome e icona neutri della finestra, PIN di sblocco con blocco automatico per inattività, tasto rapido personalizzabile (predefinito Ctrl+Shift+H) per bloccare e nascondere subito l'app, che mentre è nascosta mostra anche nome e icona neutri
+- Menu ? › Contatti per scrivere allo sviluppatore (blackcornermail@gmail.com) o copiarne l'indirizzo, e nuova descrizione in Informazioni
+
+### 🎨 Interfaccia
+
+- Casella Seleziona tutti nel filtro per anno della cronologia
+- Colonne Recensione (intestazione «Rec.») e Piattaforma più strette, così la cronologia non scorre più in orizzontale e le altre colonne hanno più spazio
+- Più spazio per tag e note in tutte le tabelle degli show: data e ora su due righe, origine del record accanto all'ora invece che in una colonna a sé, e la colonna Tag e note prende tutto lo spazio che avanza
+- Scheda della modella più larga
+- In classifica i criteri di ordinamento e la legenda dei colori sono chiusi; si aprono con un clic sul titolo
+- Anche il riquadro Obiettivo e Budget Mensile è chiuso e si apre con un clic sul titolo; accanto al titolo il badge Budget OK/KO mostra lo stato del budget anche a riquadro chiuso
+
+### 🐛 Correzioni
+
+- Alcuni pulsanti che dovevano restare nascosti erano visibili (es. Seleziona tutti i risultati quando erano già tutti selezionati)
+- In classifica la piattaforma della modella spariva se il suo ultimo show era un regalo; ora vale quella dello show precedente
+
+## 1.11.0
+
+### ✨ Novità
+
+- Durata degli show e costo al minuto (€/min), per singolo show e come media per modella; la media considera solo gli show con durata registrata, regali esclusi
+- Interfaccia multilingua (italiano e inglese)
+- Indicatore di raggiungibilità di Mondo Cam Girls nell'intestazione
+- Colori con significato, cioè voto di ogni show come badge (5 verde, 4 verde acqua, 3 ambra, 1-2 rosso, TBD grigio) e €/min verde o rosso rispetto alla tua media (oltre ±10%)
+- Legenda dei colori nella classifica, con il valore attuale della tua media €/min
+- Il backup esportato include anche il budget mensile; i backup delle versioni precedenti restano importabili
+- Importazione della cronologia completa di MCG dal menu Dati, che legge tutte le pagine delle transazioni e chiede conferma prima di salvare
+- Stato online delle modelle su MCG, con badge Online accanto al nome in classifica e nella scheda e filtro Solo online, aggiornato ogni 3 minuti
+
+### 🎨 Interfaccia
+
+- Intestazione semplificata, con i menu Dati (Esporta, Importa, Cartella) e Impostazioni (testo, lingua, tema)
+- Form di inserimento a scomparsa, che si apre con Nuovo show o con Modifica
+- La durata dello show non è più obbligatoria; senza durata lo show resta fuori dal calcolo del €/min
+- Tabelle più compatte e leggibili, con righe bicolore, pulsanti Modifica/Elimina a icona, nickname e note lunghi troncati (clic sulla nota per leggerla tutta), dati mancanti mostrati come – in grigio e regali attenuati
+- Scheda modella con intestazione compatta su una sola riga
+- Tema scuro completato e contrasto dei testi di almeno 4.5:1 (WCAG) in tutti i temi
+- Font e icone inclusi nell'app, visibili anche senza connessione
+- A pari merito in classifica viene prima la modella con lo show più recente (prima l'ordine dipendeva dal nome)
+
+### 🔄 Sincronizzazione MCG
+
+- Vengono importati tutti gli show con la stessa modella nello stesso minuto (prima solo uno) e ignorate le righe senza una data valida (prima importate con la data di oggi)
+- I nuovi show prendono la piattaforma già usata con quella modella (prima sempre Teams)
+- Vengono importati solo i pagamenti; ricariche e altre transazioni sono ignorate in base al tipo
+- Viene usato il link reale del profilo fornito da MCG; negli show già salvati gli indirizzi vuoti o indovinati dal nome vengono corretti (quelli inseriti a mano restano invariati)
+- Riconosciuti come già presenti anche gli show importati in passato con l'orario spostato (stessa modella e stesso importo entro ±3 ore)
+- Avviso se la finestra di MCG viene chiusa prima di leggere le transazioni
+- Se la pagina delle transazioni non ha la struttura attesa, l'importazione si ferma con un avviso invece di importare dati sbagliati
+- A ogni sincronizzazione viene salvata nella cartella dati una copia della tabella letta, con l'esito di ogni riga (mcg_ultima_sincronizzazione.json)
+
+### 🐛 Correzioni
+
+- Un rimborso veniva importato come show da 0 €; ora segna come rimborsato il pagamento corrispondente, che non conta più nella spesa né nel €/min (il costo pagato resta visibile passando il mouse)
+- Le date dei record più vecchi (gg/mm/aaaa) venivano lette con giorno e mese invertiti in filtri, statistiche, budget e ordinamenti
+- Le foto delle modelle senza profilo salvato non venivano trovate (le maiuscole del nome sparivano dall'indirizzo)
+- Con una data non valida il salvataggio falliva senza alcun messaggio
+- Le tabelle tagliavano le ultime colonne, compresi i pulsanti Modifica/Elimina
+- Nelle tabelle i valori centrati non erano allineati alle intestazioni
+- L'evidenziazione del mese corrente nelle statistiche non era visibile, e cambiando lingua durante una modifica il pulsante tornava a Salva Record
+- Modificando uno show rimborsato dal form si perdeva l'informazione del rimborso (costo pagato e data del rimborso)
+
+### 🔒 Sicurezza
+
+- Content-Security-Policy che vieta script esterni e codice JavaScript nell'HTML, così un testo malevolo in un campo non può eseguire codice
+
+### 🛠️ Tecnico
+
+- Codice dell'interfaccia suddiviso in moduli nella cartella js/ e ottimizzazione generale con l'IA
+- Build ottimizzata, con eseguibile più leggero (93 MB invece di 106) che include solo i file necessari e le lingue italiano e inglese; nuovo nome del file GestioneShowMCG-<versione>-portable.exe
+- Processo principale diviso in moduli nella cartella main/ (dati, sistema, Mondo Cam Girls), con i nomi dei canali IPC in un unico file
+- I record salvati da versioni precedenti vengono convertiti al formato attuale alla lettura, al posto dei controlli sui campi vecchi sparsi nel codice
+- Log scritto in coda in ordine cronologico, con rotazione oltre 1 MB (prima ogni riga riscriveva l'intero file)
+- Test automatici (npm test), eseguiti anche prima di ogni build
+- Rimossi codice e funzioni non più usati
+- Archivio degli show in memoria, letto da disco solo all'avvio e dopo un'importazione; salvataggi, modifiche ed eliminazioni non rileggono più il file
+- Calcoli di classifica, statistiche, budget e cronologia separati dal disegno delle pagine e coperti da test
+- Righe di cronologia, dettaglio del mese e scheda modella disegnate da un'unica definizione delle colonne; stili spostati dal codice al foglio di stile
+- Interfaccia convertita in moduli ES (import/export) con stato condiviso in un unico oggetto e dipendenze verificate dai test
+- I 46 gestori scritti nell'HTML (onclick, onchange, onerror...) sostituiti da azioni dichiarate negli attributi e gestite da un unico modulo
+
+## 1.10.7
+
+### ✨ Novità
+
+- Nickname della modella con collegamento rapido alla piattaforma di chat
+- Sezione Criteri di Ordinamento nella classifica
+
+### 🐛 Correzioni
+
+- Ripristinata la funzione Sincronizza MCG
+
+### 🛠️ Tecnico
+
+- Progetto sotto controllo di versione Git e ottimizzazione generale
+
+## 1.10.6
+
+### ✨ Novità
+
+- Filtro per anno nella cronologia e nelle statistiche
+- Ingrandimento delle foto delle modelle
+- Carosello con le foto recuperate dal profilo della modella
+
+### 🐛 Correzioni
+
+- Il testo si ingrandiva da solo dopo l'apertura di una pagina web
+
+### 🛠️ Tecnico
+
+- Ottimizzazione generale del codice
+
+## 1.10.5
+
+### ✨ Novità
+
+- Verifica dello stato online delle modelle (non ancora funzionante)
+
+### 🎨 Interfaccia
+
+- Sistemati alcuni titoli
+
+### 🛠️ Tecnico
+
+- Ottimizzazione del codice con l'IA
+
+## 1.10.3
+
+### ✨ Novità
+
+- Sistema di changelog
+
+### 🐛 Correzioni
+
+- L'importazione da MCG si bloccava
+- Modali di dettaglio delle modelle
+
+## 1.10.2
+
+### ✨ Novità
+
+- Schermata di caricamento (splash screen) all'avvio
+- La versione corrente viene registrata nel log all'avvio
+
+### 🐛 Correzioni
+
+- Errore di sintassi nell'importazione dei dati e nel gestore append-log
+
+## 1.10.1
+
+### 🛠️ Tecnico
+
+- Configurazione iniziale per la build dell'eseguibile portable
