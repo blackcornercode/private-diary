@@ -77,11 +77,15 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
    ```
 4. Avvia l'applicazione con `npm start` (oppure con `AVVIA.bat` su Windows).
    > Se l'avvio dal terminale di VS Code fallisce con `Cannot read properties of undefined (reading 'getPath')`, è impostata la variabile d'ambiente `ELECTRON_RUN_AS_NODE`: rimuovila prima di lanciare l'app.
-5. Per creare l'eseguibile portable per Windows:
+5. Per creare l'installer e l'eseguibile portable per Windows:
    ```bash
    npm run dist
    ```
-   Il file viene creato in `dist/PrivateDiary-<versione>-portable.exe`.
+   Vengono creati due file in `dist/`:
+   - `PrivateDiary-<versione>-setup.exe`: installer NSIS **per utente** (in `%LOCALAPPDATA%\Programs\Private Diary`, senza permessi di amministratore), con scelta della cartella, collegamenti nel menu Start e sul desktop, in italiano o in inglese secondo la lingua di Windows. Il disinstallatore non tocca i dati (`deleteAppDataOnUninstall: false`).
+   - `PrivateDiary-<versione>-portable.exe`: versione portable. A ogni avvio si estrae sempre nella stessa cartella, `%TEMP%\PrivateDiary` (`portable.unpackDirName`), invece che in una cartella con nome casuale: l'estrazione in cartelle temporanee sempre diverse è uno dei comportamenti che gli antivirus (es. AVG con *IDP.ALEXA*) giudicano sospetti.
+
+   L'eseguibile non è firmato digitalmente, quindi SmartScreen e alcuni antivirus possono segnalarlo come sconosciuto: vedi la sezione sugli avvisi antivirus del README. La soluzione definitiva sarebbe un certificato di firma del codice.
    Per una prova veloce senza creare l'eseguibile, `npm run pack` prepara solo la cartella `dist/win-unpacked/` (circa 10 secondi invece di quasi 2 minuti); l'app si avvia da `dist/win-unpacked/Private Diary.exe`.
 
 ### Test automatici

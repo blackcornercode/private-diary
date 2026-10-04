@@ -40,9 +40,17 @@
 
 ## ⬇️ Download
 
-1. Scarica `PrivateDiary-<versione>-portable.exe` dall'[ultima release](https://github.com/blackcornercode/private-diary/releases/latest).
-2. Avvialo: è un'app portable, non serve installarla (Windows 10/11).
-3. L'eseguibile non ha una firma digitale: se Windows SmartScreen mostra un avviso, scegli **Ulteriori informazioni › Esegui comunque**.
+Dall'[ultima release](https://github.com/blackcornercode/private-diary/releases/latest) (Windows 10/11):
+- **`PrivateDiary-<versione>-setup.exe`** (consigliato): installa l'app solo per il tuo utente, senza permessi di amministratore, con collegamenti nel menu Start e sul desktop. Disinstallandola i dati restano.
+- **`PrivateDiary-<versione>-portable.exe`**: si avvia senza installazione.
+
+### 🛡️ Se Windows o l'antivirus segnalano l'app
+
+L'eseguibile non ha una firma digitale e, essendo nuovo, non ha ancora una «reputazione»: Windows SmartScreen e alcuni antivirus (per esempio AVG e Avast, con segnalazioni generiche come *IDP.ALEXA*) possono bloccarlo per prudenza. È un falso positivo:
+- con SmartScreen scegli **Ulteriori informazioni › Esegui comunque**;
+- per una verifica indipendente, carica il file su [VirusTotal](https://www.virustotal.com), che lo analizza con circa 70 antivirus;
+- preferisci l'installer: la versione portable a ogni avvio si estrae in una cartella temporanea, un comportamento che alcuni antivirus giudicano sospetto;
+- il codice è tutto in questo repository e puoi compilarlo da te (`npm run dist`).
 
 ## 🚀 Primi passi
 
@@ -64,7 +72,7 @@ La guida completa di tutte le funzioni è in [docs/GUIDA.md](docs/GUIDA.md).
 npm install
 npm start          # avvia l'app
 npm test           # test automatici
-npm run dist       # eseguibile portable per Windows in dist/
+npm run dist       # installer ed eseguibile portable per Windows in dist/
 ```
 
 Architettura, test e build: [docs/SVILUPPO.md](docs/SVILUPPO.md). Storia delle versioni: [CHANGELOG.md](CHANGELOG.md).

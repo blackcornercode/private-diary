@@ -5,9 +5,17 @@ Generato da `changelog.json` con `npm run changelog`: per modificarlo, modificar
 
 ## 1.12.3
 
+### ✨ Novità
+
+- Installer per Windows (PrivateDiary-setup.exe), per utente e senza permessi di amministratore, oltre alla versione portable; disinstallando l'app i dati restano
+
 ### 🎨 Interfaccia
 
 - Sincronizza MCG e Cronologia completa MCG sono nel menu Dati, in una sezione evidenziata «Importa da Mondo Cam Girls», con una descrizione sotto ogni voce e un tooltip che spiega la differenza; il pulsante Sincronizza MCG non è più nell'intestazione
+
+### 🛠️ Tecnico
+
+- La versione portable si estrae sempre nella stessa cartella temporanea invece che in una con nome casuale, per ridurre i falsi positivi degli antivirus (es. AVG IDP.ALEXA); avviso con le istruzioni nei README e nelle note di rilascio
 
 ## 1.12.2
 

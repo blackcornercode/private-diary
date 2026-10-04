@@ -40,9 +40,17 @@
 
 ## ⬇️ Download
 
-1. Download `PrivateDiary-<version>-portable.exe` from the [latest release](https://github.com/blackcornercode/private-diary/releases/latest).
-2. Run it: it is a portable app, no installation needed (Windows 10/11).
-3. The executable is not digitally signed: if Windows SmartScreen shows a warning, choose **More info › Run anyway**.
+From the [latest release](https://github.com/blackcornercode/private-diary/releases/latest) (Windows 10/11):
+- **`PrivateDiary-<version>-setup.exe`** (recommended): installs the app for your user only, no administrator rights needed, with Start menu and desktop shortcuts. Uninstalling keeps your data.
+- **`PrivateDiary-<version>-portable.exe`**: runs without installation.
+
+### 🛡️ Antivirus or SmartScreen warnings
+
+The executable is not digitally signed and, being new, has no "reputation" yet: Windows SmartScreen and some antivirus programs (for example AVG and Avast, with generic detections such as *IDP.ALEXA*) may block it as a precaution. It is a false positive:
+- with SmartScreen choose **More info › Run anyway**;
+- for an independent check, upload the file to [VirusTotal](https://www.virustotal.com), which scans it with about 70 antivirus engines;
+- prefer the installer: on every launch the portable version unpacks itself into a temporary folder, a behaviour some antivirus programs find suspicious;
+- all the source code is in this repository and you can build it yourself (`npm run dist`).
 
 ## 🚀 Getting started
 
@@ -64,7 +72,7 @@ The full user guide (in Italian) is in [docs/GUIDA.md](docs/GUIDA.md).
 npm install
 npm start          # run the app
 npm test           # automated tests
-npm run dist       # portable Windows executable in dist/
+npm run dist       # Windows installer and portable executable in dist/
 ```
 
 Architecture, tests and build details (in Italian): [docs/SVILUPPO.md](docs/SVILUPPO.md). Version history: [CHANGELOG.md](CHANGELOG.md).
