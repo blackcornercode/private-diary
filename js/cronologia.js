@@ -1,7 +1,13 @@
+import { anniDisponibili, filtraOrdinaShows, paginaDi } from './calcoli.js';
+import { t } from './i18n.js';
+import { logger } from './logger.js';
+import { COLONNE_CRONOLOGIA, intestazioneShow, righeShow } from './righe-show.js';
+import { stato } from './stato.js';
+
 /* ==========================================================================
    CRONOLOGIA: FILTRI PER ANNO E NOME
    ========================================================================== */
-function inizializzaFiltriCronologia() {
+export function inizializzaFiltriCronologia() {
     const limiteSalvato = localStorage.getItem('limiteRisultati');
     const limiteSelect = document.getElementById('limiteRisultati');
     if (limiteSelect && limiteSalvato) {
@@ -9,7 +15,7 @@ function inizializzaFiltriCronologia() {
     }
 }
 
-function inizializzaFiltroAnni(shows) {
+export function inizializzaFiltroAnni(shows) {
     const container = document.getElementById('container-filtri-anni');
     if (!container) return;
 
@@ -18,7 +24,7 @@ function inizializzaFiltroAnni(shows) {
     const salvati = localStorage.getItem('anniSelezionatiFiltro');
     if (salvati) {
         try {
-            anniSelezionati = new Set(JSON.parse(salvati));
+            stato.anniSelezionati = new Set(JSON.parse(salvati));
         } catch (e) {
             console.error("Errore nel ripristino degli anni dal localStorage", e);
         }
@@ -37,14 +43,14 @@ function inizializzaFiltroAnni(shows) {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.value = anno;
-        checkbox.checked = anniSelezionati.has(anno);
+        checkbox.checked = stato.anniSelezionati.has(anno);
 
         checkbox.addEventListener('change', (e) => {
-            if (e.target.checked) anniSelezionati.add(anno);
-            else anniSelezionati.delete(anno);
-            localStorage.setItem('anniSelezionatiFiltro', JSON.stringify(Array.from(anniSelezionati)));
-            paginaCorrente = 1;
-            caricaCronologia(tuttiGliShow);
+            if (e.target.checked) stato.anniSelezionati.add(anno);
+            else stato.anniSelezionati.delete(anno);
+            localStorage.setItem('anniSelezionatiFiltro', JSON.stringify(Array.from(stato.anniSelezionati)));
+            stato.paginaCorrente = 1;
+            caricaCronologia(stato.tuttiGliShow);
         });
 
         wrapper.appendChild(checkbox);
@@ -56,7 +62,7 @@ function inizializzaFiltroAnni(shows) {
 /* ==========================================================================
    CRONOLOGIA E PAGINAZIONE
    ========================================================================== */
-function caricaCronologia(shows) {
+export function caricaCronologia(shows) {
     const listaShow = document.getElementById('listaShow');
     if (!listaShow) return;
 
@@ -65,11 +71,11 @@ function caricaCronologia(shows) {
     // Il filtro per nome resta attivo anche cambiando pagina, ordine, numero di risultati o anno
     const filtrati = filtraOrdinaShows(shows, {
         nome: document.getElementById('searchModellaCronologia')?.value || '',
-        anni: [...anniSelezionati],
+        anni: [...stato.anniSelezionati],
         ordine: document.getElementById('ordineData')?.value || 'desc'
     });
-    const { elementi, pagina, totalePagine } = paginaDi(filtrati, limite, paginaCorrente);
-    paginaCorrente = pagina;
+    const { elementi, pagina, totalePagine } = paginaDi(filtrati, limite, stato.paginaCorrente);
+    stato.paginaCorrente = pagina;
 
     const intestazione = document.getElementById('intestazioneCronologia');
     if (intestazione) intestazione.innerHTML = intestazioneShow(COLONNE_CRONOLOGIA);
@@ -77,13 +83,13 @@ function caricaCronologia(shows) {
     aggiornaControlliPaginazione(totalePagine, limite === 'all');
 }
 
-function cambiaPagina(direzione) {
-    paginaCorrente += direzione;
-    logger.info(`Navigazione pagina cronologia: ${paginaCorrente}`);
-    caricaCronologia(tuttiGliShow);
+export function cambiaPagina(direzione) {
+    stato.paginaCorrente += direzione;
+    logger.info(`Navigazione pagina cronologia: ${stato.paginaCorrente}`);
+    caricaCronologia(stato.tuttiGliShow);
 }
 
-function aggiornaControlliPaginazione(totalePagine, mostraTutti) {
+export function aggiornaControlliPaginazione(totalePagine, mostraTutti) {
     const btnIndietro = document.getElementById('btnPrevPagina');
     const btnAvanti = document.getElementById('btnNextPagina');
     const infoPagina = document.getElementById('infoPagina');
@@ -98,16 +104,16 @@ function aggiornaControlliPaginazione(totalePagine, mostraTutti) {
 
     contenitorePaginazione.style.display = 'flex';
 
-    if (btnIndietro) btnIndietro.disabled = (paginaCorrente <= 1);
-    if (btnAvanti) btnAvanti.disabled = (paginaCorrente >= totalePagine);
+    if (btnIndietro) btnIndietro.disabled = (stato.paginaCorrente <= 1);
+    if (btnAvanti) btnAvanti.disabled = (stato.paginaCorrente >= totalePagine);
     if (infoPagina) {
         infoPagina.textContent = t('pagination.page_of')
-            .replace('{page}', paginaCorrente)
+            .replace('{page}', stato.paginaCorrente)
             .replace('{total}', totalePagine);
     }
 }
 
-function resetFiltriCronologia() {
+export function resetFiltriCronologia() {
     logger.info("Reset dei filtri cronologia richiesto.");
     const ordine = document.getElementById('ordineData');
     const limite = document.getElementById('limiteRisultati');
@@ -117,17 +123,17 @@ function resetFiltriCronologia() {
     const searchInput = document.getElementById('searchModellaCronologia');
     if (searchInput) searchInput.value = '';
 
-    anniSelezionati.clear();
+    stato.anniSelezionati.clear();
     localStorage.removeItem('anniSelezionatiFiltro');
 
-    inizializzaFiltroAnni(tuttiGliShow);
+    inizializzaFiltroAnni(stato.tuttiGliShow);
 
     localStorage.removeItem('limiteRisultati');
-    paginaCorrente = 1;
-    caricaCronologia(tuttiGliShow);
+    stato.paginaCorrente = 1;
+    caricaCronologia(stato.tuttiGliShow);
 }
 
-function filtraCronologiaPerNome() {
-    paginaCorrente = 1;
-    caricaCronologia(tuttiGliShow);
+export function filtraCronologiaPerNome() {
+    stato.paginaCorrente = 1;
+    caricaCronologia(stato.tuttiGliShow);
 }

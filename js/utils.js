@@ -1,7 +1,11 @@
+import { t } from './i18n.js';
+import { logger } from './logger.js';
+import { stato } from './stato.js';
+
 /* ==========================================================================
    UTILITIES ED HELPER
    ========================================================================== */
-function generaLinkChat(piattaforma, nickname) {
+export function generaLinkChat(piattaforma, nickname) {
     if (!nickname) return null;
     const nick = nickname.trim().replace(/^@/, '');
 
@@ -20,7 +24,7 @@ function generaLinkChat(piattaforma, nickname) {
     }
 }
 
-function escapeHtml(str) {
+export function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
         .replace(/&/g, '&amp;')
@@ -30,27 +34,18 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-// Converte un valore in un argomento JavaScript sicuro da inserire in un
-// attributo onclick="...". escapeHtml da solo NON basta: il browser decodifica
-// &#039; in ' prima di eseguire il codice, quindi un nome come "D'Angelo"
-// spezzava la stringa (e un nome costruito ad arte poteva eseguire codice).
-function argJs(valore) {
-    return escapeHtml(JSON.stringify(valore === null || valore === undefined ? '' : String(valore)));
-}
-
 // ID univoco anche quando se ne creano molti nello stesso millisecondo
 // (la sincronizzazione usava Date.now() + random(1000): con decine di righe
 // importate insieme due show potevano ricevere lo stesso ID, e "Elimina"
 // cancellava entrambi)
-let ultimoIdGenerato = 0;
-function generaIdUnico() {
-    ultimoIdGenerato = Math.max(Date.now(), ultimoIdGenerato + 1);
-    return ultimoIdGenerato;
+export function generaIdUnico() {
+    stato.ultimoIdGenerato = Math.max(Date.now(), stato.ultimoIdGenerato + 1);
+    return stato.ultimoIdGenerato;
 }
 
 // Converte un testo italiano "GG/MM/AA[AA] [HH:MM]" in Date (ora locale).
 // new Date("11/09/2026") lo leggerebbe come 9 novembre (formato USA mm/gg).
-function parseDataItaliana(testo) {
+export function parseDataItaliana(testo) {
     const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:[\s,]+(\d{1,2}):(\d{2}))?/.exec(String(testo || '').trim());
     if (!m) return null;
     let anno = parseInt(m[3], 10);
@@ -66,7 +61,7 @@ function parseDataItaliana(testo) {
 //   tempoShow -> durata        url -> urlProfilo        voto -> punteggio
 //   dataOra / data -> dataOraISO (e data -> dataFormattata per la visualizzazione)
 // Restituisce una copia: l'oggetto originale non viene modificato.
-function normalizzaShow(originale) {
+export function normalizzaShow(originale) {
     const s = { ...originale };
 
     if ((s.durata === undefined || s.durata === null || s.durata === '') && s.tempoShow !== undefined) s.durata = s.tempoShow;
@@ -94,7 +89,7 @@ function normalizzaShow(originale) {
 
 // Data di uno show come Date, o null se assente/illeggibile.
 // I record passano da normalizzaShow, quindi dataOraISO è il campo di riferimento.
-function dataDelloShow(show) {
+export function dataDelloShow(show) {
     if (!show) return null;
     if (show.dataOraISO) {
         const d = new Date(show.dataOraISO);
@@ -103,20 +98,20 @@ function dataDelloShow(show) {
     return parseDataItaliana(show.dataFormattata);
 }
 
-function annoDelloShow(show) {
+export function annoDelloShow(show) {
     const d = dataDelloShow(show);
     return d ? d.getFullYear() : null;
 }
 
 // Timestamp per ordinare gli show; in mancanza di data si usa l'ID (creato da Date.now())
-function timestampShow(show) {
+export function timestampShow(show) {
     const d = dataDelloShow(show);
     return d ? d.getTime() : (Number(show.id) || 0);
 }
 
 // URL MCG dedotto dal nome quando non ne è stato salvato uno: "Giulìa Rossi" -> giuliarossi.mondocamgirls.com.
 // Il minuscolo va fatto prima del filtro, altrimenti le maiuscole venivano scartate ("Giulia" -> "iulia").
-function urlProfiloPredefinito(nome) {
+export function urlProfiloPredefinito(nome) {
     const sottodominio = String(nome || '').toLowerCase()
         .normalize('NFD').replace(/[̀-ͯ]/g, '')
         .replace(/[^a-z0-9]/g, '');
@@ -125,7 +120,7 @@ function urlProfiloPredefinito(nome) {
 
 // Salva l'archivio e, se il processo principale segnala un errore, lo mostra
 // invece di proseguire come se il salvataggio fosse riuscito
-async function salvaOAvvisa(shows) {
+export async function salvaOAvvisa(shows) {
     const esito = await window.electronAPI.saveData(shows);
     if (!esito || !esito.success) {
         const msg = (esito && esito.error) || 'errore sconosciuto';
@@ -136,14 +131,14 @@ async function salvaOAvvisa(shows) {
 }
 
 // Importo in euro sempre a 2 decimali, anche se nel JSON il costo è una stringa
-function formattaEuro(valore) {
+export function formattaEuro(valore) {
     const n = parseFloat(valore);
     return `€ ${(isNaN(n) ? 0 : n).toFixed(2)}`;
 }
 
 // Cella del costo: attenuata per regali e show rimborsati; per questi ultimi il
 // tooltip riporta l'importo pagato prima del rimborso
-function cellaCosto(show) {
+export function cellaCosto(show) {
     if (show.rimborsato) {
         const titolo = `Rimborsato: pagato ${formattaEuro(show.costoOriginale)}`;
         return `<td class="col-nowrap testo-attenuato" title="${escapeHtml(titolo)}">${formattaEuro(show.costo)} ↩</td>`;
@@ -151,13 +146,13 @@ function cellaCosto(show) {
     return `<td class="col-nowrap${show.isRegalo ? ' testo-attenuato' : ''}">${formattaEuro(show.costo)}</td>`;
 }
 
-function minutiDelloShow(show) {
+export function minutiDelloShow(show) {
     return parseInt(show.durata, 10) || 0;
 }
 
 // Costo al minuto di un singolo show; null se manca la durata (show registrati
 // prima della 1.11.0), se è un regalo o se è stato rimborsato
-function costoAlMinuto(show) {
+export function costoAlMinuto(show) {
     const minuti = minutiDelloShow(show);
     if (minuti <= 0 || show.isRegalo || show.rimborsato) return null;
     return (parseFloat(show.costo) || 0) / minuti;
@@ -166,7 +161,7 @@ function costoAlMinuto(show) {
 // Media ponderata per un gruppo di show: spesa / minuti dei soli show con durata.
 // Dividere la spesa totale per la durata totale gonfierebbe il risultato,
 // perché conterebbe la spesa degli show senza durata ma non i loro minuti.
-function costoMedioAlMinuto(shows) {
+export function costoMedioAlMinuto(shows) {
     let spesa = 0;
     let minuti = 0;
     shows.forEach(s => {
@@ -179,27 +174,24 @@ function costoMedioAlMinuto(shows) {
 
 // Cella delle note troncata con "…" e testo completo nel tooltip. Il limite di
 // larghezza sta su un div interno: sulle celle di tabella max-width non è affidabile.
-function cellaNote(note) {
+export function cellaNote(note) {
     const testo = escapeHtml(note);
     if (!testo) return '<td class="col-note"></td>';
     // Clic (o Invio/Spazio da tastiera) mostra la nota completa, un secondo clic la richiude
     return `<td class="col-note espandibile" title="${testo}" tabindex="0" aria-expanded="false"
-        onclick="espandiNota(event, this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') espandiNota(event, this)"><div class="testo-note">${testo}</div></td>`;
+        data-azione="espandi-nota" data-tastiera><div class="testo-note">${testo}</div></td>`;
 }
 
-function espandiNota(event, cella) {
-    event.preventDefault();
-    // Non deve attivare il clic sulla riga (es. apertura della scheda modella)
-    event.stopPropagation();
+export function espandiNota(cella) {
     const espansa = cella.classList.toggle('espansa');
     cella.setAttribute('aria-expanded', String(espansa));
 }
 
-const DATO_MANCANTE = '<span class="dato-mancante">–</span>';
+export const DATO_MANCANTE = '<span class="dato-mancante">–</span>';
 
 // €/min colorato rispetto alla media personale: verde se più basso, rosso se più alto.
 // Entro ±10% dalla media resta neutro, per non colorare differenze irrilevanti.
-function formattaCostoAlMinuto(valore, riferimento = costoMinutoRiferimento) {
+export function formattaCostoAlMinuto(valore, riferimento = stato.costoMinutoRiferimento) {
     if (valore === null) return DATO_MANCANTE;
     const testo = `€ ${valore.toFixed(2)}`;
     if (!riferimento) return testo;
@@ -211,7 +203,7 @@ function formattaCostoAlMinuto(valore, riferimento = costoMinutoRiferimento) {
 }
 
 // Voto del singolo show come badge colorato (5 verde … 1-2 rosso)
-function formattaVoto(show) {
+export function formattaVoto(show) {
     if (show.isRegalo) return DATO_MANCANTE;
     const voto = parseInt(show.punteggio, 10);
     if (show.punteggio === 'TBD' || !voto) return '<span class="badge-tbd">TBD</span>';
@@ -220,17 +212,14 @@ function formattaVoto(show) {
 }
 
 // Durata: "–" in grigio quando non è registrata (prima compariva "0m" in grassetto)
-function formattaDurata(minuti) {
+export function formattaDurata(minuti) {
     const m = parseInt(minuti, 10) || 0;
     return m > 0 ? formattaTempo(m) : DATO_MANCANTE;
 }
 
-function apriLinkEsterno(event, url) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
+// Apre un link nel browser di sistema (o in Teams/Telegram). Il preventDefault del
+// clic su href="#" lo fa l'azione "apri-link" registrata in app.js.
+export function apriLinkEsterno(url) {
     if (!url) return;
 
     if (url.includes('teams.microsoft.com/l/call/')) {
@@ -256,7 +245,7 @@ function apriLinkEsterno(event, url) {
 }
 
 // --- FUNZIONE UTILITY PER FORMATTARE IL TEMPO (Minuti -> Ore e Minuti) ---
-function formattaTempo(minuti) {
+export function formattaTempo(minuti) {
     if (!minuti || isNaN(minuti) || minuti <= 0) return `0${t('units.min')}`;
     const ore = Math.floor(minuti / 60);
     const mins = minuti % 60;

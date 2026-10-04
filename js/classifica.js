@@ -1,26 +1,33 @@
+import { calcolaClassifica } from './calcoli.js';
+import { t } from './i18n.js';
+import { getPiattaformaFormatted } from './righe-show.js';
+import { eModellaOnline, badgeOnline } from './stato-online.js';
+import { stato } from './stato.js';
+import { escapeHtml, formattaCostoAlMinuto, formattaDurata } from './utils.js';
+
 /* ==========================================================================
    CLASSIFICA MODELLE E MEDIE
    ========================================================================== */
-function caricaMedieEStoricizzazione(shows) {
+export function caricaMedieEStoricizzazione(shows) {
     if (!document.getElementById('listaMedie')) return;
 
     // Ordinamento: 1° media voti, 2° numero di show (vedi calcolaClassifica in calcoli.js)
-    classificaCompletaCache = calcolaClassifica(shows, { immagini: mappaImmaginiModelle, url: mappaUrlModelle });
+    stato.classificaCompletaCache = calcolaClassifica(shows, { immagini: stato.mappaImmaginiModelle, url: stato.mappaUrlModelle });
 
-    mostraClassifica(classificaCompletaCache);
+    mostraClassifica(stato.classificaCompletaCache);
     aggiornaLegendaMediaMinuto();
 }
 
 // Nella legenda dei colori mostra il valore attuale della media €/min di riferimento
-function aggiornaLegendaMediaMinuto() {
+export function aggiornaLegendaMediaMinuto() {
     const elem = document.getElementById('legendaMediaMinuto');
     if (!elem) return;
-    elem.textContent = costoMinutoRiferimento
-        ? t('ranking.colors_your_avg').replace('{media}', `€ ${costoMinutoRiferimento.toFixed(2)}`)
+    elem.textContent = stato.costoMinutoRiferimento
+        ? t('ranking.colors_your_avg').replace('{media}', `€ ${stato.costoMinutoRiferimento.toFixed(2)}`)
         : '';
 }
 
-function mostraClassifica(lista) {
+export function mostraClassifica(lista) {
     const listaMedie = document.getElementById('listaMedie');
     if (!listaMedie) return;
     listaMedie.innerHTML = '';
@@ -30,14 +37,15 @@ function mostraClassifica(lista) {
     lista.forEach((item, index) => {
         const tr = document.createElement('tr');
         tr.className = 'cliccabile';
-        tr.onclick = () => apriModalModella(item.nome);
+        tr.dataset.azione = 'apri-scheda-modella';
+        tr.dataset.nome = item.nome;
 
         const imgHtml = item.foto 
-            ? `<img src="${escapeHtml(item.foto)}" class="thumb-img" alt="foto" onclick="event.stopPropagation(); apriModalImmagine(${argJs(item.foto)})" onerror="this.outerHTML='<div class=\\'no-img\\'>No Foto</div>'">`
-            : `<div class="no-img">No Foto</div>`;
+            ? `<img src="${escapeHtml(item.foto)}" class="thumb-img" alt="foto" data-azione="ingrandisci-foto" data-url="${escapeHtml(item.foto)}" data-sostituto="${escapeHtml(t('table.no_photo'))}">`
+            : `<div class="no-img">${escapeHtml(t('table.no_photo'))}</div>`;
 
         const linkWebHtml = item.urlProfilo 
-            ? `<a href="#" class="link-web link-profilo" title="Profilo Web" aria-label="Profilo Web" onclick="apriLinkEsterno(event, ${argJs(item.urlProfilo)})">🌐</a>`
+            ? `<a href="#" class="link-web link-profilo" title="Profilo Web" aria-label="Profilo Web" data-azione="apri-link" data-url="${escapeHtml(item.urlProfilo)}">🌐</a>`
             : `-`;
 
         // Stesso formato della cronologia: piattaforma e, sotto, il nickname
@@ -67,13 +75,13 @@ function mostraClassifica(lista) {
     listaMedie.appendChild(fragment);
 }
 
-function filtraClassificaModelle() {
+export function filtraClassificaModelle() {
     const input = document.getElementById('searchModellaClassifica');
     if (!input) return;
     const filtro = input.value.trim().toLowerCase();
     const soloOnline = Boolean(document.getElementById('filtroSoloOnline')?.checked);
 
-    const filtrati = classificaCompletaCache.filter(m =>
+    const filtrati = stato.classificaCompletaCache.filter(m =>
         m.nome.toLowerCase().includes(filtro) && (!soloOnline || eModellaOnline(m.nome) === true));
     mostraClassifica(filtrati);
 }

@@ -2,6 +2,9 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <!-- Content-Security-Policy: vieta script esterni e JavaScript scritto nell'HTML
+         (onclick, onerror...). Le azioni dell'interfaccia passano da js/azioni.js. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="app_title">Gestione Show MCG</title>
     <!-- Font e icone inclusi in locale: l'app li mostra anche senza connessione -->
@@ -24,7 +27,7 @@
 
             <div class="header-controls">
                 <!-- Azione principale sempre visibile -->
-                <button type="button" class="btn-sync" onclick="sincronizzaTransazioniMondoCamGirls()" title="Sincronizza da MondoCamGirls" data-i18n="actions.sync">🔄 Sincronizza MCG</button>
+                <button type="button" class="btn-sync" data-azione="sincronizza-mcg" title="Sincronizza da MondoCamGirls" data-i18n="actions.sync">🔄 Sincronizza MCG</button>
 
                 <!-- Stato raggiungibilità Mondo Cam Girls (clic = nuova verifica) -->
                 <div class="mcg-status-container" id="mcgStatusContainer" role="button" tabindex="0">
@@ -36,10 +39,10 @@
                 <div class="menu-header" id="menuDati">
                     <button type="button" class="btn-data menu-header-toggle" aria-haspopup="true" aria-expanded="false" data-i18n="menu.data">💾 Dati ▾</button>
                     <div class="menu-header-pannello" role="menu">
-                        <button type="button" class="btn-data" role="menuitem" onclick="esportaDati()" title="Esporta Backup" data-i18n="actions.export">💾 Esporta</button>
-                        <button type="button" class="btn-data" role="menuitem" onclick="importaDati()" title="Importa Backup" data-i18n="actions.import">📥 Importa</button>
-                        <button type="button" class="btn-data" role="menuitem" onclick="apriCartellaDati()" title="Apri Cartella Dati" data-i18n="actions.folder">📁 Cartella</button>
-                        <button type="button" class="btn-data" role="menuitem" onclick="importaCronologiaCompletaMcg()" title="Legge tutte le pagine delle transazioni di MondoCamGirls" data-i18n="actions.sync_all">📜 Cronologia completa MCG</button>
+                        <button type="button" class="btn-data" role="menuitem" data-azione="esporta-backup" title="Esporta Backup" data-i18n="actions.export">💾 Esporta</button>
+                        <button type="button" class="btn-data" role="menuitem" data-azione="importa-backup" title="Importa Backup" data-i18n="actions.import">📥 Importa</button>
+                        <button type="button" class="btn-data" role="menuitem" data-azione="apri-cartella-dati" title="Apri Cartella Dati" data-i18n="actions.folder">📁 Cartella</button>
+                        <button type="button" class="btn-data" role="menuitem" data-azione="cronologia-completa-mcg" title="Legge tutte le pagine delle transazioni di MondoCamGirls" data-i18n="actions.sync_all">📜 Cronologia completa MCG</button>
                     </div>
                 </div>
 
@@ -50,15 +53,15 @@
                         <div class="font-size-control">
                             <span class="font-size-label" data-i18n="controls.font">Testo:</span>
                             <span>
-                                <button type="button" class="btn-font" onclick="riduciFont()">A-</button>
+                                <button type="button" class="btn-font" data-azione="riduci-testo">A-</button>
                                 <span id="fontBadge" class="font-size-badge">18px</span>
-                                <button type="button" class="btn-font" onclick="aumentaFont()">A+</button>
+                                <button type="button" class="btn-font" data-azione="aumenta-testo">A+</button>
                             </span>
                         </div>
 
                         <div class="lang-selector">
                             <label for="selectLingua" data-i18n="controls.language">Lingua:</label>
-                            <select id="selectLingua" onchange="cambiaLingua(this.value)">
+                            <select id="selectLingua" data-al-cambio="cambia-lingua">
                                 <option value="it">Italiano</option>
                                 <option value="en">English</option>
                             </select>
@@ -66,7 +69,7 @@
 
                         <div class="theme-selector">
                             <label for="selectTema" data-i18n="controls.theme">Tema:</label>
-                            <select id="selectTema" onchange="cambiaTema(this.value)">
+                            <select id="selectTema" data-al-cambio="cambia-tema">
                                 <option value="grey" data-i18n="themes.grey">Neve & Nebbia</option>
                                 <option value="light" data-i18n="themes.light">Luce Chiara</option>
                                 <option value="dark" data-i18n="themes.dark">Eclissi Scura</option>
@@ -78,9 +81,9 @@
         </div>
 
         <nav class="tabs-nav">
-            <button type="button" class="tab-btn active" onclick="apriTab('tabDashboard', event)" data-i18n="tabs.dashboard">📝 Form & Cronologia</button>
-            <button type="button" class="tab-btn" onclick="apriTab('tabClassifica', event)" data-i18n="tabs.ranking">🏆 Classifica Modelle</button>
-            <button type="button" class="tab-btn" onclick="apriTab('tabStatistiche', event)" style="display: inline-flex; align-items: center; gap: 8px;">
+            <button type="button" class="tab-btn active" data-azione="apri-tab" data-tab="tabDashboard" data-i18n="tabs.dashboard">📝 Form & Cronologia</button>
+            <button type="button" class="tab-btn" data-azione="apri-tab" data-tab="tabClassifica" data-i18n="tabs.ranking">🏆 Classifica Modelle</button>
+            <button type="button" class="tab-btn" data-azione="apri-tab" data-tab="tabStatistiche" style="display: inline-flex; align-items: center; gap: 8px;">
                 <span data-i18n="tabs.stats">📈 Statistiche Mensili</span>
                 <span id="navBudgetBadge" class="nav-badge" style="display: none;"></span>
             </button>
@@ -96,7 +99,7 @@
             <section class="card-section form-chiuso" id="sezioneForm">
                 <div class="form-intestazione">
                     <h2 id="titoloForm" data-i18n="form.title">Aggiungi / Modifica Show</h2>
-                    <button type="button" id="btnToggleForm" class="btn-primary" onclick="toggleForm()" aria-expanded="false" aria-controls="showForm" data-i18n="form.btn_new">＋ Nuovo show</button>
+                    <button type="button" id="btnToggleForm" class="btn-primary" data-azione="toggle-form" aria-expanded="false" aria-controls="showForm" data-i18n="form.btn_new">＋ Nuovo show</button>
                 </div>
                 <form id="showForm" class="show-form-grid">
     <input type="hidden" id="editId" value="">
@@ -178,7 +181,7 @@
 
         <div class="form-group checkbox-group">
             <label class="checkbox-label" for="isRegalo">
-                <input type="checkbox" id="isRegalo" onchange="gestisciStatoRegalo()">
+                <input type="checkbox" id="isRegalo" data-al-cambio="gestisci-regalo">
                 <span data-i18n="form.gift">🎁 Regalo</span>
             </label>
         </div>
@@ -210,7 +213,7 @@
     <!-- Riga 5: Pulsanti d'azione -->
     <div class="form-actions">
         <button type="submit" id="btnSalva" class="btn-primary" data-i18n="form.btn_save">Salva Record</button>
-        <button type="button" id="btnAnnulla" class="btn-secondary" style="display: none;" onclick="annullaModifica()" data-i18n="form.btn_cancel">Annulla</button>
+        <button type="button" id="btnAnnulla" class="btn-secondary" style="display: none;" data-azione="annulla-modifica" data-i18n="form.btn_cancel">Annulla</button>
     </div>
 </form>
             </section>
@@ -227,7 +230,7 @@
                     <div class="filters-bar" style="width: 100%;">
                         <div class="filter-item">
                             <label for="searchModellaCronologia" data-i18n="history.search">🔍 Cerca Nome:</label>
-                            <input type="text" id="searchModellaCronologia" placeholder="Filtra per nome..." data-i18n-ph="history.ph_search" oninput="filtraCronologiaPerNome()">
+                            <input type="text" id="searchModellaCronologia" placeholder="Filtra per nome..." data-i18n-ph="history.ph_search" data-al-input="filtra-cronologia">
                         </div>
 
                         <div class="filter-item">
@@ -248,7 +251,7 @@
                             </select>
                         </div>
 
-                        <button type="button" class="btn-reset" onclick="resetFiltriCronologia()" data-i18n="history.reset">Reset Filtri</button>
+                        <button type="button" class="btn-reset" data-azione="reset-filtri-cronologia" data-i18n="history.reset">Reset Filtri</button>
                     </div>
                 </div>
 
@@ -261,9 +264,9 @@
                 </div>
 
                 <div id="controlliPaginazione" class="pagination-controls">
-                    <button type="button" id="btnPrevPagina" class="btn-page" onclick="cambiaPagina(-1)" data-i18n="pagination.prev">⬅️ Precedente</button>
+                    <button type="button" id="btnPrevPagina" class="btn-page" data-azione="cambia-pagina" data-direzione="-1" data-i18n="pagination.prev">⬅️ Precedente</button>
                     <span id="infoPagina" style="font-weight: 600;">Pagina 1 di 1</span>
-                    <button type="button" id="btnNextPagina" class="btn-page" onclick="cambiaPagina(1)" data-i18n="pagination.next">Successiva ➡️</button>
+                    <button type="button" id="btnNextPagina" class="btn-page" data-azione="cambia-pagina" data-direzione="1" data-i18n="pagination.next">Successiva ➡️</button>
                 </div>
             </section>
         </div>
@@ -315,10 +318,10 @@
                 <div class="filters-bar" style="margin-bottom: 20px;">
                     <div class="filter-item" style="width: 100%; max-width: 400px;">
                         <label for="searchModellaClassifica" data-i18n="ranking.search">🔎 Cerca Modella:</label>
-                        <input type="text" id="searchModellaClassifica" placeholder="Inserisci il nome..." data-i18n-ph="ranking.ph_search" oninput="filtraClassificaModelle()">
+                        <input type="text" id="searchModellaClassifica" placeholder="Inserisci il nome..." data-i18n-ph="ranking.ph_search" data-al-input="filtra-classifica">
                     </div>
                     <label class="checkbox-label" for="filtroSoloOnline">
-                        <input type="checkbox" id="filtroSoloOnline" onchange="filtraClassificaModelle()">
+                        <input type="checkbox" id="filtroSoloOnline" data-al-cambio="filtra-classifica">
                         <span data-i18n="ranking.only_online">Solo online</span>
                     </label>
                 </div>
@@ -371,7 +374,7 @@
                     <h2 data-i18n="stats.title">📈 Statistiche Mensili</h2>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <label for="selezionaAnnoStatistiche" style="font-weight: 600;" data-i18n="stats.select_year">Seleziona Anno:</label>
-                        <select id="selezionaAnnoStatistiche" onchange="aggiornaStatisticheMensili()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-color);">
+                        <select id="selezionaAnnoStatistiche" data-al-cambio="cambia-anno-statistiche" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-color);">
                             <!-- Popolato dinamicamente da js/statistiche.js -->
                         </select>
                     </div>
@@ -385,7 +388,7 @@
     <!-- MODALE DETTAGLIO MODELLA -->
     <div id="modalModella" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="chiudiModalModella()">&times;</span>
+            <span class="close-modal" data-azione="chiudi-scheda-modella">&times;</span>
             <div id="modalHeader" class="modal-header-info"></div>
             
             <!-- SEZIONE GALLERIA FOTO -->
@@ -422,42 +425,21 @@
 	</div>
 
     <!-- MODALE INGRANDIMENTO IMMAGINE (LIGHTBOX) CON FRECCE -->
-    <div id="modalImmagineIngrandita" class="modal" onclick="chiudiModalImmagine()">
+    <div id="modalImmagineIngrandita" class="modal" data-azione="chiudi-lightbox">
         <span class="close-modal" style="position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; z-index: 2010;">&times;</span>
         
         <!-- Freccia Sinistra -->
-        <button class="nav-btn-lightbox" onclick="event.stopPropagation(); navigaGalleria(-1)" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 30px; padding: 15px 20px; cursor: pointer; border-radius: 50%; z-index: 2010; user-select: none;">&#10094;</button>
+        <button class="nav-btn-lightbox" data-azione="naviga-galleria" data-direzione="-1" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 30px; padding: 15px 20px; cursor: pointer; border-radius: 50%; z-index: 2010; user-select: none;">&#10094;</button>
 
         <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
-            <img id="imgIngrandita" src="" alt="Foto ingrandita" onclick="event.stopPropagation()" style="max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); object-fit: contain;">
+            <img id="imgIngrandita" src="" alt="Foto ingrandita" data-azione="nessuna" style="max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); object-fit: contain;">
         </div>
 
         <!-- Freccia Destra -->
-        <button class="nav-btn-lightbox" onclick="event.stopPropagation(); navigaGalleria(1)" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 30px; padding: 15px 20px; cursor: pointer; border-radius: 50%; z-index: 2010; user-select: none;">&#10095;</button>
+        <button class="nav-btn-lightbox" data-azione="naviga-galleria" data-direzione="1" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 30px; padding: 15px 20px; cursor: pointer; border-radius: 50%; z-index: 2010; user-select: none;">&#10095;</button>
     </div>
 
-    <!-- Script classici caricati in ordine: condividono lo scope globale,
-         necessario per gli onclick inline. app.js va caricato per ultimo. -->
-    <script src="js/logger.js"></script>
-    <script src="js/i18n.js"></script>
-    <script src="js/stato.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/calcoli.js"></script>
-    <script src="js/righe-show.js"></script>
-    <script src="js/archivio.js"></script>
-    <script src="js/preferenze.js"></script>
-    <script src="js/galleria.js"></script>
-    <script src="js/form-show.js"></script>
-    <script src="js/dati.js"></script>
-    <script src="js/cronologia.js"></script>
-    <script src="js/statistiche.js"></script>
-    <script src="js/classifica.js"></script>
-    <script src="js/modale-modella.js"></script>
-    <script src="js/sincronizzazione.js"></script>
-    <script src="js/changelog.js"></script>
-    <script src="js/stato-mcg.js"></script>
-    <script src="js/stato-online.js"></script>
-    <script src="js/menu-header.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Moduli ES: app.js importa tutti gli altri moduli di js/ -->
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

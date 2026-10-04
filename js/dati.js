@@ -1,10 +1,13 @@
+import { aggiornaInterfaccia } from './archivio.js';
+import { logger } from './logger.js';
+
 /* Esportazione, importazione dei backup e cartella dati.
    La lettura dell'archivio e l'aggiornamento delle viste sono in archivio.js. */
 
 /* ==========================================================================
    ESPORTAZIONE E IMPORTAZIONE BACKUP
    ========================================================================== */
-async function esportaDati() {
+export async function esportaDati() {
     try {
         if (window.electronAPI && window.electronAPI.exportData) {
             // Il budget sta in localStorage: va passato perché finisca nel backup
@@ -22,7 +25,7 @@ async function esportaDati() {
     }
 }
 
-async function importaDati() {
+export async function importaDati() {
     try {
         if (window.electronAPI && window.electronAPI.importData) {
             // Prima qualsiasi risposta (anche "annullata" o un errore) veniva
@@ -43,14 +46,14 @@ async function importaDati() {
 }
 
 // I backup vecchi non hanno impostazioni: in quel caso il budget attuale resta invariato
-function ripristinaImpostazioniBackup(impostazioni) {
+export function ripristinaImpostazioniBackup(impostazioni) {
     if (!impostazioni || impostazioni.monthly_budget === undefined) return;
     localStorage.setItem('monthly_budget', impostazioni.monthly_budget);
     const budgetInput = document.getElementById('monthlyBudgetInput');
     if (budgetInput) budgetInput.value = impostazioni.monthly_budget;
 }
 
-async function apriCartellaDati() {
+export async function apriCartellaDati() {
     try {
         if (window.electronAPI && window.electronAPI.openDataFolder) {
             await window.electronAPI.openDataFolder();

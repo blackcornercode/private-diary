@@ -1,29 +1,32 @@
-// Carica gli script classici dell'interfaccia (js/*.js) in un contesto isolato,
-// come fa il browser: condividono lo stesso scope globale, quindi le funzioni
-// definite in un file sono visibili negli altri. Restituisce il contesto e una
-// funzione per eseguire espressioni al suo interno (necessaria per leggere o
-// impostare le variabili dichiarate con let/const, che non sono proprietà del contesto).
-const fs = require('fs');
+// Importa i moduli ES dell'interfaccia (js/*.js) in Node per i test.
+// Alcuni moduli usano document, window o localStorage al caricamento o quando
+// vengono chiamati: qui ne vengono creati sostituti minimi. Restituisce un
+// unico oggetto con tutti i nomi esportati dai moduli richiesti.
 const path = require('path');
-const vm = require('vm');
+const { pathToFileURL } = require('url');
 
 const CARTELLA_JS = path.join(__dirname, '..', 'js');
 
-function caricaScript(nomiFile, { traduzioni = {} } = {}) {
-    const contesto = vm.createContext({
-        console,
-        localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
-        window: {},
-        document: { getElementById: () => null, querySelectorAll: () => [] }
-    });
-    for (const nome of nomiFile) {
-        const sorgente = fs.readFileSync(path.join(CARTELLA_JS, nome), 'utf8');
-        vm.runInContext(sorgente, contesto, { filename: nome });
-    }
-    const esegui = (codice) => vm.runInContext(codice, contesto);
-    // Le traduzioni vengono da locales/*.json nell'app: nei test si impostano a mano
-    esegui(`traduzioniCorrenti = ${JSON.stringify(traduzioni)}`);
-    return { contesto, esegui };
+function preparaAmbiente() {
+    globalThis.localStorage ??= { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+    globalThis.window ??= {};
+    globalThis.alert ??= () => {};
+    globalThis.document ??= {
+        getElementById: () => null,
+        querySelector: () => null,
+        querySelectorAll: () => [],
+        addEventListener: () => {},
+        dispatchEvent: () => {}
+    };
 }
 
-module.exports = { caricaScript };
+async function caricaModuli(nomiFile) {
+    preparaAmbiente();
+    const moduli = [];
+    for (const nome of nomiFile) {
+        moduli.push(await import(pathToFileURL(path.join(CARTELLA_JS, nome)).href));
+    }
+    return Object.assign({}, ...moduli);
+}
+
+module.exports = { caricaModuli };

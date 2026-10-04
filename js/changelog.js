@@ -1,7 +1,9 @@
+import { logger } from './logger.js';
+
 /* ==========================================================================
    CHANGELOG E MODALE NOVITÀ
    ========================================================================== */
-async function initChangelogCheck() {
+export async function initChangelogCheck() {
     try {
         if (!window.electronAPI || !window.electronAPI.checkForUpdateChangelog) return;
         const esito = await window.electronAPI.checkForUpdateChangelog();
@@ -11,7 +13,7 @@ async function initChangelogCheck() {
     }
 }
 
-function inizializzaListenerChangelogMenu() {
+export function inizializzaListenerChangelogMenu() {
     if (window.electronAPI && window.electronAPI.onOpenChangelog) {
         window.electronAPI.onOpenChangelog(() => {
             apriModalChangelog();
@@ -19,7 +21,7 @@ function inizializzaListenerChangelogMenu() {
     }
 }
 
-async function apriModalChangelog() {
+export async function apriModalChangelog() {
     const modal = document.getElementById('changelogModal');
     const content = document.getElementById('changelogContent');
 
@@ -61,7 +63,7 @@ async function apriModalChangelog() {
     }
 }
 
-function chiudiModalChangelog() {
+export function chiudiModalChangelog() {
     const modal = document.getElementById('changelogModal');
     if (modal) {
         modal.style.display = 'none';

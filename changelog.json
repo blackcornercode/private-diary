@@ -41,7 +41,10 @@
     "Interfaccia: a pari merito in classifica viene prima la modella con lo show più recente (prima l'ordine dipendeva dal nome)",
     "Tecnico: archivio degli show in memoria, letto da disco solo all'avvio e dopo un'importazione; salvataggi, modifiche ed eliminazioni non rileggono più il file",
     "Tecnico: calcoli di classifica, statistiche, budget e cronologia separati dal disegno delle pagine e coperti da test",
-    "Tecnico: righe di cronologia, dettaglio del mese e scheda modella disegnate da un'unica definizione delle colonne; stili spostati dal codice al foglio di stile"
+    "Tecnico: righe di cronologia, dettaglio del mese e scheda modella disegnate da un'unica definizione delle colonne; stili spostati dal codice al foglio di stile",
+    "Sicurezza: Content-Security-Policy che vieta script esterni e codice JavaScript nell'HTML, così un testo malevolo in un campo non può eseguire codice",
+    "Tecnico: interfaccia convertita in moduli ES (import/export) con stato condiviso in un unico oggetto e dipendenze verificate dai test",
+    "Tecnico: i 46 gestori scritti nell'HTML (onclick, onchange, onerror...) sostituiti da azioni dichiarate negli attributi e gestite da un unico modulo"
   ],
   "1.10.7": [
     "Novità: nickname della modella con collegamento rapido alla piattaforma di chat",

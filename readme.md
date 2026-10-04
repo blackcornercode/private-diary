@@ -149,13 +149,18 @@ Formato del file di backup esportato:
 | `changelog.json` | Novità per versione, mostrate nel modale *Novità e Changelog*. |
 | `js/` | Codice dell'interfaccia, suddiviso in moduli (vedi sotto). |
 
-I moduli in `js/` sono script classici caricati in ordine da `index.html` e condividono lo scope globale, necessario per gli `onclick` inline nell'HTML. `app.js` va caricato per ultimo.
+I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo `js/app.js` (`<script type="module">`), che importa gli altri. Lo stato condiviso tra i moduli è un unico oggetto `stato` (in `stato.js`), perché le variabili importate sono in sola lettura.
+
+**Azioni dell'interfaccia.** L'HTML non contiene JavaScript (`onclick`, `onchange`, `onerror`…): gli elementi dichiarano un'azione con attributi `data-azione`, `data-al-cambio` o `data-al-input` (es. `<button data-azione="modifica-show" data-id="…">`), e `azioni.js` le esegue con un solo ascoltatore sul documento. La tabella di tutte le azioni è in `app.js` (`registraAzioni`). Se più elementi annidati hanno un'azione vince il più interno (es. la foto dentro una riga cliccabile).
+
+**Content-Security-Policy.** `index.html` vieta script esterni e codice JavaScript scritto nell'HTML (`script-src 'self'`): un eventuale testo malevolo inserito in un campo non può eseguire codice. `splash.html` non permette script.
 
 | Modulo | Contenuto |
 | :--- | :--- |
 | `logger.js` | Log a console, a file e nel pannello log. |
 | `i18n.js` | Caricamento lingue e funzione `t()`. |
-| `stato.js` | Variabili globali dell'applicazione. |
+| `stato.js` | Stato condiviso: l'oggetto `stato` (archivio in memoria, filtri, pagina corrente, classifica…). |
+| `azioni.js` | Esecuzione delle azioni dichiarate negli attributi `data-azione`/`data-al-cambio`/`data-al-input`, e sostituzione delle foto che non si caricano. |
 | `utils.js` | Funzioni comuni: escape HTML, ID univoci, lettura delle date (anche formato italiano `gg/mm/aaaa`), normalizzazione dei record vecchi (`normalizzaShow`), formattazione importi, voti e durate, link esterni. |
 | `calcoli.js` | Calcoli puri sugli show, senza accesso alla pagina: classifica, totali di una modella, statistiche per anno, budget, filtri e pagine della cronologia, mappe di foto e profili. Verificati dai test. |
 | `righe-show.js` | Disegnatore unico delle righe degli show: ogni colonna (intestazione e cella) è definita una volta; cronologia, dettaglio del mese e scheda modella sono elenchi di colonne. |
@@ -173,7 +178,7 @@ I moduli in `js/` sono script classici caricati in ordine da `index.html` e cond
 | `stato-mcg.js` | Indicatore di raggiungibilità di Mondo Cam Girls. |
 | `stato-online.js` | Modelle online su Mondo Cam Girls: badge e filtro in classifica e nella scheda. |
 | `menu-header.js` | Menu a tendina Dati e Impostazioni dell'intestazione. |
-| `app.js` | Avvio dell'applicazione. |
+| `app.js` | Punto di ingresso: importa i moduli, registra le azioni dell'interfaccia, collega l'archivio alle viste, avvia l'applicazione. |
 
 ---
 
@@ -203,7 +208,8 @@ I moduli in `js/` sono script classici caricati in ordine da `index.html` e cond
 npm test
 ```
 Esegue i test in `tests/` con il test runner integrato di Node (nessuna dipendenza aggiuntiva), in meno di un secondo:
-- **funzioni dell'interfaccia** (`utils.js`, `calcoli.js`, `righe-show.js`, `archivio.js`, parte di `sincronizzazione.js`): date, normalizzazione dei record vecchi, €/min, voti, durate, importi e tipi delle transazioni MCG. Gli script classici di `js/` vengono caricati in un contesto isolato come nel browser;
+- **funzioni dell'interfaccia** (`utils.js`, `calcoli.js`, `righe-show.js`, `archivio.js`, parte di `sincronizzazione.js`): date, normalizzazione dei record vecchi, €/min, voti, durate, importi e tipi delle transazioni MCG. I moduli ES di `js/` vengono importati in Node con sostituti minimi di `document` e `localStorage` (`js/package.json` indica a Node che sono moduli ES);
+- **struttura dei moduli** (`moduli.test.js`): ogni nome importato esiste nel modulo di origine, ogni funzione di un altro modulo usata nel codice è importata, ogni azione usata nell'HTML è registrata in `app.js`, e l'HTML non contiene JavaScript inline;
 - **funzioni del processo principale** (`main/rete.js`, `main/mcg-pagine.js`);
 - **coerenza dei canali IPC**: ogni canale usato in `preload.js` deve essere definito in `main/canali.js` e avere un gestore registrato (il preload, in sandbox, non può importare `canali.js`).
 

@@ -1,7 +1,7 @@
 /* ==========================================================================
    SISTEMA DI LOGGING (Ordinamento: più recenti in alto)
    ========================================================================== */
-const logger = {
+export const logger = {
     formatTime() {
         const d = new Date();
         return `${d.toLocaleDateString('it-IT')} ${d.toLocaleTimeString('it-IT')}.${String(d.getMilliseconds()).padStart(3, '0')}`;

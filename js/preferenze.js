@@ -1,13 +1,18 @@
+import { logger } from './logger.js';
+import { caricaStatisticheMensili, aggiornaIndicatoreBudgetHomepage } from './statistiche.js';
+import { stato } from './stato.js';
+
 /* ==========================================================================
    SCHEDE, PREFERENZE UTENTE E VERSIONE
    ========================================================================== */
-function apriTab(tabId, event) {
+// bottone: il pulsante della scheda cliccato, da evidenziare come attivo
+export function apriTab(tabId, bottone) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
     const tabTarget = document.getElementById(tabId);
     if (tabTarget) tabTarget.classList.add('active');
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    if (bottone) bottone.classList.add('active');
     
     logger.info(`Cambiato scheda attiva: ${tabId}`);
 }
@@ -15,7 +20,7 @@ function apriTab(tabId, event) {
 /* ==========================================================================
    GESTIONE BUDGET E FONT
    ========================================================================== */
-function inizializzaGestioneBudget() {
+export function inizializzaGestioneBudget() {
     const budgetInput = document.getElementById('monthlyBudgetInput');
     const saveBtn = document.getElementById('saveBudgetBtn');
 
@@ -31,50 +36,50 @@ function inizializzaGestioneBudget() {
             logger.info(`Budget mensile aggiornato: € ${val}`);
             
             // --- AGGIORNAMENTO ISTANTANEO DEGLI INDICATORI E STATISTICHE ---
-            caricaStatisticheMensili(tuttiGliShow);
-            aggiornaIndicatoreBudgetHomepage(tuttiGliShow);
+            caricaStatisticheMensili(stato.tuttiGliShow);
+            aggiornaIndicatoreBudgetHomepage(stato.tuttiGliShow);
         });
     }
 }
 
-function inizializzaFont() {
+export function inizializzaFont() {
     const fontSalvato = localStorage.getItem('appFontSize');
     if (fontSalvato) {
-        currentFontSize = parseInt(fontSalvato, 10);
+        stato.currentFontSize = parseInt(fontSalvato, 10);
     }
     aggiornaDimensioneFont();
 }
 
-function aumentaFont() {
-    if (currentFontSize < 26) {
-        currentFontSize += 1;
-        logger.info(`Font aumentato a: ${currentFontSize}px`);
+export function aumentaFont() {
+    if (stato.currentFontSize < 26) {
+        stato.currentFontSize += 1;
+        logger.info(`Font aumentato a: ${stato.currentFontSize}px`);
         aggiornaDimensioneFont();
     }
 }
 
-function riduciFont() {
-    if (currentFontSize > 12) {
-        currentFontSize -= 1;
-        logger.info(`Font ridotto a: ${currentFontSize}px`);
+export function riduciFont() {
+    if (stato.currentFontSize > 12) {
+        stato.currentFontSize -= 1;
+        logger.info(`Font ridotto a: ${stato.currentFontSize}px`);
         aggiornaDimensioneFont();
     }
 }
 
-function aggiornaDimensioneFont() {
-    document.documentElement.style.setProperty('font-size', `${currentFontSize}px`, 'important');
-    localStorage.setItem('appFontSize', currentFontSize);
+export function aggiornaDimensioneFont() {
+    document.documentElement.style.setProperty('font-size', `${stato.currentFontSize}px`, 'important');
+    localStorage.setItem('appFontSize', stato.currentFontSize);
     
     const badge = document.getElementById('fontBadge');
     if (badge) {
-        badge.textContent = `${currentFontSize}px`;
+        badge.textContent = `${stato.currentFontSize}px`;
     }
 }
 
 /* ==========================================================================
    GESTIONE TEMA E VERSIONE
    ========================================================================== */
-function inizializzaTema() {
+export function inizializzaTema() {
     const temaSalvato = localStorage.getItem('theme') || 'grey';
     const selectTema = document.getElementById('selectTema');
     
@@ -84,13 +89,13 @@ function inizializzaTema() {
     applicatema(temaSalvato);
 }
 
-function cambiaTema(nomeTema) {
+export function cambiaTema(nomeTema) {
     localStorage.setItem('theme', nomeTema);
     logger.info(`Tema cambiato in: ${nomeTema}`);
     applicatema(nomeTema);
 }
 
-function applicatema(nomeTema) {
+export function applicatema(nomeTema) {
     document.body.classList.remove('theme-grey', 'theme-dark');
     if (nomeTema === 'grey') {
         document.body.classList.add('theme-grey');
@@ -99,7 +104,7 @@ function applicatema(nomeTema) {
     }
 }
 
-async function mostraVersioneApp() {
+export async function mostraVersioneApp() {
     try {
         if (window.electronAPI && window.electronAPI.getAppVersion) {
             const versione = await window.electronAPI.getAppVersion();

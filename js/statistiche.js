@@ -1,7 +1,12 @@
+import { anniDisponibili, calcolaStatisticheAnno, spesaMeseCorrente, statoBudget } from './calcoli.js';
+import { t } from './i18n.js';
+import { COLONNE_DETTAGLIO_MESE, intestazioneShow, righeShow } from './righe-show.js';
+import { stato } from './stato.js';
+
 /* ==========================================================================
    STATISTICHE MENSILI PER ANNO E DETTAGLIO MESI CLICCABILI
    ========================================================================== */
-function popolaSelettoreAnni(dati) {
+export function popolaSelettoreAnni(dati) {
     const selectAnno = document.getElementById('selezionaAnnoStatistiche');
     if (!selectAnno) return;
 
@@ -25,20 +30,20 @@ function popolaSelettoreAnni(dati) {
     }
 }
 
-function aggiornaStatisticheMensili() {
-    meseSelezionatoDettaglio = null;
-    caricaStatisticheMensili(tuttiGliShow);
+export function aggiornaStatisticheMensili() {
+    stato.meseSelezionatoDettaglio = null;
+    caricaStatisticheMensili(stato.tuttiGliShow);
 }
 
-function selezionaMeseDettaglio(idxMese) {
-    meseSelezionatoDettaglio = (meseSelezionatoDettaglio === idxMese) ? null : idxMese;
-    caricaStatisticheMensili(tuttiGliShow);
+export function selezionaMeseDettaglio(idxMese) {
+    stato.meseSelezionatoDettaglio = (stato.meseSelezionatoDettaglio === idxMese) ? null : idxMese;
+    caricaStatisticheMensili(stato.tuttiGliShow);
 }
 
-const budgetMensile = () => parseFloat(localStorage.getItem('monthly_budget')) || 0;
+export const budgetMensile = () => parseFloat(localStorage.getItem('monthly_budget')) || 0;
 
 // Riquadro "Obiettivo e Budget Mensile": spesa del mese corrente rispetto al budget
-function aggiornaRiquadroBudget(shows) {
+export function aggiornaRiquadroBudget(shows) {
     const budgetStatusText = document.getElementById('budgetStatusText');
     const budgetRemainingText = document.getElementById('budgetRemainingText');
     const progressBar = document.getElementById('progressBar');
@@ -46,23 +51,23 @@ function aggiornaRiquadroBudget(shows) {
 
     const spesa = spesaMeseCorrente(shows);
     const budget = budgetMensile();
-    const stato = statoBudget(spesa, budget);
+    const esitoBudget = statoBudget(spesa, budget);
 
     budgetStatusText.textContent = `${t('stats.current_month_spent')}: € ${spesa.toFixed(2)} / € ${budget.toFixed(2)}`;
-    progressBar.style.width = `${stato.percentuale}%`;
-    if (!stato.impostato) {
+    progressBar.style.width = `${esitoBudget.percentuale}%`;
+    if (!esitoBudget.impostato) {
         budgetRemainingText.textContent = t('budget.not_set_badge');
-    } else if (stato.differenza >= 0) {
-        budgetRemainingText.textContent = `${t('budget.remaining')}: € ${stato.differenza.toFixed(2)}`;
+    } else if (esitoBudget.differenza >= 0) {
+        budgetRemainingText.textContent = `${t('budget.remaining')}: € ${esitoBudget.differenza.toFixed(2)}`;
     } else {
-        budgetRemainingText.textContent = `${t('budget.exceeded_by')}: € ${Math.abs(stato.differenza).toFixed(2)}`;
+        budgetRemainingText.textContent = `${t('budget.exceeded_by')}: € ${Math.abs(esitoBudget.differenza).toFixed(2)}`;
     }
     // I colori vengono dalle classi stato-* (definite per ogni tema in style.css)
-    budgetRemainingText.className = stato.stato;
-    progressBar.className = stato.stato;
+    budgetRemainingText.className = esitoBudget.stato;
+    progressBar.className = esitoBudget.stato;
 }
 
-function caricaStatisticheMensili(shows) {
+export function caricaStatisticheMensili(shows) {
     const sezioneStatistiche = document.getElementById('sezioneStatistiche');
     const selectAnno = document.getElementById('selezionaAnnoStatistiche');
     if (!sezioneStatistiche) return;
@@ -78,7 +83,7 @@ function caricaStatisticheMensili(shows) {
     const mesi = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].map(m => t(`months.${m}`));
 
     const righeMesi = mesi.map((nomeMese, idx) => {
-        const isAttivo = (meseSelezionatoDettaglio === idx);
+        const isAttivo = (stato.meseSelezionatoDettaglio === idx);
         const haShow = conteggio[idx] > 0;
         const eMeseCorrente = (idx === oggi.getMonth() && annoSelezionato === oggi.getFullYear());
 
@@ -90,7 +95,7 @@ function caricaStatisticheMensili(shows) {
         const tooltipText = haShow ? t('stats.click_details') : t('stats.no_shows_month');
 
         return `
-            <tr class="${classiTr}" ${haShow ? `onclick="selezionaMeseDettaglio(${idx})"` : ''} title="${tooltipText}">
+            <tr class="${classiTr}" ${haShow ? `data-azione="seleziona-mese" data-mese="${idx}"` : ''} title="${tooltipText}">
                 <td><strong>${haShow ? (isAttivo ? '🔽 ' : '▶ ') : ''}${nomeMese} ${eMeseCorrente ? `📌 (${t('stats.current')})` : ''}</strong></td>
                 <td class="col-centro">${conteggio[idx]}</td>
                 <td class="spesa-mese col-destra col-grassetto">€ ${spesa[idx].toFixed(2)}</td>
@@ -110,13 +115,13 @@ function caricaStatisticheMensili(shows) {
         </table>
     `;
 
-    if (meseSelezionatoDettaglio !== null && showPerMese[meseSelezionatoDettaglio]) {
-        const elencoShowMese = showPerMese[meseSelezionatoDettaglio];
+    if (stato.meseSelezionatoDettaglio !== null && showPerMese[stato.meseSelezionatoDettaglio]) {
+        const elencoShowMese = showPerMese[stato.meseSelezionatoDettaglio];
         html += `
             <div class="dettaglio-mese">
                 <div class="dettaglio-mese-intestazione">
-                    <h3>${t('stats.shows_done')} - ${mesi[meseSelezionatoDettaglio]} ${annoSelezionato} (${elencoShowMese.length})</h3>
-                    <button class="btn-chiudi-dettaglio" onclick="selezionaMeseDettaglio(null)">✖ ${t('actions.close_details')}</button>
+                    <h3>${t('stats.shows_done')} - ${mesi[stato.meseSelezionatoDettaglio]} ${annoSelezionato} (${elencoShowMese.length})</h3>
+                    <button class="btn-chiudi-dettaglio" data-azione="seleziona-mese" data-mese="">✖ ${t('actions.close_details')}</button>
                 </div>
                 <table class="tabella-dettaglio-mese">
                     <thead>${intestazioneShow(COLONNE_DETTAGLIO_MESE)}</thead>
@@ -130,17 +135,17 @@ function caricaStatisticheMensili(shows) {
 }
 
 // Badge "Budget OK/KO" accanto alla scheda Statistiche
-function aggiornaIndicatoreBudgetHomepage(shows) {
+export function aggiornaIndicatoreBudgetHomepage(shows) {
     const navBadge = document.getElementById('navBudgetBadge');
     if (!navBadge) return;
 
-    const stato = statoBudget(spesaMeseCorrente(shows), budgetMensile());
-    if (!stato.impostato) {
+    const esitoBudget = statoBudget(spesaMeseCorrente(shows), budgetMensile());
+    if (!esitoBudget.impostato) {
         navBadge.style.display = 'none';
         return;
     }
-    const rispettato = stato.stato === 'stato-ok';
+    const rispettato = esitoBudget.stato === 'stato-ok';
     navBadge.style.display = 'inline-block';
     navBadge.textContent = rispettato ? 'Budget OK' : 'Budget KO';
-    navBadge.className = `nav-badge ${stato.stato}`;
+    navBadge.className = `nav-badge ${esitoBudget.stato}`;
 }

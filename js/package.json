@@ -1,0 +1,4 @@
+{
+  "//": "I file di js/ sono moduli ES: questa impostazione serve a Node (npm test). Electron li carica da index.html con type=module.",
+  "type": "module"
+}

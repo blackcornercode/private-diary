@@ -1,7 +1,13 @@
+import { aggiungiShow, aggiornaShow, rimuoviShow, trovaShow } from './archivio.js';
+import { t } from './i18n.js';
+import { logger } from './logger.js';
+import { stato, iconePiattaformaHTML } from './stato.js';
+import { escapeHtml, generaIdUnico } from './utils.js';
+
 /* ==========================================================================
    GESTIONE FORM E AUTOCOMPILAZIONE
    ========================================================================== */
-function gestisciStatoRegalo() {
+export function gestisciStatoRegalo() {
     const piattaformaSelect = document.getElementById('piattaforma');
     const punteggioSelect = document.getElementById('punteggio');
     const isRegaloCheckbox = document.getElementById('isRegalo');
@@ -38,7 +44,7 @@ function gestisciStatoRegalo() {
     }
 }
 
-function impostaDataOraAttuale() {
+export function impostaDataOraAttuale() {
     const dataInput = document.getElementById('dataOra');
     if (dataInput) {
         const oraLocale = new Date();
@@ -47,19 +53,19 @@ function impostaDataOraAttuale() {
     }
 }
 
-// Suggerimenti del campo "Nome Modella" (elencoModelleUniche è calcolato da aggiornaViste)
-function aggiornaDatalistModelle() {
+// Suggerimenti del campo "Nome Modella" (stato.elencoModelleUniche è calcolato da aggiornaViste)
+export function aggiornaDatalistModelle() {
     const datalist = document.getElementById('listaModelleSuggerite');
     if (!datalist) return;
     datalist.innerHTML = '';
-    elencoModelleUniche.forEach(modella => {
+    stato.elencoModelleUniche.forEach(modella => {
         const option = document.createElement('option');
         option.value = modella.nome;
         datalist.appendChild(option);
     });
 }
 
-function impostaPiattaformaCustom(valorePiattaforma) {
+export function impostaPiattaformaCustom(valorePiattaforma) {
     const selectPiattaforma = document.getElementById('piattaforma');
     const customSelectedSpan = document.getElementById('customSelectSelected');
 
@@ -72,7 +78,7 @@ function impostaPiattaformaCustom(valorePiattaforma) {
     }
 }
 
-function autocompilaDatiModella() {
+export function autocompilaDatiModella() {
     const editIdInput = document.getElementById('editId');
     if (editIdInput && editIdInput.value) return;
 
@@ -82,7 +88,7 @@ function autocompilaDatiModella() {
     const nomeInserito = inputNome.value.trim().toLowerCase();
     if (!nomeInserito) return;
 
-    const modellaTrovata = elencoModelleUniche.find(m => m.nome.toLowerCase() === nomeInserito);
+    const modellaTrovata = stato.elencoModelleUniche.find(m => m.nome.toLowerCase() === nomeInserito);
 
     const inputImmagine = document.getElementById('immagine');
     const inputUrlProfilo = document.getElementById('urlProfilo');
@@ -102,16 +108,16 @@ function autocompilaDatiModella() {
             impostaPiattaformaCustom(modellaTrovata.piattaforma);
         }
     } else {
-        if (mappaImmaginiModelle[nomeInserito] && inputImmagine) {
-            inputImmagine.value = mappaImmaginiModelle[nomeInserito];
+        if (stato.mappaImmaginiModelle[nomeInserito] && inputImmagine) {
+            inputImmagine.value = stato.mappaImmaginiModelle[nomeInserito];
         }
-        if (mappaUrlModelle[nomeInserito] && inputUrlProfilo) {
-            inputUrlProfilo.value = mappaUrlModelle[nomeInserito];
+        if (stato.mappaUrlModelle[nomeInserito] && inputUrlProfilo) {
+            inputUrlProfilo.value = stato.mappaUrlModelle[nomeInserito];
         }
     }
 }
 
-const showForm = document.getElementById('showForm');
+export const showForm = document.getElementById('showForm');
 if (showForm) {
     showForm.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -143,7 +149,7 @@ if (showForm) {
 
         let isAutoImport = false;
         if (editId) {
-            const itemEsistente = tuttiGliShow.find(s => String(s.id) === String(editId));
+            const itemEsistente = stato.tuttiGliShow.find(s => String(s.id) === String(editId));
             if (itemEsistente && itemEsistente.isAutoImport) {
                 isAutoImport = true;
             }
@@ -152,7 +158,7 @@ if (showForm) {
         const valPunteggio = punteggioSelect ? punteggioSelect.value : '';
 
         const showData = {
-            id: editId ? (tuttiGliShow.find(s => String(s.id) === String(editId))?.id ?? editId) : generaIdUnico(),
+            id: editId ? (stato.tuttiGliShow.find(s => String(s.id) === String(editId))?.id ?? editId) : generaIdUnico(),
             dataOraISO: dataOraValue.toISOString(),
             dataFormattata: dataOraValue.toLocaleDateString('it-IT') + ' ' + dataOraValue.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
             meseAnno: dataOraValue.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }),
@@ -187,7 +193,7 @@ if (showForm) {
     });
 }
 
-async function modificaShow(id) {
+export async function modificaShow(id) {
     logger.info(`Richiesta modifica per lo show ID: ${id}`);
     const item = trovaShow(id);
     if (!item) {
@@ -262,19 +268,19 @@ async function modificaShow(id) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function annullaModifica() {
+export function annullaModifica() {
     logger.info("Modifica annullata dall'utente.");
     resetForm();
     impostaFormAperto(false);
 }
 
 /* --- FORM A SCOMPARSA --- */
-function formAperto() {
+export function formAperto() {
     const sezione = document.getElementById('sezioneForm');
     return Boolean(sezione) && !sezione.classList.contains('form-chiuso');
 }
 
-function impostaFormAperto(aperto) {
+export function impostaFormAperto(aperto) {
     const sezione = document.getElementById('sezioneForm');
     if (sezione) sezione.classList.toggle('form-chiuso', !aperto);
     aggiornaPulsanteForm();
@@ -282,7 +288,7 @@ function impostaFormAperto(aperto) {
 
 // Testi dei pulsanti coerenti con lo stato (richiamata anche al cambio lingua,
 // che altrimenti li riporterebbe sempre a "Nuovo show" e "Salva Record")
-function aggiornaPulsanteForm() {
+export function aggiornaPulsanteForm() {
     const btnSalva = document.getElementById('btnSalva');
     const editIdInput = document.getElementById('editId');
     if (btnSalva) {
@@ -298,7 +304,7 @@ function aggiornaPulsanteForm() {
     btn.classList.toggle('btn-primary', !aperto);
 }
 
-function toggleForm() {
+export function toggleForm() {
     if (!formAperto()) {
         impostaFormAperto(true);
         document.getElementById('nome')?.focus();
@@ -314,7 +320,7 @@ function toggleForm() {
     }
 }
 
-function resetForm() {
+export function resetForm() {
     const editIdInput = document.getElementById('editId');
     const showForm = document.getElementById('showForm');
     const isRegaloCheckbox = document.getElementById('isRegalo');
@@ -351,7 +357,7 @@ function resetForm() {
     if (nickInput) nickInput.value = '';
 }
 
-async function eliminaShow(id) {
+export async function eliminaShow(id) {
     if (!confirm("Sei sicuro di voler eliminare questo record?")) return;
     
     try {

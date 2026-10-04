@@ -1,3 +1,10 @@
+import { copiaArchivio, salvaArchivio } from './archivio.js';
+import { t } from './i18n.js';
+import { logger } from './logger.js';
+import { slugProfiloMcg } from './stato-online.js';
+import { stato } from './stato.js';
+import { generaIdUnico, parseDataItaliana, dataDelloShow, urlProfiloPredefinito } from './utils.js';
+
 /* ==========================================================================
    SINCRONIZZAZIONE TRANSAZIONI MONDO CAM GIRLS
    ==========================================================================
@@ -13,7 +20,7 @@
 
 // "1.234,56 €" -> "1234.56". Prima veniva sostituita solo la prima virgola e i
 // punti delle migliaia restavano, quindi 1.234,56 diventava 1,234.
-function convertiImportoItaliano(testo) {
+export function convertiImportoItaliano(testo) {
     const pulito = String(testo).replace(/[€\s ]/g, '');
     return pulito.includes(',')
         ? pulito.replace(/\./g, '').replace(',', '.')
@@ -21,12 +28,12 @@ function convertiImportoItaliano(testo) {
 }
 
 // Testo di una cella senza spazi multipli o a capo
-const testoCella = (cella) => (cella.textContent || '').replace(/\s+/g, ' ').trim();
+export const testoCella = (cella) => (cella.textContent || '').replace(/\s+/g, ' ').trim();
 
 // Una riga è una transazione MCG se il tipo (cella 3) ha il link al dettaglio
-const eRigaTransazione = (riga) => Boolean(riga.querySelector('a[href*="dettaglitrans("]'));
+export const eRigaTransazione = (riga) => Boolean(riga.querySelector('a[href*="dettaglitrans("]'));
 
-function tipoTransazione(testo) {
+export function tipoTransazione(testo) {
     const t = testo.toLowerCase();
     if (t.startsWith('pagamento')) return 'pagamento';
     if (t.startsWith('rimborso')) return 'rimborso';
@@ -36,7 +43,7 @@ function tipoTransazione(testo) {
 
 // Salva in locale (userData/mcg_ultima_sincronizzazione.json) le tabelle lette e
 // l'esito di ogni riga: serve a capire la struttura reale della pagina di MCG
-async function salvaCopiaSincronizzazione(doc, esiti) {
+export async function salvaCopiaSincronizzazione(doc, esiti) {
     if (!window.electronAPI || !window.electronAPI.salvaDumpMcg) return;
     const tabelle = [...doc.querySelectorAll('table')].map((tabella, indice) => ({
         indice,
@@ -56,7 +63,7 @@ async function salvaCopiaSincronizzazione(doc, esiti) {
 
 // Segna uno show come rimborsato: non conta più nella spesa né nel €/min, ma
 // il costo originale resta registrato
-function segnaRimborsato(show, rimborso) {
+export function segnaRimborsato(show, rimborso) {
     show.costoOriginale = parseFloat(show.costo) || rimborso.importo;
     show.costo = 0;
     show.rimborsato = true;
@@ -69,7 +76,7 @@ function segnaRimborsato(show, rimborso) {
 // già salvati sono stati modificati (rimborsi) e l'esito di ogni riga.
 // Non salva nulla: il salvataggio lo fa il chiamante. Le modifiche ai rimborsi
 // vengono fatte direttamente sugli oggetti di showsEsistenti.
-function analizzaTransazioniMcg(doc, showsEsistenti) {
+export function analizzaTransazioniMcg(doc, showsEsistenti) {
     const nuoviShow = [];
     let showModificati = 0;
     let linkAggiornati = 0;
@@ -169,7 +176,7 @@ function analizzaTransazioniMcg(doc, showsEsistenti) {
     pagamenti.filter(r => !r.esito).forEach(r => {
         // Dati noti della modella dagli show precedenti (piattaforma, nickname):
         // prima la piattaforma era sempre "Teams"
-        const modellaMemory = elencoModelleUniche.find(m => m.nome.toLowerCase() === r.nomeNormalizzato);
+        const modellaMemory = stato.elencoModelleUniche.find(m => m.nome.toLowerCase() === r.nomeNormalizzato);
 
         const nuovoShow = {
             id: generaIdUnico(),
@@ -181,8 +188,8 @@ function analizzaTransazioniMcg(doc, showsEsistenti) {
             piattaforma: (modellaMemory && modellaMemory.piattaforma) || 'Teams',
             punteggio: 'TBD',
             costo: r.importo,
-            immagine: mappaImmaginiModelle[r.nomeNormalizzato] || '',
-            urlProfilo: r.urlProfilo || mappaUrlModelle[r.nomeNormalizzato] || urlProfiloPredefinito(r.nome),
+            immagine: stato.mappaImmaginiModelle[r.nomeNormalizzato] || '',
+            urlProfilo: r.urlProfilo || stato.mappaUrlModelle[r.nomeNormalizzato] || urlProfiloPredefinito(r.nome),
             recensione: false,
             note: '',
             isAutoImport: true
@@ -235,7 +242,7 @@ function analizzaTransazioniMcg(doc, showsEsistenti) {
 
 // Unisce le pagine lette in un'unica tabella, una riga per transazione: se due
 // pagine si sovrappongono, la stessa transazione (stesso codice) compare una volta
-function unisciPagineMcg(pagine) {
+export function unisciPagineMcg(pagine) {
     const parser = new DOMParser();
     const visti = new Set();
     const righe = [];
@@ -254,13 +261,13 @@ function unisciPagineMcg(pagine) {
 }
 
 // Importazione dell'intera cronologia (menu Dati)
-function importaCronologiaCompletaMcg() {
+export function importaCronologiaCompletaMcg() {
     return sincronizzaTransazioniMondoCamGirls({ tutteLePagine: true });
 }
 
 // opzioni.tutteLePagine: legge tutte le pagine della cronologia invece della sola
 // prima, e chiede conferma prima di salvare
-async function sincronizzaTransazioniMondoCamGirls(opzioni = {}) {
+export async function sincronizzaTransazioniMondoCamGirls(opzioni = {}) {
     const tutteLePagine = Boolean(opzioni.tutteLePagine);
     try {
         if (!window.electronAPI || !window.electronAPI.fetchTransazioniHtml) {

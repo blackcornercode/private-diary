@@ -1,13 +1,15 @@
 // Test dei calcoli puri (js/calcoli.js), del disegnatore delle righe
 // (js/righe-show.js) e dell'archivio in memoria (js/archivio.js)
-const { test } = require('node:test');
+const { test, before } = require('node:test');
 const assert = require('node:assert/strict');
-const { caricaScript } = require('./carica-script');
+const { caricaModuli } = require('./carica-script');
 
-const { contesto: f, esegui } = caricaScript(['stato.js', 'i18n.js', 'utils.js', 'calcoli.js', 'righe-show.js', 'archivio.js'], {
-    traduzioni: { units: { min: 'm', hour: 'h' }, table: { name: 'Nome', date: 'Data', notes: 'Note', no_photo: 'No Foto' }, form: { gift: 'Regalo' } }
+let f;
+before(async () => {
+    f = await caricaModuli(['stato.js', 'i18n.js', 'utils.js', 'calcoli.js', 'righe-show.js', 'archivio.js']);
+    f.impostaTraduzioni({ units: { min: 'm', hour: 'h' }, table: { name: 'Nome', date: 'Data', notes: 'Note', no_photo: 'No Foto' }, form: { gift: 'Regalo' } });
 });
-// Gli oggetti creati nel contesto vm hanno un prototipo diverso: si confronta il contenuto
+// Copia del contenuto (toglie i Set e i riferimenti condivisi)
 const json = (x) => JSON.parse(JSON.stringify(x));
 const iso = (a, m, g, h = 21) => new Date(a, m - 1, g, h, 0).toISOString();
 
@@ -81,7 +83,7 @@ test('cronologia: filtri, ordine e pagine', () => {
 
 test('righe degli show: una cella per colonna, intestazioni allineate, testo con escape', () => {
     const conta = (html, tag) => (html.match(new RegExp(`<${tag}[ >]`, 'g')) || []).length;
-    for (const colonne of esegui("[COLONNE_CRONOLOGIA, COLONNE_DETTAGLIO_MESE, COLONNE_SCHEDA]")) {
+    for (const colonne of [f.COLONNE_CRONOLOGIA, f.COLONNE_DETTAGLIO_MESE, f.COLONNE_SCHEDA]) {
         assert.equal(conta(f.rigaShow(SHOWS[0], colonne), 'td'), colonne.length);
         assert.equal(conta(f.intestazioneShow(colonne), 'th'), colonne.length);
     }
@@ -91,11 +93,11 @@ test('righe degli show: una cella per colonna, intestazioni allineate, testo con
 
 test('archivio: aggiornare uno show mantiene i campi che il form non gestisce', async () => {
     const salvati = [];
-    f.window.electronAPI = { saveData: async (dati) => { salvati.push(dati); return { success: true }; } };
-    esegui('aggiornaViste = function () {}');   // nessuna pagina da ridisegnare nel test
-    esegui(`tuttiGliShow = [{ id: 7, nome: 'R', costo: 0, costoOriginale: 35, rimborsato: true, dataRimborso: '2025-07-02T17:44:00.000Z', note: 'Rimborsato' }]`);
+    globalThis.window.electronAPI = { saveData: async (dati) => { salvati.push(dati); return { success: true }; } };
+    // Nessuna vista registrata con alCambioArchivio: niente da ridisegnare nel test
+    f.stato.tuttiGliShow = [{ id: 7, nome: 'R', costo: 0, costoOriginale: 35, rimborsato: true, dataRimborso: '2025-07-02T17:44:00.000Z', note: 'Rimborsato' }];
     await f.aggiornaShow(7, { id: 7, nome: 'R', costo: 0, note: 'Rimborsato · nota nuova', punteggio: 4 });
-    const show = json(esegui('tuttiGliShow'))[0];
+    const show = f.stato.tuttiGliShow[0];
     assert.equal(show.rimborsato, true);
     assert.equal(show.costoOriginale, 35);
     assert.equal(show.punteggio, 4);
@@ -104,10 +106,10 @@ test('archivio: aggiornare uno show mantiene i campi che il form non gestisce', 
 });
 
 test('archivio: se il salvataggio su disco fallisce la memoria resta invariata', async () => {
-    f.alert = () => {};
-    f.window.electronAPI = { saveData: async () => ({ success: false, error: 'disco pieno' }) };
-    esegui(`tuttiGliShow = [{ id: 1, nome: 'A' }]`);
+    globalThis.alert = () => {};
+    globalThis.window.electronAPI = { saveData: async () => ({ success: false, error: 'disco pieno' }) };
+    f.stato.tuttiGliShow = [{ id: 1, nome: 'A' }];
     await assert.rejects(f.aggiungiShow({ id: 2, nome: 'B' }), /disco pieno/);
     await assert.rejects(f.rimuoviShow(1), /disco pieno/);
-    assert.deepEqual(json(esegui('tuttiGliShow')).map(s => s.id), [1]);
+    assert.deepEqual(f.stato.tuttiGliShow.map(s => s.id), [1]);
 });

@@ -1,7 +1,9 @@
+import { stato } from './stato.js';
+
 /* ==========================================================================
    LIGHTBOX E GALLERIA FOTO
    ========================================================================== */
-function apriModalImmagine(urlFoto, listaFoto = null, indice = 0) {
+export function apriModalImmagine(urlFoto, listaFoto = null, indice = 0) {
     if (!urlFoto) return;
     
     const modalImg = document.getElementById('modalImmagineIngrandita');
@@ -9,40 +11,40 @@ function apriModalImmagine(urlFoto, listaFoto = null, indice = 0) {
     const btnNavigazione = document.querySelectorAll('.nav-btn-lightbox');
     
     if (listaFoto && Array.isArray(listaFoto) && listaFoto.length > 1) {
-        galleriaCorrente = listaFoto;
-        indiceFotoCorrente = indice;
+        stato.galleriaCorrente = listaFoto;
+        stato.indiceFotoCorrente = indice;
         btnNavigazione.forEach(btn => btn.style.display = 'block');
     } else {
-        galleriaCorrente = [urlFoto];
-        indiceFotoCorrente = 0;
+        stato.galleriaCorrente = [urlFoto];
+        stato.indiceFotoCorrente = 0;
         btnNavigazione.forEach(btn => btn.style.display = 'none');
     }
 
     if (modalImg && imgTarget) {
-        imgTarget.src = galleriaCorrente[indiceFotoCorrente];
+        imgTarget.src = stato.galleriaCorrente[stato.indiceFotoCorrente];
         modalImg.style.display = 'block';
         modalImg.style.zIndex = '2000';
     }
 }
 
-function navigaGalleria(direzione) {
-    if (galleriaCorrente.length <= 1) return;
+export function navigaGalleria(direzione) {
+    if (stato.galleriaCorrente.length <= 1) return;
 
-    indiceFotoCorrente += direzione;
+    stato.indiceFotoCorrente += direzione;
 
-    if (indiceFotoCorrente < 0) {
-        indiceFotoCorrente = galleriaCorrente.length - 1;
-    } else if (indiceFotoCorrente >= galleriaCorrente.length) {
-        indiceFotoCorrente = 0;
+    if (stato.indiceFotoCorrente < 0) {
+        stato.indiceFotoCorrente = stato.galleriaCorrente.length - 1;
+    } else if (stato.indiceFotoCorrente >= stato.galleriaCorrente.length) {
+        stato.indiceFotoCorrente = 0;
     }
 
     const imgTarget = document.getElementById('imgIngrandita');
     if (imgTarget) {
-        imgTarget.src = galleriaCorrente[indiceFotoCorrente];
+        imgTarget.src = stato.galleriaCorrente[stato.indiceFotoCorrente];
     }
 }
 
-function chiudiModalImmagine() {
+export function chiudiModalImmagine() {
     const modalImg = document.getElementById('modalImmagineIngrandita');
     if (modalImg) {
         modalImg.style.display = 'none';

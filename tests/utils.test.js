@@ -1,13 +1,14 @@
 // Test delle funzioni pure dell'interfaccia: date, normalizzazione dei record,
 // costi e €/min, formattazione di voti e durate, importi e tipi delle transazioni MCG.
-const { test } = require('node:test');
+const { test, before } = require('node:test');
 const assert = require('node:assert/strict');
-const { caricaScript } = require('./carica-script');
+const { caricaModuli } = require('./carica-script');
 
-const { contesto, esegui } = caricaScript(['stato.js', 'i18n.js', 'utils.js', 'sincronizzazione.js'], {
-    traduzioni: { units: { min: 'm', hour: 'h' }, table: { cost_per_minute_compare: 'Media: {media}' } }
+let f;
+before(async () => {
+    f = await caricaModuli(['stato.js', 'i18n.js', 'utils.js', 'sincronizzazione.js']);
+    f.impostaTraduzioni({ units: { min: 'm', hour: 'h' }, table: { cost_per_minute_compare: 'Media: {media}' } });
 });
-const f = contesto;
 
 test('parseDataItaliana legge gg/mm/aa e gg/mm/aaaa con e senza ora', () => {
     const d = f.parseDataItaliana('11/09/26 19:02');
@@ -41,8 +42,7 @@ test('normalizzaShow converte i campi delle versioni precedenti', () => {
 
 test('normalizzaShow lascia invariati i record già nel formato attuale', () => {
     const attuale = { id: 2, nome: 'B', dataOraISO: '2026-01-10T20:00:00.000Z', dataFormattata: '10/01/2026 21:00', urlProfilo: 'https://b.mondocamgirls.com', punteggio: 'TBD', costo: 40, durata: 30 };
-    // Confronto del contenuto: gli oggetti creati nel contesto vm hanno un prototipo diverso
-    assert.deepEqual(JSON.parse(JSON.stringify(f.normalizzaShow(attuale))), attuale);
+    assert.deepEqual(f.normalizzaShow(attuale), attuale);
     // durata assente resta assente (non viene aggiunto 0 a ogni record)
     assert.ok(!('durata' in f.normalizzaShow({ costo: 10, dataOraISO: attuale.dataOraISO })));
     // i campi vecchi non sovrascrivono quelli nuovi
@@ -63,7 +63,7 @@ test('costo al minuto: singolo show e media ponderata', () => {
 });
 
 test('€/min colorato rispetto alla media (fascia neutra ±10%)', () => {
-    esegui('costoMinutoRiferimento = 2');
+    f.stato.costoMinutoRiferimento = 2;
     assert.match(f.formattaCostoAlMinuto(1.5), /costo-min-conveniente/);
     assert.match(f.formattaCostoAlMinuto(2.1), /class=""/);
     assert.match(f.formattaCostoAlMinuto(3), /costo-min-caro/);
@@ -88,9 +88,8 @@ test('URL del profilo predefinito senza accenti e maiuscole', () => {
     assert.equal(f.urlProfiloPredefinito('Jenny_'), 'https://jenny.mondocamgirls.com');
 });
 
-test('escape HTML e argomenti JavaScript negli attributi', () => {
+test('escape HTML negli attributi e nel testo', () => {
     assert.equal(f.escapeHtml(`<a href="x">D'Angelo</a>`), '&lt;a href=&quot;x&quot;&gt;D&#039;Angelo&lt;/a&gt;');
-    assert.equal(f.argJs("D'Angelo"), '&quot;D&#039;Angelo&quot;');
 });
 
 test('importi e tipi delle transazioni MCG', () => {

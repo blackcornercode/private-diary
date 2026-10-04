@@ -1,11 +1,11 @@
 /* ==========================================================================
    TRADUZIONI (i18n)
    ========================================================================== */
-let traduzioniCorrenti = {};
-let linguaCorrente = localStorage.getItem('appLang') || 'it';
+export let traduzioniCorrenti = {};
+export let linguaCorrente = localStorage.getItem('appLang') || 'it';
 
 // Carica il file JSON della lingua
-async function caricaLingua(lang) {
+export async function caricaLingua(lang) {
     try {
         const response = await fetch(`./locales/${lang}.json`);
         traduzioniCorrenti = await response.json();
@@ -23,12 +23,12 @@ async function caricaLingua(lang) {
 }
 
 // Funzione helper per recuperare chiavi annidate (es. t('form.title'))
-function t(key) {
+export function t(key) {
     return key.split('.').reduce((obj, i) => (obj ? obj[i] : null), traduzioniCorrenti) || key;
 }
 
 // Aggiorna tutti gli elementi con data-i18n e data-i18n-ph
-function aggiornaTestiDOM() {
+export function aggiornaTestiDOM() {
     // Testi generici
     document.querySelectorAll('[data-i18n]').forEach(elem => {
         const key = elem.getAttribute('data-i18n');
@@ -42,19 +42,7 @@ function aggiornaTestiDOM() {
     });
 }
 
-// Handler richiamato dall'onchange del selettore nell'HTML
-async function cambiaLingua(nuovaLingua) {
-    if (!nuovaLingua) return;
-    try {
-        logger.info(`Cambio lingua richiesto: ${nuovaLingua}`);
-        // caricaLingua salva già la preferenza in localStorage ('appLang')
-        await caricaLingua(nuovaLingua);
-        // Ridisegna le viste generate da JS (dalla memoria, senza rileggere il disco)
-        aggiornaViste();
-        aggiornaTestoStatoMCG();
-        aggiornaPulsanteForm();
-        logger.success(`Lingua aggiornata a: ${nuovaLingua}`);
-    } catch (err) {
-        logger.error(`Errore durante il cambio lingua a "${nuovaLingua}"`, err);
-    }
+// Imposta direttamente le traduzioni (usata dai test, senza leggere i file JSON)
+export function impostaTraduzioni(traduzioni) {
+    traduzioniCorrenti = traduzioni;
 }

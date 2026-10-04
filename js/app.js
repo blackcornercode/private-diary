@@ -1,10 +1,190 @@
 /* ==========================================================================
-   INIZIALIZZAZIONE
-   ========================================================================== */
-document.addEventListener('DOMContentLoaded', async () => {
+   AVVIO E COLLEGAMENTI DELL'INTERFACCIA
+   ==========================================================================
+   Unico script caricato da index.html (type="module"): importa i moduli,
+   registra le azioni dell'interfaccia (data-azione, vedi azioni.js), collega
+   l'archivio alle viste e avvia l'applicazione. */
+import { aggiornaInterfaccia, alCambioArchivio, aggiornaViste } from './archivio.js';
+import { inizializzaAzioni, registraAzioni } from './azioni.js';
+import { initChangelogCheck, inizializzaListenerChangelogMenu, apriModalChangelog, chiudiModalChangelog } from './changelog.js';
+import { caricaMedieEStoricizzazione, filtraClassificaModelle } from './classifica.js';
+import { inizializzaFiltriCronologia, inizializzaFiltroAnni, caricaCronologia, cambiaPagina, resetFiltriCronologia, filtraCronologiaPerNome } from './cronologia.js';
+import { esportaDati, importaDati, apriCartellaDati } from './dati.js';
+import { impostaDataOraAttuale, autocompilaDatiModella, aggiornaPulsanteForm, aggiornaDatalistModelle, toggleForm, annullaModifica, gestisciStatoRegalo, modificaShow, eliminaShow } from './form-show.js';
+import { apriModalImmagine, chiudiModalImmagine, navigaGalleria } from './galleria.js';
+import { caricaLingua, linguaCorrente } from './i18n.js';
+import { logger } from './logger.js';
+import { inizializzaMenuHeader } from './menu-header.js';
+import { apriModalModella, chiudiModalModella, aggiornaBadgeSchedaModella } from './modale-modella.js';
+import { mostraVersioneApp, inizializzaTema, inizializzaFont, inizializzaGestioneBudget, apriTab, cambiaTema, aumentaFont, riduciFont } from './preferenze.js';
+import { sincronizzaTransazioniMondoCamGirls, importaCronologiaCompletaMcg } from './sincronizzazione.js';
+import { stato } from './stato.js';
+import { verificaStatoMCG, aggiornaTestoStatoMCG } from './stato-mcg.js';
+import { inizializzaStatoOnline } from './stato-online.js';
+import { popolaSelettoreAnni, caricaStatisticheMensili, aggiornaStatisticheMensili, selezionaMeseDettaglio, aggiornaIndicatoreBudgetHomepage } from './statistiche.js';
+import { apriLinkEsterno, espandiNota } from './utils.js';
+
+/* --------------------------------------------------------------------------
+   AZIONI DELL'INTERFACCIA: nome usato negli attributi data-* -> funzione
+   -------------------------------------------------------------------------- */
+registraAzioni({
+    // Intestazione e menu
+    'sincronizza-mcg': () => sincronizzaTransazioniMondoCamGirls(),
+    'cronologia-completa-mcg': () => importaCronologiaCompletaMcg(),
+    'esporta-backup': () => esportaDati(),
+    'importa-backup': () => importaDati(),
+    'apri-cartella-dati': () => apriCartellaDati(),
+    'riduci-testo': () => riduciFont(),
+    'aumenta-testo': () => aumentaFont(),
+    'cambia-lingua': (el) => cambiaLingua(el.value),
+    'cambia-tema': (el) => cambiaTema(el.value),
+    'apri-tab': (el) => apriTab(el.dataset.tab, el),
+
+    // Form e cronologia
+    'toggle-form': () => toggleForm(),
+    'annulla-modifica': () => annullaModifica(),
+    'gestisci-regalo': () => gestisciStatoRegalo(),
+    'modifica-show': (el) => modificaShow(el.dataset.id),
+    'elimina-show': (el) => eliminaShow(el.dataset.id),
+    'filtra-cronologia': () => filtraCronologiaPerNome(),
+    'reset-filtri-cronologia': () => resetFiltriCronologia(),
+    'cambia-pagina': (el) => cambiaPagina(Number(el.dataset.direzione)),
+    'espandi-nota': (el) => espandiNota(el),
+
+    // Classifica, statistiche, scheda modella
+    'filtra-classifica': () => filtraClassificaModelle(),
+    'cambia-anno-statistiche': () => aggiornaStatisticheMensili(),
+    'seleziona-mese': (el) => selezionaMeseDettaglio(el.dataset.mese === '' ? null : Number(el.dataset.mese)),
+    'apri-scheda-modella': (el) => apriModalModella(el.dataset.nome),
+    'chiudi-scheda-modella': () => chiudiModalModella(),
+
+    // Foto, link e lightbox
+    'ingrandisci-foto': (el) => apriModalImmagine(el.dataset.url),
+    'apri-link': (el, e) => { e.preventDefault(); apriLinkEsterno(el.dataset.url); },
+    'chiudi-lightbox': () => chiudiModalImmagine(),
+    'naviga-galleria': (el) => navigaGalleria(Number(el.dataset.direzione)),
+    // Clic sull'immagine ingrandita: non deve chiudere il lightbox
+    'nessuna': () => {}
+});
+
+/* --------------------------------------------------------------------------
+   AGGIORNAMENTO DELLE VISTE
+   -------------------------------------------------------------------------- */
+// Chiamata dall'archivio dopo ogni modifica (e dal cambio lingua)
+function ridisegnaViste() {
+    aggiornaDatalistModelle();
+    inizializzaFiltroAnni(stato.tuttiGliShow);
+    popolaSelettoreAnni(stato.tuttiGliShow);
+    caricaCronologia(stato.tuttiGliShow);
+    caricaStatisticheMensili(stato.tuttiGliShow);
+    caricaMedieEStoricizzazione(stato.tuttiGliShow);
+    // Mantiene l'eventuale ricerca e il filtro "Solo online" della classifica
+    filtraClassificaModelle();
+    aggiornaIndicatoreBudgetHomepage(stato.tuttiGliShow);
+}
+alCambioArchivio(ridisegnaViste);
+
+// Nuovo elenco delle modelle online (stato-online.js): classifica e scheda aperta
+document.addEventListener('modelle-online-aggiornate', () => {
+    filtraClassificaModelle();
+    aggiornaBadgeSchedaModella();
+});
+
+async function cambiaLingua(nuovaLingua) {
+    if (!nuovaLingua) return;
+    try {
+        logger.info(`Cambio lingua richiesto: ${nuovaLingua}`);
+        // caricaLingua salva già la preferenza in localStorage ('appLang')
+        await caricaLingua(nuovaLingua);
+        // Ridisegna le viste generate da JS (dalla memoria, senza rileggere il disco)
+        aggiornaViste();
+        aggiornaTestoStatoMCG();
+        aggiornaPulsanteForm();
+        logger.success(`Lingua aggiornata a: ${nuovaLingua}`);
+    } catch (err) {
+        logger.error(`Errore durante il cambio lingua a "${nuovaLingua}"`, err);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   CONTROLLI CON COMPORTAMENTO PROPRIO
+   -------------------------------------------------------------------------- */
+function inizializzaSelectPiattaforma() {
+    const customTrigger = document.querySelector('.custom-select-trigger');
+    const customDropdown = document.getElementById('customPiattaformaDropdown');
+    const selectPiattaforma = document.getElementById('piattaforma');
+    if (!customTrigger || !customDropdown) return;
+
+    customTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!document.getElementById('isRegalo')?.checked) customDropdown.classList.toggle('open');
+    });
+
+    document.querySelectorAll('.custom-option').forEach(option => {
+        option.addEventListener('click', () => {
+            if (selectPiattaforma) selectPiattaforma.value = option.getAttribute('data-value');
+            const selectedSpan = document.getElementById('customSelectSelected');
+            if (selectedSpan) selectedSpan.innerHTML = option.innerHTML;
+            customDropdown.classList.remove('open');
+        });
+    });
+
+    window.addEventListener('click', () => customDropdown.classList.remove('open'));
+}
+
+function inizializzaControlliCronologia() {
+    document.getElementById('nome')?.addEventListener('input', autocompilaDatiModella);
+
+    document.getElementById('limiteRisultati')?.addEventListener('change', (e) => {
+        localStorage.setItem('limiteRisultati', e.target.value);
+        stato.paginaCorrente = 1;
+        caricaCronologia(stato.tuttiGliShow);
+    });
+
+    document.getElementById('ordineData')?.addEventListener('change', () => {
+        stato.paginaCorrente = 1;
+        caricaCronologia(stato.tuttiGliShow);
+    });
+}
+
+function inizializzaModali() {
+    // Clic sullo sfondo della scheda modella: la chiude
+    window.addEventListener('click', (event) => {
+        if (event.target === document.getElementById('modalModella')) chiudiModalModella();
+    });
+
+    document.getElementById('closeChangelogBtn')?.addEventListener('click', chiudiModalChangelog);
+    document.getElementById('confirmChangelogBtn')?.addEventListener('click', chiudiModalChangelog);
+    document.getElementById('openChangelogBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        apriModalChangelog();
+    });
+    inizializzaListenerChangelogMenu();
+}
+
+function inizializzaIndicatoreMCG() {
+    // Verifica subito, poi ogni 60 secondi o al clic (dopo caricaLingua: testi già tradotti)
+    verificaStatoMCG();
+    setInterval(verificaStatoMCG, 60000);
+    const mcgContainer = document.getElementById('mcgStatusContainer');
+    if (!mcgContainer) return;
+    mcgContainer.addEventListener('click', verificaStatoMCG);
+    mcgContainer.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            verificaStatoMCG();
+        }
+    });
+}
+
+/* --------------------------------------------------------------------------
+   AVVIO (i moduli vengono eseguiti a documento già analizzato)
+   -------------------------------------------------------------------------- */
+async function avvia() {
     logger.info("Inizializzazione applicazione...");
+    inizializzaAzioni();
     await caricaLingua(linguaCorrente);
-    
+
     mostraVersioneApp();
     impostaDataOraAttuale();
     inizializzaFiltriCronologia();
@@ -14,103 +194,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     inizializzaGestioneBudget();
     inizializzaMenuHeader();
     aggiornaPulsanteForm();
-
-    const customTrigger = document.querySelector('.custom-select-trigger');
-    const customDropdown = document.getElementById('customPiattaformaDropdown');
-    const selectPiattaforma = document.getElementById('piattaforma');
-
-    if (customTrigger && customDropdown) {
-        customTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isRegalo = document.getElementById('isRegalo')?.checked;
-            if (!isRegalo) {
-                customDropdown.classList.toggle('open');
-            }
-        });
-
-        document.querySelectorAll('.custom-option').forEach(option => {
-            option.addEventListener('click', () => {
-                const val = option.getAttribute('data-value');
-                if (selectPiattaforma) selectPiattaforma.value = val;
-                
-                const selectedSpan = document.getElementById('customSelectSelected');
-                if (selectedSpan) selectedSpan.innerHTML = option.innerHTML;
-
-                customDropdown.classList.remove('open');
-            });
-        });
-
-        window.addEventListener('click', () => {
-            customDropdown.classList.remove('open');
-        });
-    }
-
-    const closeBtn = document.getElementById('closeChangelogBtn');
-    const confirmBtn = document.getElementById('confirmChangelogBtn');
-    
-    if (closeBtn) closeBtn.addEventListener('click', chiudiModalChangelog);
-    if (confirmBtn) confirmBtn.addEventListener('click', chiudiModalChangelog);
-
-    const openChangelogBtn = document.getElementById('openChangelogBtn');
-    if (openChangelogBtn) {
-        openChangelogBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            apriModalChangelog();
-        });
-    }
-
-    inizializzaListenerChangelogMenu();
-
-    const inputNome = document.getElementById('nome');
-    if (inputNome) {
-        inputNome.addEventListener('input', autocompilaDatiModella);
-    }
-
-    const limiteSelect = document.getElementById('limiteRisultati');
-    if (limiteSelect) {
-        limiteSelect.addEventListener('change', (e) => {
-            localStorage.setItem('limiteRisultati', e.target.value);
-            paginaCorrente = 1;
-            caricaCronologia(tuttiGliShow);
-        });
-    }
-
-    const ordineSelect = document.getElementById('ordineData');
-    if (ordineSelect) {
-        ordineSelect.addEventListener('change', () => {
-            paginaCorrente = 1;
-            caricaCronologia(tuttiGliShow);
-        });
-    }
-
-    window.addEventListener('click', (event) => {
-        const modal = document.getElementById('modalModella');
-        if (event.target === modal) {
-            chiudiModalModella();
-        }
-    });
+    inizializzaSelectPiattaforma();
+    inizializzaControlliCronologia();
+    inizializzaModali();
 
     // Mostra automaticamente le novità al primo avvio dopo un aggiornamento
-    // (prima veniva cercata una funzione initChangelogCheck mai definita)
     initChangelogCheck();
-    
-    // Indicatore stato MCG: verifica subito, poi ogni 60 secondi o al clic.
-    // Parte dopo caricaLingua, così i testi sono già tradotti.
-    verificaStatoMCG();
-    setInterval(verificaStatoMCG, 60000);
-
+    inizializzaIndicatoreMCG();
     // Modelle online su MCG: subito, poi ogni 3 minuti
     inizializzaStatoOnline();
-    const mcgContainer = document.getElementById('mcgStatusContainer');
-    if (mcgContainer) {
-        mcgContainer.addEventListener('click', verificaStatoMCG);
-        mcgContainer.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                verificaStatoMCG();
-            }
-        });
-    }
 
     logger.success("Applicazione inizializzata con successo.");
-});
+}
+
+avvia();

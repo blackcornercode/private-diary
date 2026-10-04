@@ -1,11 +1,15 @@
+import { t } from './i18n.js';
+import { logger } from './logger.js';
+import { stato } from './stato.js';
+
 /* ==========================================================================
    INDICATORE STATO MONDO CAM GIRLS
    ========================================================================== */
 // Ultimo esito: 'checking' | 'online' | 'offline' | 'error'
-let statoMCG = { stato: 'checking', motivo: '' };
-let pingMCGInCorso = false;
+export let statoMCG = { stato: 'checking', motivo: '' };
+export let pingMCGInCorso = false;
 
-function aggiornaTestoStatoMCG() {
+export function aggiornaTestoStatoMCG() {
     const dot = document.getElementById('mcgStatusDot');
     const text = document.getElementById('mcgStatusText');
     const container = document.getElementById('mcgStatusContainer');
@@ -24,7 +28,7 @@ function aggiornaTestoStatoMCG() {
     }
 }
 
-async function verificaStatoMCG() {
+export async function verificaStatoMCG() {
     // Evita ping sovrapposti (clic ripetuti o timer mentre una verifica è in corso)
     if (pingMCGInCorso) return;
     pingMCGInCorso = true;

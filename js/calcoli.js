@@ -1,3 +1,6 @@
+import { stato } from './stato.js';
+import { dataDelloShow, annoDelloShow, timestampShow, minutiDelloShow, costoMedioAlMinuto } from './utils.js';
+
 /* ==========================================================================
    CALCOLI SUGLI SHOW (funzioni pure)
    ==========================================================================
@@ -5,10 +8,10 @@
    né modificano la pagina, lo stato globale o localStorage. Le viste usano
    questi risultati per disegnare; i test in tests/calcoli.test.js li verificano. */
 
-const chiaveModella = (nome) => String(nome || '').trim().toLowerCase();
+export const chiaveModella = (nome) => String(nome || '').trim().toLowerCase();
 
 // Ultima foto e ultimo profilo noti per ogni modella (in ordine di data, vince il più recente)
-function calcolaMappeModelle(shows) {
+export function calcolaMappeModelle(shows) {
     const immagini = {};
     const url = {};
     [...shows].sort((a, b) => timestampShow(a) - timestampShow(b)).forEach(show => {
@@ -22,7 +25,7 @@ function calcolaMappeModelle(shows) {
 
 // Una voce per modella con gli ultimi dati noti (autocompletamento del form,
 // piattaforma e nickname dei nuovi show importati da MCG)
-function calcolaModelleUniche(shows) {
+export function calcolaModelleUniche(shows) {
     const mappa = new Map();
     [...shows].sort((a, b) => timestampShow(a) - timestampShow(b)).forEach(show => {
         if (!show.nome || show.nome.trim() === '') return;
@@ -40,7 +43,7 @@ function calcolaModelleUniche(shows) {
 }
 
 // Show di una modella, dal più recente
-function showsDiModella(shows, nome) {
+export function showsDiModella(shows, nome) {
     const chiave = chiaveModella(nome);
     return shows.filter(s => s.nome && chiaveModella(s.nome) === chiave)
         .sort((a, b) => timestampShow(b) - timestampShow(a));
@@ -48,7 +51,7 @@ function showsDiModella(shows, nome) {
 
 // Totali di un gruppo di show: numero, spesa, minuti, voti e €/min medio.
 // La media voti esclude regali e show da valutare (TBD).
-function riepilogoShow(shows) {
+export function riepilogoShow(shows) {
     let spesaTotale = 0, totaleDurata = 0, sommaVoti = 0, conteggioVoti = 0;
     shows.forEach(show => {
         spesaTotale += parseFloat(show.costo) || 0;
@@ -75,7 +78,7 @@ function riepilogoShow(shows) {
 // a pari merito viene prima la modella con lo show più recente (ordine dei gruppi,
 // mantenuto dall'ordinamento stabile).
 // mappe = { immagini, url } da calcolaMappeModelle, per foto e profilo di ripiego.
-function calcolaClassifica(shows, mappe = { immagini: {}, url: {} }) {
+export function calcolaClassifica(shows, mappe = { immagini: {}, url: {} }) {
     const gruppi = new Map();
     [...shows].sort((a, b) => timestampShow(b) - timestampShow(a)).forEach(show => {
         if (!show.nome) return;
@@ -101,13 +104,13 @@ function calcolaClassifica(shows, mappe = { immagini: {}, url: {} }) {
 }
 
 // Anni presenti negli show, dal più recente
-function anniDisponibili(shows) {
+export function anniDisponibili(shows) {
     return Array.from(new Set(shows.map(annoDelloShow).filter(Boolean))).sort((a, b) => b - a);
 }
 
 // Statistiche di un anno: spesa e numero di show per mese, e gli show di ogni
 // mese ordinati dal più recente
-function calcolaStatisticheAnno(shows, anno) {
+export function calcolaStatisticheAnno(shows, anno) {
     const spesa = Array(12).fill(0);
     const conteggio = Array(12).fill(0);
     const showPerMese = Array.from({ length: 12 }, () => []);
@@ -124,7 +127,7 @@ function calcolaStatisticheAnno(shows, anno) {
 }
 
 // Spesa del mese di calendario di "oggi"
-function spesaMeseCorrente(shows, oggi = new Date()) {
+export function spesaMeseCorrente(shows, oggi = new Date()) {
     return shows.reduce((totale, show) => {
         const d = dataDelloShow(show);
         const delMese = d && d.getFullYear() === oggi.getFullYear() && d.getMonth() === oggi.getMonth();
@@ -134,7 +137,7 @@ function spesaMeseCorrente(shows, oggi = new Date()) {
 
 // Stato del budget mensile: percentuale usata (0-100), differenza (positiva se
 // avanza, negativa se sforato) e classe CSS del colore
-function statoBudget(spesa, budget) {
+export function statoBudget(spesa, budget) {
     if (!(budget > 0)) return { impostato: false, percentuale: 0, differenza: 0, stato: 'stato-neutro' };
     const differenza = budget - spesa;
     return {
@@ -147,7 +150,7 @@ function statoBudget(spesa, budget) {
 
 // Filtri e ordinamento della cronologia: nome (contiene, senza maiuscole),
 // anni selezionati (nessuno = tutti) e ordine per data ('asc' o 'desc')
-function filtraOrdinaShows(shows, { nome = '', anni = [], ordine = 'desc' } = {}) {
+export function filtraOrdinaShows(shows, { nome = '', anni = [], ordine = 'desc' } = {}) {
     const filtroNome = nome.trim().toLowerCase();
     const anniScelti = new Set(anni);
     const risultato = shows.filter(s =>
@@ -162,7 +165,7 @@ function filtraOrdinaShows(shows, { nome = '', anni = [], ordine = 'desc' } = {}
 
 // Una pagina di un elenco. limite 'all' = tutto in una pagina; la pagina
 // richiesta viene riportata nell'intervallo valido.
-function paginaDi(elenco, limite, pagina) {
+export function paginaDi(elenco, limite, pagina) {
     if (limite === 'all') return { elementi: elenco, pagina: 1, totalePagine: 1 };
     const perPagina = parseInt(limite, 10) || elenco.length || 1;
     const totalePagine = Math.ceil(elenco.length / perPagina) || 1;

@@ -1,7 +1,10 @@
 /* ==========================================================================
    MENU A TENDINA DELL'HEADER (Dati / Impostazioni)
-   ========================================================================== */
-function chiudiMenuHeader(eccetto = null) {
+   ==========================================================================
+   Un solo ascoltatore sul documento: i clic non vengono fermati
+   (stopPropagation), così le azioni dentro i menu (data-azione) arrivano
+   all'ascoltatore comune di azioni.js. */
+export function chiudiMenuHeader(eccetto = null) {
     document.querySelectorAll('.menu-header.open').forEach(menu => {
         if (menu === eccetto) return;
         menu.classList.remove('open');
@@ -9,27 +12,21 @@ function chiudiMenuHeader(eccetto = null) {
     });
 }
 
-function inizializzaMenuHeader() {
-    document.querySelectorAll('.menu-header').forEach(menu => {
-        const toggle = menu.querySelector('.menu-header-toggle');
-        if (!toggle) return;
-
-        toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
+export function inizializzaMenuHeader() {
+    document.addEventListener('click', (e) => {
+        const toggle = e.target.closest('.menu-header-toggle');
+        if (toggle) {
+            const menu = toggle.closest('.menu-header');
             chiudiMenuHeader(menu);
             const aperto = menu.classList.toggle('open');
             toggle.setAttribute('aria-expanded', String(aperto));
-        });
-
-        // I clic dentro il pannello (select, A+/A-) non devono chiuderlo...
-        menu.querySelector('.menu-header-pannello')?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // ...tranne le azioni del menu Dati, che aprono una finestra di dialogo
-            if (e.target.closest('[role="menuitem"]')) chiudiMenuHeader();
-        });
+            return;
+        }
+        // I clic dentro il pannello (select, A+/A-) non lo chiudono, tranne le
+        // voci del menu Dati, che aprono una finestra di dialogo
+        if (e.target.closest('.menu-header-pannello') && !e.target.closest('[role="menuitem"]')) return;
+        chiudiMenuHeader();
     });
-
-    document.addEventListener('click', () => chiudiMenuHeader());
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') chiudiMenuHeader();
     });

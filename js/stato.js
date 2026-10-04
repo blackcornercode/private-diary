@@ -1,25 +1,33 @@
 /* ==========================================================================
-   STATO APPLICAZIONE E VARIABILI GLOBALI
-   ========================================================================== */
-let mappaImmaginiModelle = {};
-let mappaUrlModelle = {};
-let tuttiGliShow = [];
-let anniSelezionati = new Set();
-let elencoModelleUniche = [];
+   STATO CONDIVISO DELL'APPLICAZIONE
+   ==========================================================================
+   Un unico oggetto mutabile: con i moduli ES una variabile importata è in sola
+   lettura, quindi lo stato modificato da più moduli sta in proprietà di "stato"
+   (es. stato.tuttiGliShow = ...). */
+export const stato = {
+    // Archivio in memoria (gestito da archivio.js) e dati derivati
+    tuttiGliShow: [],
+    mappaImmaginiModelle: {},
+    mappaUrlModelle: {},
+    elencoModelleUniche: [],
+    // Costo medio al minuto di tutti gli show: riferimento per colorare i €/min
+    costoMinutoRiferimento: null,
+    // ID più alto già usato: generaIdUnico() parte da qui (utils.js)
+    ultimoIdGenerato: 0,
 
-let paginaCorrente = 1;
-let currentFontSize = 18;
-let classificaCompletaCache = [];
+    // Cronologia
+    anniSelezionati: new Set(),
+    paginaCorrente: 1,
 
-let galleriaCorrente = [];
-let indiceFotoCorrente = 0;
+    // Classifica, statistiche, galleria, preferenze
+    classificaCompletaCache: [],
+    meseSelezionatoDettaglio: null,
+    galleriaCorrente: [],
+    indiceFotoCorrente: 0,
+    currentFontSize: 18
+};
 
-let meseSelezionatoDettaglio = null;
-
-// Costo medio al minuto di tutti gli show: riferimento per colorare i €/min
-let costoMinutoRiferimento = null;
-
-const iconePiattaformaHTML = {
+export const iconePiattaformaHTML = {
     'Teams': '<i class="fa-solid fa-users-rectangle" style="color: #6264A7;"></i> Teams',
     'Telegram': '<i class="fa-brands fa-telegram" style="color: #2AABEE;"></i> Telegram',
     'Skype': '<i class="fa-brands fa-skype" style="color: #00AFF0;"></i> Skype',

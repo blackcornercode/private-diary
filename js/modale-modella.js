@@ -1,7 +1,15 @@
+import { chiaveModella, showsDiModella, riepilogoShow } from './calcoli.js';
+import { apriModalImmagine } from './galleria.js';
+import { t } from './i18n.js';
+import { COLONNE_SCHEDA, intestazioneShow, righeShow } from './righe-show.js';
+import { badgeOnline } from './stato-online.js';
+import { stato } from './stato.js';
+import { escapeHtml, urlProfiloPredefinito, formattaCostoAlMinuto, formattaDurata } from './utils.js';
+
 /* ==========================================================================
    MODALE DETTAGLIO MODELLA E FOTO DINAMICHE
    ========================================================================== */
-async function apriModalModella(nomeModella) {
+export async function apriModalModella(nomeModella) {
     const modal = document.getElementById('modalModella');
     const header = document.getElementById('modalHeader');
     const listaBody = document.getElementById('modalListaShow');
@@ -12,15 +20,15 @@ async function apriModalModella(nomeModella) {
     modal.dataset.nomeModella = nomeModella;
 
     // Stessi totali della classifica (riepilogoShow in calcoli.js)
-    const showsModella = showsDiModella(tuttiGliShow, nomeModella);
+    const showsModella = showsDiModella(stato.tuttiGliShow, nomeModella);
     const riepilogo = riepilogoShow(showsModella);
 
     const chiave = chiaveModella(nomeModella);
-    const fotoProfilo = mappaImmaginiModelle[chiave] || (showsModella.find(s => s.immagine) || {}).immagine || '';
-    const urlProfilo = mappaUrlModelle[chiave] || (showsModella.find(s => s.urlProfilo) || {}).urlProfilo || '';
+    const fotoProfilo = stato.mappaImmaginiModelle[chiave] || (showsModella.find(s => s.immagine) || {}).immagine || '';
+    const urlProfilo = stato.mappaUrlModelle[chiave] || (showsModella.find(s => s.urlProfilo) || {}).urlProfilo || '';
 
     const imgProfiloHtml = fotoProfilo
-        ? `<img src="${escapeHtml(fotoProfilo)}" alt="${escapeHtml(nomeModella)}" class="modella-avatar" onclick="apriModalImmagine(${argJs(fotoProfilo)})">`
+        ? `<img src="${escapeHtml(fotoProfilo)}" alt="${escapeHtml(nomeModella)}" class="modella-avatar" data-azione="ingrandisci-foto" data-url="${escapeHtml(fotoProfilo)}">`
         : `<div class="modella-avatar modella-avatar-vuoto">👤</div>`;
 
     // Riquadro statistico: etichetta sopra, valore sotto, entrambi senza andare a capo
@@ -28,7 +36,7 @@ async function apriModalModella(nomeModella) {
         `<div class="stat-box"${extra}><span class="stat-box-etichetta">${escapeHtml(etichetta)}</span><strong class="stat-box-valore">${valore}</strong></div>`;
 
     const urlHtml = urlProfilo
-        ? `<a href="#" class="modella-url" title="${escapeHtml(urlProfilo)}" onclick="apriLinkEsterno(event, ${argJs(urlProfilo)})">🌐 ${escapeHtml(urlProfilo)}</a>`
+        ? `<a href="#" class="modella-url" title="${escapeHtml(urlProfilo)}" data-azione="apri-link" data-url="${escapeHtml(urlProfilo)}">🌐 ${escapeHtml(urlProfilo)}</a>`
         : `<span class="modella-url modella-url-vuoto">Nessun sito web collegato</span>`;
 
     // Tutto su una riga: avatar | nome e sito (troncati con "…" se serve) | statistiche
@@ -49,7 +57,7 @@ async function apriModalModella(nomeModella) {
         </div>
     `;
 
-    caricaFotoDinamicheModella(nomeModella, mappaUrlModelle);
+    caricaFotoDinamicheModella(nomeModella, stato.mappaUrlModelle);
 
     const intestazione = document.getElementById('intestazioneScheda');
     if (intestazione) intestazione.innerHTML = intestazioneShow(COLONNE_SCHEDA);
@@ -58,20 +66,20 @@ async function apriModalModella(nomeModella) {
     modal.style.display = 'block';
 }
 
-function chiudiModalModella() {
+export function chiudiModalModella() {
     const modal = document.getElementById('modalModella');
     if (modal) modal.style.display = 'none';
 }
 
 // Aggiorna il badge "Online" della scheda, se è aperta
-function aggiornaBadgeSchedaModella() {
+export function aggiornaBadgeSchedaModella() {
     const modal = document.getElementById('modalModella');
     const span = document.getElementById('badgeOnlineScheda');
     if (!modal || !span || modal.style.display !== 'block') return;
     span.innerHTML = badgeOnline(modal.dataset.nomeModella);
 }
 
-async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
+export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
     const contenitoreFoto = document.getElementById('contenitoreFotoDinamiche');
     if (!contenitoreFoto) return;
 
@@ -99,7 +107,7 @@ async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
                 contenitoreFoto.appendChild(img);
             });
         } else {
-            const targetUrlHtml = `<a href="#" class="link-web link-sottolineato" onclick="apriLinkEsterno(event, ${argJs(targetUrlFoto)})">${escapeHtml(targetUrlFoto)}</a>`;
+            const targetUrlHtml = `<a href="#" class="link-web link-sottolineato" data-azione="apri-link" data-url="${escapeHtml(targetUrlFoto)}">${escapeHtml(targetUrlFoto)}</a>`;
             
             contenitoreFoto.innerHTML = `
                 <div class="galleria-messaggio">
