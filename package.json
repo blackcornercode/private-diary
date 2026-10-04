@@ -1,6 +1,6 @@
 {
   "name": "gestioneshow",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Gestione Show MCG",
   "main": "main.js",
   "scripts": {

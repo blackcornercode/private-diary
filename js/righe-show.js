@@ -1,6 +1,7 @@
 import { chiaveModella } from './calcoli.js';
 import { t } from './i18n.js';
 import { stato, iconePiattaformaHTML } from './stato.js';
+import { tagDelloShow, etichettaTag } from './tag.js';
 import { generaLinkChat, escapeHtml, cellaCosto, costoAlMinuto, cellaNote, formattaCostoAlMinuto, formattaVoto, formattaDurata } from './utils.js';
 
 /* ==========================================================================
@@ -45,8 +46,33 @@ export function cellaFoto(show) {
         data-azione="ingrandisci-foto" data-url="${escapeHtml(fotoUrl)}" data-sostituto="${testoSenzaFoto}"></td>`;
 }
 
-// chiave: [chiave della traduzione dell'intestazione, classe dell'intestazione, cella]
+// Tag e note nella stessa colonna, per non allargare la tabella: in alto fino a
+// TAG_VISIBILI etichette (poi "+N"), sotto la nota troncata. Il clic sulla cella
+// (espandi-nota) mostra tutti i tag e la nota completa.
+const TAG_VISIBILI = 3;
+export function cellaTagNote(show) {
+    const tags = tagDelloShow(show);
+    if (tags.length === 0) return cellaNote(show.note);
+    const nota = escapeHtml(show.note);
+    const altri = tags.length - TAG_VISIBILI;
+    const etichette = tags.map((tag, i) => etichettaTag(tag, i >= TAG_VISIBILI ? 'tag-extra' : '')).join('') +
+        (altri > 0 ? `<span class="etichetta-tag tag-altri">+${altri}</span>` : '');
+    const titolo = escapeHtml(tags.map(tag => tag.nome).join(', ')) + (nota ? ` — ${nota}` : '');
+    const espandibile = nota || altri > 0;
+    return `<td class="col-note${espandibile ? ' espandibile' : ''}" title="${titolo}"${espandibile ? ' tabindex="0" aria-expanded="false" data-azione="espandi-nota" data-tastiera' : ''}>
+        <div class="tag-show">${etichette}</div>${nota ? `<div class="testo-note">${nota}</div>` : ''}</td>`;
+}
+
+const selezionato = (show) => stato.selezioneCronologia.has(String(show.id));
+
+// chiave: [chiave della traduzione dell'intestazione, classe dell'intestazione, cella,
+//          intestazione personalizzata (facoltativa, al posto del testo tradotto)]
 export const COLONNE_SHOW = {
+    // Casella della selezione multipla (selezione.js); nell'intestazione seleziona la pagina
+    selezione:     ['table.select', 'col-selezione', s => `<td class="col-selezione"><input type="checkbox" class="casella-selezione"
+                        aria-label="${escapeHtml(t('table.select'))}" data-al-cambio="seleziona-show" data-id="${escapeHtml(s.id)}"${selezionato(s) ? ' checked' : ''}></td>`,
+                    () => `<input type="checkbox" id="selezionaPaginaCronologia" class="casella-selezione"
+                        title="${escapeHtml(t('selection.select_page'))}" aria-label="${escapeHtml(t('selection.select_page'))}" data-al-cambio="seleziona-pagina">`],
     foto:          ['table.photo', '', cellaFoto],
     data:          ['table.date', '', s => `<td class="col-nowrap">${escapeHtml(s.dataFormattata)}</td>`],
     nome:          ['table.name', '', s => `<td><strong>${escapeHtml(s.nome)}</strong></td>`],
@@ -59,27 +85,30 @@ export const COLONNE_SHOW = {
     origine:       ['table.source', '', s => `<td>${s.isAutoImport
                         ? '<span class="badge-origine auto" title="Auto MCG">🤖 MCG</span>'
                         : '<span class="badge-origine manuale" title="Manuale">👤</span>'}</td>`],
-    recensione:    ['table.review', 'col-centro', s => `<td class="col-centro">${s.recensione ? '✅' : '❌'}</td>`],
-    note:          ['table.notes', '', s => cellaNote(s.note)],
+    // Intestazione abbreviata (nome completo nel tooltip): la colonna contiene solo ✅/❌
+    recensione:    ['table.review', 'col-centro', s => `<td class="col-centro">${s.recensione ? '✅' : '❌'}</td>`,
+                    () => `<span title="${escapeHtml(t('table.review'))}">${escapeHtml(t('table.review_short'))}</span>`],
+    note:          ['table.tags_notes', '', cellaTagNote],
     azioni:        ['table.actions', '', s => `<td class="col-azioni">
                         <button class="btn-edit" title="Modifica" aria-label="Modifica" data-azione="modifica-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn-delete" title="Elimina" aria-label="Elimina" data-azione="elimina-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-trash"></i></button>
                     </td>`]
 };
 
-export const COLONNE_CRONOLOGIA = ['foto', 'data', 'nome', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'origine', 'recensione', 'note', 'azioni'];
+export const COLONNE_CRONOLOGIA = ['selezione', 'foto', 'data', 'nome', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'origine', 'recensione', 'note', 'azioni'];
 export const COLONNE_DETTAGLIO_MESE = ['foto', 'data', 'nomeCliccabile', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note'];
 export const COLONNE_SCHEDA = ['data', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note'];
 
 export function intestazioneShow(colonne) {
     return `<tr>${colonne.map(c => {
-        const [chiave, classe] = COLONNE_SHOW[c];
-        return `<th${classe ? ` class="${classe}"` : ''}>${escapeHtml(t(chiave))}</th>`;
+        const [chiave, classe, , personalizzata] = COLONNE_SHOW[c];
+        return `<th${classe ? ` class="${classe}"` : ''}>${personalizzata ? personalizzata() : escapeHtml(t(chiave))}</th>`;
     }).join('')}</tr>`;
 }
 
 export function rigaShow(show, colonne) {
-    return `<tr>${colonne.map(c => COLONNE_SHOW[c][2](show)).join('')}</tr>`;
+    const evidenziata = colonne.includes('selezione') && selezionato(show);
+    return `<tr${evidenziata ? ' class="riga-selezionata"' : ''}>${colonne.map(c => COLONNE_SHOW[c][2](show)).join('')}</tr>`;
 }
 
 export function righeShow(shows, colonne) {

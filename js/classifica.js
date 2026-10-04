@@ -1,6 +1,7 @@
 import { calcolaClassifica } from './calcoli.js';
 import { t } from './i18n.js';
 import { getPiattaformaFormatted } from './righe-show.js';
+import { badgeSospesa } from './profili-sospesi.js';
 import { eModellaOnline, badgeOnline } from './stato-online.js';
 import { stato } from './stato.js';
 import { escapeHtml, formattaCostoAlMinuto, formattaDurata } from './utils.js';
@@ -60,7 +61,7 @@ export function mostraClassifica(lista) {
         tr.innerHTML = `
             <td class="col-centro col-grassetto">#${item.posizioneOriginale || (index + 1)}</td>
             <td>${imgHtml}</td>
-            <td><strong>${escapeHtml(item.nome)}</strong>${badgeOnline(item.nome)}</td>
+            <td><strong>${escapeHtml(item.nome)}</strong>${badgeOnline(item.nome)}${badgeSospesa(item.nome)}</td>
             <td class="col-centro">${linkWebHtml}</td>
             <td>${piattaformaHtml}</td>
             <td class="col-centro">${item.totaleShow}</td>

@@ -2,6 +2,7 @@ import { aggiungiShow, aggiornaShow, rimuoviShow, trovaShow } from './archivio.j
 import { t } from './i18n.js';
 import { logger } from './logger.js';
 import { stato, iconePiattaformaHTML } from './stato.js';
+import { impostaTagForm, tagSceltiForm } from './tag.js';
 import { escapeHtml, generaIdUnico } from './utils.js';
 
 /* ==========================================================================
@@ -173,7 +174,8 @@ if (showForm) {
             recensione: inputRecensione ? inputRecensione.checked : false,
             note: inputNote ? inputNote.value : '',
             isAutoImport: isAutoImport,
-            nickname: inputNickname ? inputNickname.value.trim() : ''
+            nickname: inputNickname ? inputNickname.value.trim() : '',
+            tag: tagSceltiForm()
         };
 
         try {
@@ -254,6 +256,7 @@ export async function modificaShow(id) {
 
     const noteInput = document.getElementById('note');
     if (noteInput) noteInput.value = item.note || '';
+    impostaTagForm(item.tag || []);
 
     const btnSalva = document.getElementById('btnSalva');
     const btnAnnulla = document.getElementById('btnAnnulla');
@@ -355,6 +358,7 @@ export function resetForm() {
 
     const nickInput = document.getElementById('nickname');
     if (nickInput) nickInput.value = '';
+    impostaTagForm([]);
 }
 
 export async function eliminaShow(id) {

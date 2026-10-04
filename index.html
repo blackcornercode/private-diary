@@ -75,6 +75,8 @@
                                 <option value="dark" data-i18n="themes.dark">Eclissi Scura</option>
                             </select>
                         </div>
+
+                        <button type="button" class="btn-data" data-azione="apri-gestione-tag" data-i18n="tags.manage">🏷️ Gestisci tag</button>
                     </div>
                 </div>
             </div>
@@ -210,6 +212,18 @@
         </div>
     </div>
 
+    <!-- Riga 4b: Tag (js/tag.js) -->
+    <div class="form-row">
+        <div class="form-group full-width">
+            <span class="etichetta-campo" data-i18n="tags.label">🏷️ Tag</span>
+            <div id="tagForm" class="selettore-tag"></div>
+            <div class="nuovo-tag">
+                <input type="text" id="nuovoTagForm" maxlength="40" placeholder="Nuovo tag..." data-i18n-ph="tags.ph_new" aria-label="Nuovo tag">
+                <button type="button" class="btn-data" data-azione="crea-tag-form" data-i18n="tags.add">＋ Aggiungi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Riga 5: Pulsanti d'azione -->
     <div class="form-actions">
         <button type="submit" id="btnSalva" class="btn-primary" data-i18n="form.btn_save">Salva Record</button>
@@ -234,6 +248,12 @@
                         </div>
 
                         <div class="filter-item">
+                            <label for="filtroTagCronologia" data-i18n="tags.filter">🏷️ Tag:</label>
+                            <!-- Opzioni generate da js/tag.js (aggiornaFiltroTag) -->
+                            <select id="filtroTagCronologia" data-al-cambio="filtra-cronologia"></select>
+                        </div>
+
+                        <div class="filter-item">
                             <label for="ordineData" data-i18n="history.order">Ordine:</label>
                             <select id="ordineData">
                                 <option value="desc" data-i18n="history.sort_desc">Più recenti prima</option>
@@ -253,6 +273,18 @@
 
                         <button type="button" class="btn-reset" data-azione="reset-filtri-cronologia" data-i18n="history.reset">Reset Filtri</button>
                     </div>
+                </div>
+
+                <!-- Selezione multipla (js/selezione.js): visibile con almeno uno show selezionato -->
+                <div id="barraSelezione" class="barra-selezione">
+                    <span id="conteggioSelezione" class="conteggio-selezione"></span>
+                    <span id="avvisoSelezioneNascosti" class="avviso-selezione"></span>
+                    <span class="barra-selezione-azioni">
+                        <button type="button" id="btnSelezionaFiltrati" class="btn-data" data-azione="seleziona-tutti-filtrati"></button>
+                        <button type="button" class="btn-data" data-azione="deseleziona-tutti" data-i18n="selection.clear">Deseleziona</button>
+                        <button type="button" class="btn-primary btn-compatto" data-azione="modifica-selezionati" data-i18n="selection.edit">✏️ Modifica selezionati</button>
+                        <button type="button" class="btn-delete btn-compatto" data-azione="elimina-selezionati" data-i18n="selection.delete">🗑️ Elimina selezionati</button>
+                    </span>
                 </div>
 
                 <div class="table-container">
@@ -276,12 +308,13 @@
             <section class="card-section">
                 <h2 data-i18n="ranking.title">🏆 Classifica Generale Modelle</h2>
 
-                <!-- BOX INFORMAZIONI CRITERI CLASSIFICA -->
-                <div class="info-classifica-box" style="margin-bottom: 20px; padding: 15px; border-radius: var(--radius-md); background: var(--bg-main); border: 1px solid var(--border-color); font-size: 0.88rem; line-height: 1.5;">
-                    <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">
+                <!-- BOX INFORMAZIONI CRITERI CLASSIFICA: chiuso, si apre con un clic sul titolo (details/summary, senza JavaScript) -->
+                <details class="info-classifica-box">
+                    <summary class="info-classifica-titolo">
                         <i class="fa-solid fa-circle-info"></i>
                         <span data-i18n="ranking.info_title">Criteri di Ordinamento della Classifica:</span>
-                    </div>
+                        <i class="fa-solid fa-chevron-down riquadro-freccia" aria-hidden="true"></i>
+                    </summary>
                     <p style="margin-bottom: 6px; color: var(--text-muted);">
                         <strong data-i18n="ranking.info_rule1_title">Media Voti (Criterio Primario):</strong>
                         <span data-i18n="ranking.info_rule1_text">Le modelle vengono ordinate prima di tutto in base alla media dei voti ricevuti (da 1 a 5 stelle). Gli show regalati o contrassegnati come TBD non influiscono sulla media.</span>
@@ -313,7 +346,7 @@
                             </li>
                         </ul>
                     </div>
-                </div>
+                </details>
                 
                 <div class="filters-bar" style="margin-bottom: 20px;">
                     <div class="filter-item" style="width: 100%; max-width: 400px;">
@@ -351,7 +384,14 @@
         <!-- TAB 3: STATISTICHE MENSILI -->
         <div id="tabStatistiche" class="tab-content">
             <section id="sectionObiettivoBudget" class="card-section">
-                <h2 data-i18n="budget.title">Obiettivo e Budget Mensile</h2>
+                <!-- Chiuso, si apre con un clic sul titolo (details/summary). Il badge accanto
+                     al titolo mostra lo stato del budget anche a riquadro chiuso (statistiche.js) -->
+                <details class="riquadro-budget">
+                <summary class="riquadro-budget-titolo">
+                    <h2 data-i18n="budget.title">Obiettivo e Budget Mensile</h2>
+                    <span id="budgetBadgeTitolo" class="nav-badge stato-neutro"></span>
+                    <i class="fa-solid fa-chevron-down riquadro-freccia" aria-hidden="true"></i>
+                </summary>
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                     <label for="monthlyBudgetInput" style="font-weight: 600;" data-i18n="budget.set_label">Imposta Budget Mensile (€):</label>
                     <input type="number" id="monthlyBudgetInput" placeholder="Es. 1000" step="10" min="0" style="width: 150px;">
@@ -367,6 +407,7 @@
                         <div id="progressBar" style="width: 0%; height: 100%; background: var(--accent-color); transition: width 0.4s ease;"></div>
                     </div>
                 </div>
+                </details>
             </section>
 
             <section class="card-section">
@@ -379,6 +420,19 @@
                         </select>
                     </div>
                 </div>
+                <!-- Grafico della spesa (js/grafico-spesa.js): mesi dell'anno scelto o tutti gli anni -->
+                <div class="grafico-spesa-box">
+                    <div class="grafico-spesa-intestazione">
+                        <h3 data-i18n="chart.title">📊 Andamento della spesa</h3>
+                        <div class="selettore-vista" role="group" aria-label="Vista del grafico">
+                            <button type="button" class="btn-data" data-azione="vista-grafico-spesa" data-vista="mesi" aria-pressed="true" data-i18n="chart.by_month">Per mese</button>
+                            <button type="button" class="btn-data" data-azione="vista-grafico-spesa" data-vista="anni" aria-pressed="false" data-i18n="chart.by_year">Per anno</button>
+                        </div>
+                    </div>
+                    <p id="riepilogoGraficoSpesa" class="riepilogo-grafico"></p>
+                    <div id="graficoSpesa" class="contenitore-grafico"></div>
+                </div>
+
                 <div id="sezioneStatistiche" class="accordion-container"></div>
             </section>
         </div>
@@ -423,6 +477,87 @@
 			<button id="confirmChangelogBtn" class="btn-primary" data-i18n="changelog.confirm">Ho capito</button>
 		</div>
 	</div>
+
+    <!-- MODIFICA MULTIPLA DEGLI SHOW SELEZIONATI (js/selezione.js) -->
+    <div id="modalModificaMultipla" class="modal">
+        <div class="modal-content modal-modifica-multipla">
+            <button type="button" class="close-btn" aria-label="Chiudi" data-azione="chiudi-modifica-multipla">&times;</button>
+            <h2 data-i18n="selection.edit_title">✏️ Modifica show selezionati</h2>
+            <p id="infoModificaMultipla" class="info-modifica-multipla"></p>
+
+            <div class="griglia-modifica-multipla">
+                <div class="form-group">
+                    <label for="mmPiattaforma" data-i18n="form.platform">Piattaforma</label>
+                    <select id="mmPiattaforma">
+                        <option value="" data-i18n="selection.no_change">— non modificare —</option>
+                        <option value="Teams">Teams</option>
+                        <option value="Telegram">Telegram</option>
+                        <option value="Skype">Skype</option>
+                        <option value="Zoom">Zoom</option>
+                        <option value="Altro" data-i18n="options.other">Altro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mmPunteggio" data-i18n="form.rating">Valutazione</label>
+                    <select id="mmPunteggio">
+                        <option value="" data-i18n="selection.no_change">— non modificare —</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                        <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                        <option value="3">⭐⭐⭐ (3/5)</option>
+                        <option value="2">⭐⭐ (2/5)</option>
+                        <option value="1">⭐ (1/5)</option>
+                        <option value="TBD" data-i18n="options.tbd">TBD (Da valutare)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mmRecensione" data-i18n="table.review">Recensione</label>
+                    <select id="mmRecensione">
+                        <option value="" data-i18n="selection.no_change">— non modificare —</option>
+                        <option value="si" data-i18n="selection.review_yes">✅ Fatta</option>
+                        <option value="no" data-i18n="selection.review_no">❌ Non fatta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mmDurata" data-i18n="form.label_duration">Durata Show (minuti)</label>
+                    <input type="number" id="mmDurata" min="0" step="1" placeholder="— non modificare —" data-i18n-ph="selection.no_change">
+                </div>
+                <div class="form-group">
+                    <label for="mmNickname" data-i18n="form.nickname">Nickname Chat</label>
+                    <input type="text" id="mmNickname" placeholder="— non modificare —" data-i18n-ph="selection.no_change">
+                </div>
+            </div>
+
+            <div class="form-group campo-tag-multipla">
+                <span class="etichetta-campo" data-i18n="tags.label">🏷️ Tag</span>
+                <div id="mmTag" class="selettore-tag"></div>
+                <small class="nota-modifica-multipla" data-i18n="tags.bulk_hint">Clic su un tag: + aggiungi, poi − togli, poi di nuovo non modificare.</small>
+            </div>
+
+            <p class="nota-modifica-multipla" data-i18n="selection.edit_note">I campi lasciati su «non modificare» restano invariati. Piattaforma e voto non vengono applicati ai regali.</p>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-data" data-azione="chiudi-modifica-multipla" data-i18n="form.btn_cancel">Annulla</button>
+                <button type="button" class="btn-primary" data-azione="applica-modifica-multipla" data-i18n="selection.apply">Applica modifiche</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GESTIONE DEL CATALOGO DEI TAG (js/tag.js) -->
+    <div id="modalGestioneTag" class="modal">
+        <div class="modal-content modal-gestione-tag">
+            <button type="button" class="close-btn" aria-label="Chiudi" data-azione="chiudi-gestione-tag">&times;</button>
+            <h2 data-i18n="tags.manage_title">🏷️ Gestisci tag</h2>
+            <p class="nota-modifica-multipla" data-i18n="tags.manage_hint">Rinomina un tag scrivendo nel campo: il nuovo nome vale per tutti gli show che lo usano.</p>
+            <div id="elencoGestioneTag" class="elenco-gestione-tag"></div>
+            <div class="nuovo-tag">
+                <input type="text" id="nuovoTagGestione" maxlength="40" placeholder="Nuovo tag..." data-i18n-ph="tags.ph_new" aria-label="Nuovo tag">
+                <button type="button" class="btn-data" data-azione="crea-tag-gestione" data-i18n="tags.add">＋ Aggiungi</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" data-azione="chiudi-gestione-tag" data-i18n="tags.done">Fatto</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODALE INGRANDIMENTO IMMAGINE (LIGHTBOX) CON FRECCE -->
     <div id="modalImmagineIngrandita" class="modal" data-azione="chiudi-lightbox">

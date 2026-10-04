@@ -1,9 +1,11 @@
-import { chiaveModella, showsDiModella, riepilogoShow } from './calcoli.js';
+import { chiaveModella, showsDiModella, riepilogoShow, conteggioTag } from './calcoli.js';
 import { apriModalImmagine } from './galleria.js';
 import { t } from './i18n.js';
 import { COLONNE_SCHEDA, intestazioneShow, righeShow } from './righe-show.js';
+import { badgeSospesa } from './profili-sospesi.js';
 import { badgeOnline } from './stato-online.js';
 import { stato } from './stato.js';
+import { tagDaId, etichettaTag } from './tag.js';
 import { escapeHtml, urlProfiloPredefinito, formattaCostoAlMinuto, formattaDurata } from './utils.js';
 
 /* ==========================================================================
@@ -39,12 +41,21 @@ export async function apriModalModella(nomeModella) {
         ? `<a href="#" class="modella-url" title="${escapeHtml(urlProfilo)}" data-azione="apri-link" data-url="${escapeHtml(urlProfilo)}">🌐 ${escapeHtml(urlProfilo)}</a>`
         : `<span class="modella-url modella-url-vuoto">Nessun sito web collegato</span>`;
 
+    // Tipi di show proposti dalla modella: i suoi tag, dal più usato
+    const tipiShow = conteggioTag(showsModella)
+        .map(({ id, conteggio }) => ({ tag: tagDaId(id), conteggio }))
+        .filter(({ tag }) => tag);
+    const tipiShowHtml = tipiShow.length
+        ? `<div class="modella-tipi-show"><span class="modella-tipi-etichetta">${escapeHtml(t('tags.show_types'))}</span>
+            ${tipiShow.map(({ tag, conteggio }) => etichettaTag(tag, '', ` ×${conteggio}`)).join('')}</div>`
+        : '';
+
     // Tutto su una riga: avatar | nome e sito (troncati con "…" se serve) | statistiche
     header.innerHTML = `
         <div class="modella-header-card">
             ${imgProfiloHtml}
             <div class="modella-info-main">
-                <h2 class="modella-nome" title="${escapeHtml(nomeModella)}">${escapeHtml(nomeModella)}<span id="badgeOnlineScheda">${badgeOnline(nomeModella)}</span></h2>
+                <h2 class="modella-nome" title="${escapeHtml(nomeModella)}">${escapeHtml(nomeModella)}<span id="badgeOnlineScheda">${badgeOnline(nomeModella)}${badgeSospesa(nomeModella)}</span></h2>
                 ${urlHtml}
             </div>
             <div class="modella-stats-summary">
@@ -55,6 +66,7 @@ export async function apriModalModella(nomeModella) {
                 ${statBox(t('table.avg_rating'), `<span class="voto-medio">${riepilogo.mediaTxt !== 'N/D' ? riepilogo.mediaTxt + ' / 5' : 'N/D'}</span>`)}
             </div>
         </div>
+        ${tipiShowHtml}
     `;
 
     caricaFotoDinamicheModella(nomeModella, stato.mappaUrlModelle);
@@ -71,12 +83,12 @@ export function chiudiModalModella() {
     if (modal) modal.style.display = 'none';
 }
 
-// Aggiorna il badge "Online" della scheda, se è aperta
+// Aggiorna i badge "Online" e "Sospesa" della scheda, se è aperta
 export function aggiornaBadgeSchedaModella() {
     const modal = document.getElementById('modalModella');
     const span = document.getElementById('badgeOnlineScheda');
     if (!modal || !span || modal.style.display !== 'block') return;
-    span.innerHTML = badgeOnline(modal.dataset.nomeModella);
+    span.innerHTML = badgeOnline(modal.dataset.nomeModella) + badgeSospesa(modal.dataset.nomeModella);
 }
 
 export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {

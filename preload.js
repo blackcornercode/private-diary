@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openDataFolder: () => ipcRenderer.invoke('open-data-folder'),
     exportData: (impostazioni) => ipcRenderer.invoke('export-data', impostazioni),
     importData: () => ipcRenderer.invoke('import-data'),
+    readTags: () => ipcRenderer.invoke('read-tags'),
+    saveTags: (catalogo) => ipcRenderer.invoke('save-tags', catalogo),
 
     // Logging & Utility di Sistema
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
@@ -21,6 +23,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     salvaDumpMcg: (dump) => ipcRenderer.invoke('salva-dump-mcg', dump),
     getModelleOnline: () => ipcRenderer.invoke('get-modelle-online'),
     fetchModellaFoto: (urlProfilo) => ipcRenderer.invoke('fetch-modella-foto', urlProfilo),
+    getProfiloSospeso: (urlProfilo) => ipcRenderer.invoke('get-profilo-sospeso', urlProfilo),
 
     // Apertura Link Esterni
     openExternal: (url) => ipcRenderer.invoke('open-external', url),

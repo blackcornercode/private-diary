@@ -1,4 +1,4 @@
-import { calcolaMappeModelle, calcolaModelleUniche } from './calcoli.js';
+import { calcolaMappeModelle, calcolaModelleUniche, applicaModificheMultiple, togliTagDaShows } from './calcoli.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
 import { normalizzaShow, salvaOAvvisa, costoMedioAlMinuto } from './utils.js';
@@ -33,6 +33,32 @@ export async function salvaArchivio(nuoviShows) {
     aggiornaViste();
 }
 
+// Catalogo dei tag: letto con l'archivio, salvato a parte (tags.json)
+export async function leggiCatalogoTag() {
+    const catalogo = await window.electronAPI.readTags();
+    return Array.isArray(catalogo) ? catalogo : [];
+}
+
+export async function salvaCatalogoTag(nuovoCatalogo) {
+    const esito = await window.electronAPI.saveTags(nuovoCatalogo);
+    if (!esito || !esito.success) {
+        const messaggio = esito?.error || 'errore sconosciuto';
+        alert(`❌ Salvataggio dei tag non riuscito: ${messaggio}`);
+        throw new Error(messaggio);
+    }
+    stato.catalogoTag = nuovoCatalogo;
+    aggiornaViste();
+}
+
+// Elimina un tag dal catalogo e dagli show che lo usano.
+// Restituisce quanti show sono stati modificati.
+export async function eliminaTagDalCatalogo(id) {
+    const { shows, modificati } = togliTagDaShows(stato.tuttiGliShow, id);
+    if (modificati > 0) await salvaArchivio(shows);
+    await salvaCatalogoTag(stato.catalogoTag.filter(tag => tag.id !== id));
+    return modificati;
+}
+
 export function aggiungiShow(show) {
     return salvaArchivio([...stato.tuttiGliShow, show]);
 }
@@ -45,6 +71,20 @@ export async function aggiornaShow(id, campi) {
         throw new Error(`Show con ID ${id} non trovato`);
     }
     return salvaArchivio(stato.tuttiGliShow.map(s => String(s.id) === String(id) ? { ...s, ...campi } : s));
+}
+
+// Elimina più show con un solo salvataggio su disco
+export function rimuoviShows(ids) {
+    const daTogliere = new Set(ids.map(String));
+    return salvaArchivio(stato.tuttiGliShow.filter(s => !daTogliere.has(String(s.id))));
+}
+
+// Modifica più show insieme con un solo salvataggio (vedi applicaModificheMultiple).
+// Restituisce { modificati, regaliSaltati }; se nessuno show cambia non salva.
+export async function aggiornaShows(ids, campi) {
+    const { shows, modificati, regaliSaltati } = applicaModificheMultiple(stato.tuttiGliShow, ids, campi);
+    if (modificati > 0) await salvaArchivio(shows);
+    return { modificati, regaliSaltati };
 }
 
 export function rimuoviShow(id) {
@@ -82,6 +122,14 @@ export function aggiornaViste() {
 export async function aggiornaInterfaccia() {
     try {
         stato.tuttiGliShow = await leggiArchivio();
+        try {
+            stato.catalogoTag = await leggiCatalogoTag();
+        } catch (err) {
+            // Senza catalogo gli show restano utilizzabili, solo senza tag visibili
+            logger.error('Catalogo dei tag non caricato', err);
+            alert(`⚠️ ${err.message}`);
+            stato.catalogoTag = [];
+        }
         logger.info(`Dati letti. Totale show caricati: ${stato.tuttiGliShow.length}`);
         aggiornaViste();
     } catch (err) {

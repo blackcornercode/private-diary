@@ -1,11 +1,13 @@
 // Gestori IPC di Mondo Cam Girls: lettura delle transazioni (con login),
-// copia diagnostica della sincronizzazione, modelle online, foto e raggiungibilità.
+// copia diagnostica della sincronizzazione, modelle online, profili sospesi o
+// rimossi, foto e raggiungibilità.
 const { BrowserWindow, ipcMain, net } = require('electron');
+const dns = require('dns').promises;
 const canali = require('./canali');
 const percorsi = require('./percorsi');
 const { scriviFileAtomico } = require('./file');
 const { logToFile } = require('./log');
-const { urlMcgValido, slugProfiloMcg, downloadHtmlPage, USER_AGENT } = require('./rete');
+const { urlMcgValido, slugProfiloMcg, downloadHtmlPage, profiloSospeso, USER_AGENT } = require('./rete');
 const { leggiPaginaCorrente, leggiTutteLePagine } = require('./mcg-pagine');
 
 const URL_TRANSAZIONI = 'https://www.mondocamgirls.com/it/areacliente_transazioni.html?pagina_vis=0';
@@ -110,6 +112,43 @@ async function modelleOnline() {
     }
 }
 
+// Il nome esiste nel DNS? Ogni profilo MCG ha un proprio sottodominio: quando il
+// profilo viene eliminato il sottodominio smette di esistere (ENOTFOUND).
+async function nomeRisolto(host) {
+    try {
+        await dns.lookup(host);
+        return true;
+    } catch (err) {
+        if (err.code === 'ENOTFOUND') return false;
+        throw err;
+    }
+}
+
+// Stato del profilo: { success, sospeso, rimosso }.
+// - rimosso: il sottodominio del profilo non esiste più, mentre il sito sì
+//   (se non si risolve nemmeno www.mondocamgirls.com manca la rete: esito non valido);
+// - sospeso: la pagina del profilo mostra l'avviso di sospensione.
+// success = false se la pagina non è stata scaricata o non è riconoscibile.
+async function statoSospensioneProfilo(urlProfilo) {
+    if (!urlMcgValido(urlProfilo) || !slugProfiloMcg(urlProfilo)) {
+        return { success: false, sospeso: null, rimosso: false, error: 'URL profilo non appartenente a MondoCamGirls' };
+    }
+    try {
+        if (!(await nomeRisolto(new URL(urlProfilo).hostname))) {
+            return (await nomeRisolto('www.mondocamgirls.com'))
+                ? { success: true, sospeso: false, rimosso: true }
+                : { success: false, sospeso: null, rimosso: false, error: 'rete non disponibile' };
+        }
+    } catch (err) {
+        return { success: false, sospeso: null, rimosso: false, error: err.message };
+    }
+    const html = await downloadHtmlPage(urlProfilo);
+    const sospeso = profiloSospeso(html);
+    return sospeso === null
+        ? { success: false, sospeso: null, rimosso: false, error: html ? 'pagina del profilo non riconosciuta' : 'pagina non scaricata' }
+        : { success: true, sospeso, rimosso: false };
+}
+
 async function fotoModella(urlProfilo) {
     // Lo scraping è limitato a mondocamgirls.com: il renderer non può far
     // scaricare all'app pagine di domini arbitrari
@@ -204,6 +243,7 @@ function registra() {
 
     ipcMain.handle(canali.MODELLE_ONLINE, () => modelleOnline());
     ipcMain.handle(canali.FOTO_MODELLA, (event, urlProfilo) => fotoModella(urlProfilo));
+    ipcMain.handle(canali.PROFILO_SOSPESO, (event, urlProfilo) => statoSospensioneProfilo(urlProfilo));
     ipcMain.handle(canali.PING_MCG, () => pingMcg());
 }
 

@@ -729,6 +729,26 @@ td.testo-attenuato {
     color: var(--success-text);
 }
 
+/* Profilo sospeso o rimosso su MCG (profili-sospesi.js) */
+.badge-sospesa {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+}
+
+.badge-rimossa {
+    background-color: var(--neutral-bg);
+    color: var(--neutral-text);
+}
+
 .badge-online::before {
     content: '';
     width: 7px;
@@ -738,9 +758,11 @@ td.testo-attenuato {
 }
 
 /* Nickname (spesso email lunghe) troncati: il testo completo è nel tooltip */
+/* Il nickname determina la larghezza della colonna Piattaforma: 110px bastano per
+   riconoscerlo (es. "jumpingpeach@…"), il testo completo è nel tooltip */
 .nick-troncato {
     display: inline-block;
-    max-width: 160px;
+    max-width: 110px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1099,6 +1121,53 @@ body.theme-dark .mcg-status-container {
 /* ==========================================================================
    LEGENDA COLORI (riquadro criteri della classifica)
    ========================================================================== */
+/* Criteri e legenda della classifica: riquadro chiuso, si apre cliccando il titolo */
+.info-classifica-box {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    border-radius: var(--radius-md);
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+.info-classifica-titolo,
+.riquadro-budget-titolo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--primary-color);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+.info-classifica-titolo::-webkit-details-marker,
+.riquadro-budget-titolo::-webkit-details-marker { display: none; }
+.info-classifica-titolo:focus-visible,
+.riquadro-budget-titolo:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+/* Freccia dei riquadri apribili (classifica, budget): ruota quando sono aperti */
+.riquadro-freccia {
+    margin-left: auto;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+details[open] > summary .riquadro-freccia { transform: rotate(180deg); }
+
+/* Riquadro budget: titolo come gli altri h2 delle sezioni, con il badge di stato a fianco */
+.riquadro-budget-titolo { color: var(--text-color); }
+.riquadro-budget-titolo h2 { margin: 0; }
+/* Badge e freccia alla stessa altezza del testo del titolo, non della sua
+   sottolineatura (padding-bottom 12px + bordo 2px dell'h2) */
+.riquadro-budget-titolo > .nav-badge,
+.riquadro-budget-titolo > .riquadro-freccia { margin-bottom: 14px; }
+.riquadro-budget[open] > .riquadro-budget-titolo { margin-bottom: 15px; }
+.info-classifica-box[open] .info-classifica-titolo { margin-bottom: 8px; }
+
 .legenda-colori {
     margin-top: 10px;
     padding-top: 10px;
@@ -1338,6 +1407,43 @@ a.modella-url:hover { text-decoration: underline; }
 }
 .nav-badge.stato-ok { background-color: var(--success-color); }
 .nav-badge.stato-ko { background-color: var(--danger-color); }
+.nav-badge.stato-neutro { background-color: var(--neutral-bg); color: var(--neutral-text); }
+
+/* Grafico della spesa (js/grafico-spesa.js) */
+.grafico-spesa-box {
+    margin-bottom: 24px;
+    padding: 14px 16px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-main);
+}
+.grafico-spesa-intestazione {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.grafico-spesa-intestazione h3 { margin: 0; font-size: 1.05rem; }
+.selettore-vista { display: inline-flex; }
+.selettore-vista button { border-radius: 0; }
+.selettore-vista button:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.selettore-vista button:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; border-left: none; }
+.selettore-vista button.attivo { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+.riepilogo-grafico { margin: 8px 0 4px; color: var(--text-muted); font-size: 0.88rem; font-weight: 600; }
+.contenitore-grafico { width: 100%; }
+.grafico-spesa { display: block; width: 100%; height: auto; }
+.grafico-spesa .griglia { stroke: var(--border-color); stroke-width: 1; }
+.grafico-spesa .asse { fill: var(--text-muted); font-size: 13px; }
+.grafico-spesa .asse.evidenziata { fill: var(--text-color); font-weight: 700; }
+.grafico-spesa .valore { fill: var(--text-color); font-size: 12.5px; font-weight: 700; }
+.grafico-spesa .barra { fill: var(--primary-color); opacity: 0.8; transition: opacity 0.15s ease; }
+.grafico-spesa .barra.evidenziata { opacity: 1; }
+.grafico-spesa .barra.oltre-soglia { fill: var(--danger-color); }
+.grafico-spesa g:hover .barra { opacity: 1; }
+.grafico-spesa .linea-soglia { stroke: var(--danger-color); stroke-width: 2; stroke-dasharray: 8 6; }
+.grafico-spesa .etichetta-soglia { fill: var(--danger-text); font-size: 13px; font-weight: 700; }
+.grafico-vuoto { color: var(--text-muted); font-size: 0.9rem; padding: 20px 0; text-align: center; }
 
 /* Righe della tabella mesi: dopo le regole zebra, che usano !important */
 tbody tr.riga-mese-cliccabile { cursor: pointer; }
@@ -1374,6 +1480,12 @@ td.col-destra { text-align: right; }
     gap: 4px;
     font-size: 0.85rem;
     cursor: pointer;
+}
+/* "Seleziona tutti" separato dagli anni da una linea verticale */
+.filtro-anno-tutti {
+    font-weight: 700;
+    padding-right: 12px;
+    border-right: 1px solid var(--border-color);
 }
 .filtro-anni-vuoto { font-size: 0.85rem; color: var(--text-muted); }
 
@@ -1428,3 +1540,193 @@ td.col-destra { text-align: right; }
     font-weight: bold;
     text-decoration: underline;
 }
+
+/* Selezione multipla della cronologia (js/selezione.js) */
+/* Colonna stretta: padding ridotto (th/td hanno il padding con !important) */
+th.col-selezione, td.col-selezione {
+    width: 1%;
+    padding-left: 8px !important;
+    padding-right: 2px !important;
+    text-align: center;
+}
+.casella-selezione {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+tbody tr.riga-selezionata,
+tbody tr.riga-selezionata:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
+}
+.barra-selezione {
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin: 12px 0 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--primary-color);
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--primary-color) 8%, var(--bg-card));
+}
+.barra-selezione.visibile { display: flex; }
+.conteggio-selezione { font-weight: 700; }
+.avviso-selezione {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+.barra-selezione-azioni {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+}
+button.btn-compatto {
+    padding: 7px 14px;
+    font-size: 0.85rem;
+}
+.modal-modifica-multipla { max-width: 640px; }
+.info-modifica-multipla { margin: 8px 0 16px; font-weight: 600; }
+.griglia-modifica-multipla {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 4px 16px;
+}
+.nota-modifica-multipla {
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+.modal-modifica-multipla .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Tag degli show (js/tag.js): un colore per tag, con varianti per il tema scuro */
+.tag-colore-blu { --tag-sfondo: #dbeafe; --tag-testo: #1e40af; }
+.tag-colore-verde { --tag-sfondo: #dcfce7; --tag-testo: #166534; }
+.tag-colore-acqua { --tag-sfondo: #ccfbf1; --tag-testo: #115e59; }
+.tag-colore-viola { --tag-sfondo: #ede9fe; --tag-testo: #5b21b6; }
+.tag-colore-rosa { --tag-sfondo: #fce7f3; --tag-testo: #9d174d; }
+.tag-colore-rosso { --tag-sfondo: #fee2e2; --tag-testo: #991b1b; }
+.tag-colore-arancio { --tag-sfondo: #ffedd5; --tag-testo: #9a3412; }
+.tag-colore-ambra { --tag-sfondo: #fef3c7; --tag-testo: #92400e; }
+.tag-colore-grigio { --tag-sfondo: #e2e8f0; --tag-testo: #334155; }
+body.theme-dark .tag-colore-blu { --tag-sfondo: #1e3a8a; --tag-testo: #bfdbfe; }
+body.theme-dark .tag-colore-verde { --tag-sfondo: #14532d; --tag-testo: #bbf7d0; }
+body.theme-dark .tag-colore-acqua { --tag-sfondo: #134e4a; --tag-testo: #99f6e4; }
+body.theme-dark .tag-colore-viola { --tag-sfondo: #4c1d95; --tag-testo: #ddd6fe; }
+body.theme-dark .tag-colore-rosa { --tag-sfondo: #831843; --tag-testo: #fbcfe8; }
+body.theme-dark .tag-colore-rosso { --tag-sfondo: #7f1d1d; --tag-testo: #fecaca; }
+body.theme-dark .tag-colore-arancio { --tag-sfondo: #7c2d12; --tag-testo: #fed7aa; }
+body.theme-dark .tag-colore-ambra { --tag-sfondo: #78350f; --tag-testo: #fde68a; }
+body.theme-dark .tag-colore-grigio { --tag-sfondo: #334155; --tag-testo: #e2e8f0; }
+.etichetta-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    margin: 1px 3px 1px 0;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.5;
+    white-space: nowrap;
+    background-color: var(--tag-sfondo, var(--neutral-bg));
+    color: var(--tag-testo, var(--neutral-text));
+    border: 1px solid transparent;
+}
+/* Nelle celle: i tag oltre i primi tre compaiono solo con la cella espansa */
+td.col-note .tag-show { display: flex; flex-wrap: wrap; max-width: 160px; }
+td.col-note .tag-show + .testo-note { margin-top: 2px; }
+td.col-note:not(.espansa) .tag-extra,
+td.col-note.espansa .tag-altri { display: none; }
+.tag-altri {
+    background-color: var(--neutral-bg);
+    color: var(--neutral-text);
+}
+
+/* Etichette cliccabili (form, modifica multipla): spente finché non scelte */
+button.etichetta-tag.selezionabile {
+    padding: 4px 11px;
+    margin: 0;
+    font-size: 0.8rem;
+    gap: 0;
+    opacity: 0.5;
+    border-color: var(--border-color);
+}
+button.etichetta-tag.selezionabile:hover { opacity: 0.8; }
+button.etichetta-tag.selezionabile[aria-pressed="true"] {
+    opacity: 1;
+    border-color: var(--tag-testo);
+}
+button.etichetta-tag.tag-togli { text-decoration: line-through; }
+.selettore-tag {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 8px;
+}
+.tag-vuoto { color: var(--text-muted); font-size: 0.85rem; }
+.etichetta-campo {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.nuovo-tag {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    max-width: 380px;
+}
+.nuovo-tag input { flex: 1; min-width: 0; }
+.campo-tag-multipla { margin-top: 8px; }
+
+/* Scheda modella: tipi di show proposti */
+.modella-tipi-show {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+}
+.modella-tipi-show .etichetta-tag { font-size: 0.8rem; padding: 2px 10px; }
+.modella-tipi-etichetta {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+/* Finestra Gestisci tag */
+.modal-gestione-tag { max-width: 760px; }
+.elenco-gestione-tag {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 14px 0;
+}
+.riga-gestione-tag {
+    display: grid;
+    grid-template-columns: 110px minmax(120px, 1fr) auto 64px auto;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.riga-gestione-tag > .etichetta-tag { justify-self: start; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+.nome-gestione-tag { min-width: 0; }
+.colori-tag { display: flex; gap: 4px; }
+button.campione-colore {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: var(--tag-testo);
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 0 0 1px var(--border-color);
+}
+button.campione-colore.attivo { box-shadow: 0 0 0 2px var(--text-color); }
+.uso-tag { color: var(--text-muted); font-size: 0.85rem; text-align: right; }

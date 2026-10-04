@@ -1,4 +1,5 @@
 import { anniDisponibili, calcolaStatisticheAnno, spesaMeseCorrente, statoBudget } from './calcoli.js';
+import { disegnaGraficoSpesa } from './grafico-spesa.js';
 import { t } from './i18n.js';
 import { COLONNE_DETTAGLIO_MESE, intestazioneShow, righeShow } from './righe-show.js';
 import { stato } from './stato.js';
@@ -79,6 +80,7 @@ export function caricaStatisticheMensili(shows) {
     const { spesa, conteggio, showPerMese } = calcolaStatisticheAnno(shows, annoSelezionato);
 
     aggiornaRiquadroBudget(shows);
+    disegnaGraficoSpesa({ shows, anno: annoSelezionato, spesaMesi: spesa, conteggioMesi: conteggio, budget: budgetMensile(), oggi });
 
     const mesi = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].map(m => t(`months.${m}`));
 
@@ -134,18 +136,30 @@ export function caricaStatisticheMensili(shows) {
     sezioneStatistiche.innerHTML = html;
 }
 
-// Badge "Budget OK/KO" accanto alla scheda Statistiche
+// Badge "Budget OK/KO" accanto alla scheda Statistiche e accanto al titolo del
+// riquadro budget (visibile anche a riquadro chiuso)
 export function aggiornaIndicatoreBudgetHomepage(shows) {
-    const navBadge = document.getElementById('navBudgetBadge');
-    if (!navBadge) return;
+    const spesa = spesaMeseCorrente(shows);
+    const budget = budgetMensile();
+    const esitoBudget = statoBudget(spesa, budget);
+    const testo = !esitoBudget.impostato ? t('budget.not_set_badge')
+        : t(esitoBudget.stato === 'stato-ok' ? 'budget.ok_badge' : 'budget.ko_badge');
+    const dettaglio = !esitoBudget.impostato ? t('budget.not_set_sub')
+        : `€ ${spesa.toFixed(2)} / € ${budget.toFixed(2)} · ${esitoBudget.differenza >= 0
+            ? `${t('budget.remaining')}: € ${esitoBudget.differenza.toFixed(2)}`
+            : `${t('budget.exceeded_by')}: € ${Math.abs(esitoBudget.differenza).toFixed(2)}`}`;
 
-    const esitoBudget = statoBudget(spesaMeseCorrente(shows), budgetMensile());
-    if (!esitoBudget.impostato) {
-        navBadge.style.display = 'none';
-        return;
+    const navBadge = document.getElementById('navBudgetBadge');
+    if (navBadge) {
+        // Nella barra delle schede compare solo con un budget impostato
+        navBadge.style.display = esitoBudget.impostato ? 'inline-block' : 'none';
+        navBadge.textContent = testo;
+        navBadge.className = `nav-badge ${esitoBudget.stato}`;
     }
-    const rispettato = esitoBudget.stato === 'stato-ok';
-    navBadge.style.display = 'inline-block';
-    navBadge.textContent = rispettato ? 'Budget OK' : 'Budget KO';
-    navBadge.className = `nav-badge ${esitoBudget.stato}`;
+    const badgeTitolo = document.getElementById('budgetBadgeTitolo');
+    if (badgeTitolo) {
+        badgeTitolo.textContent = testo;
+        badgeTitolo.title = dettaglio;
+        badgeTitolo.className = `nav-badge ${esitoBudget.stato}`;
+    }
 }

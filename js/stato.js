@@ -10,6 +10,9 @@ export const stato = {
     mappaImmaginiModelle: {},
     mappaUrlModelle: {},
     elencoModelleUniche: [],
+    // Catalogo dei tag [{ id, nome, colore }] (tags.json, gestito da archivio.js);
+    // gli show salvano gli ID nel campo "tag"
+    catalogoTag: [],
     // Costo medio al minuto di tutti gli show: riferimento per colorare i €/min
     costoMinutoRiferimento: null,
     // ID più alto già usato: generaIdUnico() parte da qui (utils.js)
@@ -18,6 +21,14 @@ export const stato = {
     // Cronologia
     anniSelezionati: new Set(),
     paginaCorrente: 1,
+    // Selezione multipla (selezione.js): ID degli show selezionati, come stringhe.
+    // idPagina/idFiltrati sono aggiornati da caricaCronologia a ogni disegno.
+    selezioneCronologia: new Set(),
+    idPaginaCronologia: [],
+    idFiltratiCronologia: [],
+    // Tag scelti nel form e nella modifica multipla (tag.js): ID -> '+' aggiungi / '-' togli
+    tagForm: new Set(),
+    tagModificaMultipla: new Map(),
 
     // Classifica, statistiche, galleria, preferenze
     classificaCompletaCache: [],

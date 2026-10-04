@@ -66,6 +66,7 @@
   "history": {
     "title": "📋 Show History",
     "filter_year": "Filter by Year:",
+    "select_all_years": "Select all",
     "search": "🔍 Search Name:",
     "ph_search": "Filter by name...",
     "order": "Order:",
@@ -75,6 +76,52 @@
     "results": "results",
     "all": "All",
     "reset": "Reset Filters"
+  },
+  "selection": {
+    "select_page": "Select all shows on this page",
+    "count": "Selected: {n}",
+    "hidden": "({n} of them hidden by the current filters)",
+    "select_all_filtered": "Select all results ({n})",
+    "clear": "Clear selection",
+    "edit": "✏️ Edit selected",
+    "delete": "🗑️ Delete selected",
+    "confirm_delete": "Permanently delete the selected shows ({n})?",
+    "confirm_hidden": "Warning: some of them are hidden by the current filters ({n}).",
+    "edit_title": "✏️ Edit selected shows",
+    "edit_info": "Shows the changes will be applied to: {n}",
+    "edit_note": "Fields left on \"don't change\" stay as they are. Platform and rating are not applied to gifts.",
+    "no_change": "— don't change —",
+    "review_yes": "✅ Done",
+    "review_no": "❌ Not done",
+    "apply": "Apply changes",
+    "nothing_to_change": "Choose at least one field to change.",
+    "invalid_duration": "Duration must be a whole number of minutes (0 or more).",
+    "edit_none": "No show changed: they already had these values.",
+    "edit_done_gifts": "Shows updated: {n}. Platform and rating were not applied to the selected gifts ({regali})."
+  },
+  "tags": {
+    "label": "🏷️ Tags",
+    "ph_new": "New tag...",
+    "add": "＋ Add",
+    "manage": "🏷️ Manage tags",
+    "manage_title": "🏷️ Manage tags",
+    "manage_hint": "Rename a tag by typing in its field: the new name applies to every show that uses it.",
+    "done": "Done",
+    "rename": "Tag name",
+    "color": "Color",
+    "delete": "Delete tag",
+    "usage": "{n} shows",
+    "confirm_delete": "Delete the tag \"{nome}\"? It will also be removed from the shows that use it ({n}).",
+    "duplicate": "A tag with this name already exists.",
+    "empty_name": "The tag name cannot be empty.",
+    "empty": "No tags: create one below.",
+    "empty_form": "No tags yet: type one below.",
+    "filter": "🏷️ Tag:",
+    "all": "All",
+    "show_types": "Show types:",
+    "bulk_hint": "Click a tag: + add, then − remove, then back to no change.",
+    "bulk_add": "Will be added",
+    "bulk_remove": "Will be removed"
   },
   "pagination": {
     "prev": "⬅️ Previous",
@@ -102,6 +149,12 @@
     "badge": "Online",
     "tooltip": "Online now on MondoCamGirls (checked at {ora})"
   },
+  "suspended": {
+    "badge": "⛔ Suspended",
+    "tooltip": "Profile temporarily suspended on MondoCamGirls: shows cannot be purchased (checked on {data})",
+    "badge_removed": "🚫 Removed",
+    "removed": "This profile no longer exists on MondoCamGirls (checked on {data})"
+  },
   "budget": {
     "title": "Monthly Target & Budget",
     "set_label": "Set Monthly Budget (€):",
@@ -113,7 +166,9 @@
     "under_budget_badge": "UNDER BUDGET",
     "exceeded_warning": "WARNING! You exceeded your budget by",
     "exceeded_badge": "BUDGET EXCEEDED",
-    "exceeded_by": "Exceeded by"
+    "exceeded_by": "Exceeded by",
+    "ok_badge": "Budget OK",
+    "ko_badge": "Over budget"
   },
   "stats": {
     "title": "📈 Monthly Statistics",
@@ -125,6 +180,18 @@
     "current": "Current",
     "click_details": "Click to show/hide show details",
     "no_shows_month": "No shows in this month"
+  },
+  "chart": {
+    "title": "📊 Spending trend",
+    "by_month": "By month",
+    "by_year": "By year",
+    "shows": "shows",
+    "total_year": "Total {anno}",
+    "total_all": "Overall total",
+    "avg_month": "monthly average",
+    "avg_year": "yearly average",
+    "budget": "Budget",
+    "empty": "No spending to show."
   },
   "table": {
     "pos": "Position",
@@ -148,8 +215,11 @@
     "rating": "Rating",
     "source": "Source",
     "review": "Review",
+    "review_short": "Rev.",
     "notes": "Notes",
-    "actions": "Actions"
+    "actions": "Actions",
+    "select": "Select",
+    "tags_notes": "Tags & notes"
   },
   "modal": {
     "gallery": "🖼️ Profile Photo Gallery",

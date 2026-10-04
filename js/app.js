@@ -12,14 +12,18 @@ import { inizializzaFiltriCronologia, inizializzaFiltroAnni, caricaCronologia, c
 import { esportaDati, importaDati, apriCartellaDati } from './dati.js';
 import { impostaDataOraAttuale, autocompilaDatiModella, aggiornaPulsanteForm, aggiornaDatalistModelle, toggleForm, annullaModifica, gestisciStatoRegalo, modificaShow, eliminaShow } from './form-show.js';
 import { apriModalImmagine, chiudiModalImmagine, navigaGalleria } from './galleria.js';
+import { impostaVistaGraficoSpesa } from './grafico-spesa.js';
 import { caricaLingua, linguaCorrente } from './i18n.js';
 import { logger } from './logger.js';
 import { inizializzaMenuHeader } from './menu-header.js';
 import { apriModalModella, chiudiModalModella, aggiornaBadgeSchedaModella } from './modale-modella.js';
+import { verificaProfiliSospesi, inizializzaProfiliSospesi } from './profili-sospesi.js';
 import { mostraVersioneApp, inizializzaTema, inizializzaFont, inizializzaGestioneBudget, apriTab, cambiaTema, aumentaFont, riduciFont } from './preferenze.js';
+import { selezionaShow, selezionaPagina, selezionaTuttiFiltrati, deselezionaTutti, eliminaSelezionati, apriModificaMultipla, applicaModificaMultipla, chiudiModificaMultipla } from './selezione.js';
 import { sincronizzaTransazioniMondoCamGirls, importaCronologiaCompletaMcg } from './sincronizzazione.js';
 import { stato } from './stato.js';
 import { verificaStatoMCG, aggiornaTestoStatoMCG } from './stato-mcg.js';
+import { disegnaSelettoreTagForm, alternaTagForm, creaTagDaForm, disegnaTagModificaMultipla, alternaTagModificaMultipla, aggiornaFiltroTag, apriGestioneTag, chiudiGestioneTag, disegnaGestioneTag, creaTagDaGestione, rinominaTag, cambiaColoreTag, eliminaTag, inizializzaTag } from './tag.js';
 import { inizializzaStatoOnline } from './stato-online.js';
 import { popolaSelettoreAnni, caricaStatisticheMensili, aggiornaStatisticheMensili, selezionaMeseDettaglio, aggiornaIndicatoreBudgetHomepage } from './statistiche.js';
 import { apriLinkEsterno, espandiNota } from './utils.js';
@@ -51,9 +55,31 @@ registraAzioni({
     'cambia-pagina': (el) => cambiaPagina(Number(el.dataset.direzione)),
     'espandi-nota': (el) => espandiNota(el),
 
+    // Selezione multipla della cronologia
+    'seleziona-show': (el) => selezionaShow(el),
+    'seleziona-pagina': (el) => selezionaPagina(el),
+    'seleziona-tutti-filtrati': () => selezionaTuttiFiltrati(),
+    'deseleziona-tutti': () => deselezionaTutti(),
+    'elimina-selezionati': () => eliminaSelezionati(),
+    'modifica-selezionati': () => apriModificaMultipla(),
+    'applica-modifica-multipla': () => applicaModificaMultipla(),
+    'chiudi-modifica-multipla': () => chiudiModificaMultipla(),
+
+    // Tag degli show
+    'alterna-tag-form': (el) => alternaTagForm(el),
+    'crea-tag-form': () => creaTagDaForm(),
+    'alterna-tag-multipla': (el) => alternaTagModificaMultipla(el),
+    'apri-gestione-tag': () => apriGestioneTag(),
+    'chiudi-gestione-tag': () => chiudiGestioneTag(),
+    'crea-tag-gestione': () => creaTagDaGestione(),
+    'rinomina-tag': (el) => rinominaTag(el),
+    'colore-tag': (el) => cambiaColoreTag(el),
+    'elimina-tag': (el) => eliminaTag(el),
+
     // Classifica, statistiche, scheda modella
     'filtra-classifica': () => filtraClassificaModelle(),
     'cambia-anno-statistiche': () => aggiornaStatisticheMensili(),
+    'vista-grafico-spesa': (el) => { impostaVistaGraficoSpesa(el.dataset.vista); caricaStatisticheMensili(stato.tuttiGliShow); },
     'seleziona-mese': (el) => selezionaMeseDettaglio(el.dataset.mese === '' ? null : Number(el.dataset.mese)),
     'apri-scheda-modella': (el) => apriModalModella(el.dataset.nome),
     'chiudi-scheda-modella': () => chiudiModalModella(),
@@ -74,6 +100,11 @@ registraAzioni({
 function ridisegnaViste() {
     aggiornaDatalistModelle();
     inizializzaFiltroAnni(stato.tuttiGliShow);
+    // Tag: prima il filtro (usato da caricaCronologia), poi form, modifica multipla e gestione
+    aggiornaFiltroTag();
+    disegnaSelettoreTagForm();
+    disegnaTagModificaMultipla();
+    disegnaGestioneTag();
     popolaSelettoreAnni(stato.tuttiGliShow);
     caricaCronologia(stato.tuttiGliShow);
     caricaStatisticheMensili(stato.tuttiGliShow);
@@ -81,11 +112,18 @@ function ridisegnaViste() {
     // Mantiene l'eventuale ricerca e il filtro "Solo online" della classifica
     filtraClassificaModelle();
     aggiornaIndicatoreBudgetHomepage(stato.tuttiGliShow);
+    // Verifica in background i profili MCG non controllati di recente (anche delle modelle nuove)
+    verificaProfiliSospesi();
 }
 alCambioArchivio(ridisegnaViste);
 
 // Nuovo elenco delle modelle online (stato-online.js): classifica e scheda aperta
 document.addEventListener('modelle-online-aggiornate', () => {
+    filtraClassificaModelle();
+    aggiornaBadgeSchedaModella();
+});
+// Esito della verifica dei profili sospesi (profili-sospesi.js)
+document.addEventListener('profili-sospesi-aggiornati', () => {
     filtraClassificaModelle();
     aggiornaBadgeSchedaModella();
 });
@@ -197,12 +235,15 @@ async function avvia() {
     inizializzaSelectPiattaforma();
     inizializzaControlliCronologia();
     inizializzaModali();
+    inizializzaTag();
 
     // Mostra automaticamente le novità al primo avvio dopo un aggiornamento
     initChangelogCheck();
     inizializzaIndicatoreMCG();
     // Modelle online su MCG: subito, poi ogni 3 minuti
     inizializzaStatoOnline();
+    // Profili sospesi su MCG: ricontrollo orario dei profili verificati da più di 12 ore
+    inizializzaProfiliSospesi();
 
     logger.success("Applicazione inizializzata con successo.");
 }

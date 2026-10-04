@@ -9,6 +9,8 @@ module.exports = {
     cartellaDati,
     archivio: path.join(cartellaDati, 'shows_data.json'),
     archivioBackup: path.join(cartellaDati, 'shows_data.bak.json'),
+    // Catalogo dei tag degli show (main/catalogo-tag.js)
+    catalogoTag: path.join(cartellaDati, 'tags.json'),
     statoFinestra: path.join(cartellaDati, 'window_state.json'),
     log: path.join(cartellaDati, 'app.log'),
     logPrecedente: path.join(cartellaDati, 'app.log.1'),

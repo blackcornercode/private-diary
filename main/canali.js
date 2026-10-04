@@ -7,6 +7,8 @@ module.exports = Object.freeze({
     SALVA_ARCHIVIO: 'save-data',
     ESPORTA_BACKUP: 'export-data',
     IMPORTA_BACKUP: 'import-data',
+    LEGGI_TAG: 'read-tags',
+    SALVA_TAG: 'save-tags',
 
     // Sistema, log e changelog (ipc-sistema.js)
     VERSIONE_APP: 'get-app-version',
@@ -21,6 +23,7 @@ module.exports = Object.freeze({
     SALVA_COPIA_SINCRONIZZAZIONE: 'salva-dump-mcg',
     MODELLE_ONLINE: 'get-modelle-online',
     FOTO_MODELLA: 'fetch-modella-foto',
+    PROFILO_SOSPESO: 'get-profilo-sospeso',
     PING_MCG: 'ping-mcg',
 
     // Evento dal menu dell'applicazione verso l'interfaccia (main.js)

@@ -68,4 +68,15 @@ function downloadHtmlPage(targetUrl, timeoutMs = 15000) {
     });
 }
 
-module.exports = { urlMcgValido, slugProfiloMcg, downloadHtmlPage, USER_AGENT };
+// Profilo sospeso su MCG: la pagina mostra un avviso come
+//   <p class="mp-badge mp-badge--warn">WARNING! PROFILE TEMPORARYLY SUSPENDED!! ...</p>
+// (in italiano "sospeso"). Restituisce true/false, oppure null se la pagina
+// non sembra un profilo (scaricamento fallito o struttura cambiata).
+function profiloSospeso(html) {
+    if (!html) return null;
+    const avvisi = [...html.matchAll(/class="[^"]*\bmp-badge--warn\b[^"]*"[^>]*>([^<]*)</gi)].map(m => m[1]);
+    if (avvisi.some(testo => /suspend|sospes/i.test(testo))) return true;
+    return /class="[^"]*\bmp-top__/.test(html) ? false : null;
+}
+
+module.exports = { urlMcgValido, slugProfiloMcg, downloadHtmlPage, profiloSospeso, USER_AGENT };

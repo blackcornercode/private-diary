@@ -1,6 +1,6 @@
 # Gestione Show MCG V2
 
-![Version](https://img.shields.io/badge/version-v1.11.0-blue.svg)
+![Version](https://img.shields.io/badge/version-v1.12.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Electron-brightgreen.svg)
 
 **Gestione Show MCG** è un'applicazione desktop basata sull'architettura **Electron**, progettata per il monitoraggio, l'organizzazione e la storicizzazione degli show con **camgirl**. Il sistema offre un tracciamento avanzato delle sessioni e della spesa rispetto a budget mensili prefissati, fornendo metriche, statistiche economiche e classifiche automatiche. È nativamente integrata con il portale web **Mondo Cam Girls**.
@@ -41,15 +41,32 @@ Il form è chiuso di default per lasciare spazio alla cronologia: si apre con **
 
 #### Funzionalità avanzate della Cronologia:
 - **Paginazione Dinamica**: Selezione di vista a 5, 10, 20 elementi o elenco completo.
-- **Filtri e Ricerca**: Filtro per anno (generato dinamicamente) e ricerca istantanea per testo.
+- **Filtri e Ricerca**: Filtro per anno (generato dinamicamente, con la casella **Seleziona tutti** che spunta o toglie tutti gli anni e appare parzialmente spuntata se ne sono scelti solo alcuni), filtro per tag e ricerca istantanea per testo.
 - **Badge Origine**: Distinzione visiva tra record ad inserimento manuale (`👤`) o importati da MCG (`🤖 MCG`).
 - **Righe compatte**: Modifica (✏️) ed Elimina (🗑️) sono pulsanti a icona; nickname e note lunghi sono troncati con "…" e il testo completo compare al passaggio del mouse. Cliccando su una nota (o premendo Invio quando è selezionata) la si espande per leggerla tutta; un secondo clic la richiude. Se la finestra è stretta, la tabella scorre in orizzontale invece di tagliare le colonne.
+- **Selezione multipla**: una casella all'inizio di ogni riga seleziona lo show; quella nell'intestazione seleziona l'intera pagina. La selezione resta valida cambiando pagina, ordine o filtri. Con almeno uno show selezionato compare una barra con il conteggio (e quanti selezionati sono nascosti dai filtri attuali) e i pulsanti:
+  - **Seleziona tutti i risultati**: tutti gli show che passano i filtri, anche nelle altre pagine.
+  - **✏️ Modifica selezionati**: piattaforma, voto, recensione, durata e nickname impostati in un colpo solo; i campi lasciati su «non modificare» restano invariati. Come nel form, piattaforma e voto non vengono applicati ai regali.
+  - **🗑️ Elimina selezionati**: dopo una conferma che avvisa se tra i selezionati ci sono show nascosti dai filtri.
+  
+  Entrambe le operazioni salvano su disco una sola volta.
 - **Costo al Minuto (€/min)**: Calcolato automaticamente come costo ÷ durata. Mostra `–` per gli show senza durata registrata e per i regali.
 - **Colori con significato** (gli stessi in cronologia, scheda modella e dettaglio del mese):
   - **Voto**: badge verde (5), verde acqua (4), ambra (3), rosso (1-2); `TBD` in grigio.
   - **€/min**: verde se lo show è costato meno al minuto della tua media su tutti gli show, rosso se di più; entro ±10% dalla media resta neutro. Il valore della media compare passando il mouse.
   - **Dati mancanti e regali**: durata non registrata mostrata come `–` in grigio; costo e voto dei regali attenuati.
   - Tutte le coppie testo/sfondo rispettano il contrasto minimo WCAG di 4.5:1 in ogni tema, righe a zebra comprese.
+
+#### 🏷️ Tag degli show
+I tag indicano a colpo d'occhio il tipo di show (es. Anal, Lush, Squirt). Sono personalizzabili e ognuno ha un colore.
+- **Nel form**: sotto le note, clic su un tag per assegnarlo o toglierlo; un tag nuovo si crea scrivendolo nel campo e premendo Invio o **＋ Aggiungi**.
+- **Nelle tabelle**: per non allargare la tabella, i tag stanno nella colonna **Tag e note**, sopra la nota. Si vedono i primi tre tag e un «+N» per gli altri; il clic sulla cella mostra tutti i tag e la nota completa. Il tooltip elenca tutti i tag.
+- **Filtro**: il menu **🏷️ Tag** della cronologia mostra solo gli show con quel tag.
+- **Modifica multipla**: nella finestra della modifica dei selezionati, ogni clic su un tag passa da «non modificare» a **+ aggiungi**, a **− togli** e di nuovo a «non modificare». Utile per assegnare i tag agli show già salvati.
+- **Scheda modella**: la riga **Tipi di show** riassume i tag degli show fatti con la modella, dal più usato, con il numero di volte (es. `Squirt ×5`).
+- **⚙️ Impostazioni › 🏷️ Gestisci tag**: creazione, rinomina, colore ed eliminazione. Rinomina e colore valgono subito per tutti gli show che usano il tag; eliminandolo, dopo una conferma con il numero di show coinvolti, viene tolto anche da quegli show.
+
+Al primo avvio il catalogo contiene tre tag di esempio (Anal, Lush, Squirt), modificabili o eliminabili.
 
 ---
 
@@ -61,6 +78,7 @@ Elabora la cronologia salvata per generare indicatori prestazionali e statistici
 - **€/min Medio**: Costo medio al minuto per modella, presente anche nella scheda dettaglio. È calcolato come spesa ÷ minuti dei soli show con durata registrata, regali esclusi, così gli show più vecchi senza durata non gonfiano il risultato.
 - **Scheda Dettaglio (Modal)**: Cliccando su una riga si apre il resoconto storico dettagliato degli show effettuati con la singola modella.
 - **Modelle online**: accanto al nome compare il badge verde **● Online** se la modella è online su Mondo Cam Girls (anche nella scheda dettaglio); il filtro **Solo online** mostra solo quelle. Lo stato si aggiorna all'avvio e ogni 3 minuti, leggendo l'elenco delle modelle online dal servizio pubblico del sito (`getdata.html?online=si`, senza login). La modella viene riconosciuta dall'indirizzo del suo profilo (`https://<nome>.mondocamgirls.com`): senza un indirizzo valido lo stato non è verificabile e il badge non compare. Se il sito non risponde, i badge non compaiono e l'errore viene annotato nel log.
+- **Profili sospesi o rimossi**: accanto al nome (in classifica e nella scheda) compare il badge rosso **⛔ Sospesa** se il profilo su MCG è temporaneamente sospeso (la pagina mostra l'avviso «PROFILE TEMPORARYLY SUSPENDED»: non si possono acquistare show), oppure il badge grigio **🚫 Rimossa** se il profilo non esiste più (il suo sottodominio non esiste più, mentre il sito risponde). MCG non lo indica nell'elenco delle modelle, quindi l'app legge in background la pagina di ogni profilo, tre alla volta. L'esito di ogni profilo vale 12 ore ed è conservato tra un avvio e l'altro: si riverificano solo i profili controllati da più di 12 ore (all'avvio e poi ogni ora). Il tooltip del badge indica quando è stato verificato.
 
 ---
 
@@ -68,7 +86,9 @@ Elabora la cronologia salvata per generare indicatori prestazionali e statistici
 Fornisce il controllo finanziario sulle uscite e sui costi degli show:
 
 - **Impostazione Budget**: Definisce la soglia massima di spesa mensile (€).
+- **Riquadro apribile con stato sempre visibile**: il riquadro *Obiettivo e Budget Mensile* è chiuso e si apre con un clic sul titolo; accanto al titolo il badge **Budget OK** (verde), **Budget KO** (rosso) o **Non impostato** (grigio) mostra lo stato anche a riquadro chiuso, e il suo tooltip riporta spesa, budget e importo rimanente o sforato.
 - **Avanzamento e Indicatori Dynamic**: Monitoraggio percentuale in tempo reale con avvisi cromatici e messaggi contestuali tradotti in base al superamento o rispetto del budget.
+- **Grafico della spesa**: barre con la spesa di ogni mese dell'anno scelto (**Per mese**) o di ogni anno (**Per anno**), con totale, numero di show e media mensile o annua. Nella vista per mese, se è impostato un budget, una linea tratteggiata lo indica e i mesi oltre il budget sono in rosso; il mese o l'anno in corso è evidenziato. Passando il mouse su una barra si vedono spesa e numero di show. La vista scelta viene ricordata.
 - **Visualizzazione Tabellare Dettagliata**: Prospetto dei 12 mesi con contatore degli show effettuati, totale speso e vista espandibile per singolo mese.
 
 ---
@@ -77,7 +97,7 @@ Fornisce il controllo finanziario sulle uscite e sui costi degli show:
 
 L'intestazione mostra sempre **🔄 Sincronizza MCG** e l'indicatore di raggiungibilità del sito. Le altre funzioni sono raccolte in due menu a tendina:
 - **💾 Dati**: Esporta, Importa, Cartella.
-- **⚙️ Impostazioni**: dimensione del testo, lingua, tema.
+- **⚙️ Impostazioni**: dimensione del testo, lingua, tema, gestione dei tag.
 
 I menu si chiudono con un clic fuori o con `Esc`.
 
@@ -112,6 +132,7 @@ I dati sono salvati nella cartella `userData` dell'applicazione (apribile dal pu
 | `shows_data.bak.json` | Copia della versione precedente, aggiornata a ogni salvataggio o importazione. |
 | `shows_data.corrotto-<timestamp>.json` | Copia di un archivio illeggibile, conservata invece di sovrascriverlo. |
 | `app.log` | Log dell'applicazione, in ordine cronologico (righe più recenti in fondo). Oltre 1 MB diventa `app.log.1` e ne viene iniziato uno nuovo. |
+| `tags.json` | Catalogo dei tag (`id`, `nome`, `colore`). Gli show salvano solo gli ID dei tag nel campo `tag`, quindi rinominare un tag non modifica l'archivio. |
 | `window_state.json` | Dimensione e posizione della finestra. |
 | `mcg_ultima_sincronizzazione.json` | Copia della tabella letta nell'ultima sincronizzazione MCG, con l'esito di ogni riga. |
 
@@ -123,8 +144,9 @@ Formato del file di backup esportato:
 {
   "formato": "gestioneshow-backup",
   "versione": 1,
-  "versioneApp": "1.11.0",
+  "versioneApp": "1.12.0",
   "shows": [ ... ],
+  "tag": [ { "id": "lush", "nome": "Lush", "colore": "viola" } ],
   "impostazioni": { "monthly_budget": "300" }
 }
 ```
@@ -136,7 +158,8 @@ Formato del file di backup esportato:
 | Percorso | Ruolo |
 | :--- | :--- |
 | `main.js` | Processo principale Electron: ciclo di vita dell'app, finestre, menu e stato della finestra. Registra i gestori IPC di `main/`. |
-| `main/ipc-dati.js` | Archivio degli show: lettura, salvataggio (con copia `.bak`), esportazione e importazione dei backup. |
+| `main/ipc-dati.js` | Archivio degli show e catalogo dei tag: lettura, salvataggio (con copia `.bak`), esportazione e importazione dei backup. |
+| `main/catalogo-tag.js` | Validazione del catalogo dei tag, colori disponibili e tag iniziali. |
 | `main/ipc-sistema.js` | Versione, log, apertura di cartelle e link esterni, changelog e avviso "Novità". |
 | `main/ipc-mcg.js` | Mondo Cam Girls: lettura delle transazioni con login, copia diagnostica, modelle online, foto, raggiungibilità. |
 | `main/mcg-pagine.js` | Lettura pagina per pagina della cronologia transazioni di MCG. |
@@ -162,20 +185,24 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
 | `stato.js` | Stato condiviso: l'oggetto `stato` (archivio in memoria, filtri, pagina corrente, classifica…). |
 | `azioni.js` | Esecuzione delle azioni dichiarate negli attributi `data-azione`/`data-al-cambio`/`data-al-input`, e sostituzione delle foto che non si caricano. |
 | `utils.js` | Funzioni comuni: escape HTML, ID univoci, lettura delle date (anche formato italiano `gg/mm/aaaa`), normalizzazione dei record vecchi (`normalizzaShow`), formattazione importi, voti e durate, link esterni. |
-| `calcoli.js` | Calcoli puri sugli show, senza accesso alla pagina: classifica, totali di una modella, statistiche per anno, budget, filtri e pagine della cronologia, mappe di foto e profili. Verificati dai test. |
+| `calcoli.js` | Calcoli puri sugli show, senza accesso alla pagina: classifica, totali di una modella, statistiche per anno, budget, filtri e pagine della cronologia, modifica di più show insieme, mappe di foto e profili. Verificati dai test. |
 | `righe-show.js` | Disegnatore unico delle righe degli show: ogni colonna (intestazione e cella) è definita una volta; cronologia, dettaglio del mese e scheda modella sono elenchi di colonne. |
-| `archivio.js` | Archivio in memoria: letto da disco solo all'avvio e dopo un'importazione; aggiunte, modifiche ed eliminazioni salvano su disco e ridisegnano le viste senza rileggere il file. |
+| `archivio.js` | Archivio in memoria: letto da disco solo all'avvio e dopo un'importazione; aggiunte, modifiche ed eliminazioni (anche di più show insieme) salvano su disco e ridisegnano le viste senza rileggere il file. |
 | `preferenze.js` | Schede, tema, dimensione font, budget, versione. |
 | `galleria.js` | Lightbox e navigazione foto. |
 | `form-show.js` | Form di inserimento/modifica, autocompilazione, eliminazione. |
 | `dati.js` | Esportazione e importazione dei backup, apertura della cartella dati. |
 | `cronologia.js` | Cronologia show, filtri e paginazione. |
+| `tag.js` | Tag degli show: etichette colorate, selettore del form, scelta nella modifica multipla, filtro della cronologia e finestra Gestisci tag. |
+| `selezione.js` | Selezione multipla della cronologia: barra della selezione, eliminazione e modifica di più show insieme. |
+| `grafico-spesa.js` | Grafico a barre della spesa (per mese o per anno), disegnato in SVG senza librerie esterne. |
 | `statistiche.js` | Statistiche mensili e indicatori budget. |
 | `classifica.js` | Classifica modelle. |
 | `modale-modella.js` | Scheda dettaglio modella e foto da Mondo Cam Girls. |
 | `sincronizzazione.js` | Importazione transazioni da Mondo Cam Girls. |
 | `changelog.js` | Modale novità. |
 | `stato-mcg.js` | Indicatore di raggiungibilità di Mondo Cam Girls. |
+| `profili-sospesi.js` | Profili sospesi o rimossi su Mondo Cam Girls: verifica in background e badge in classifica e nella scheda. |
 | `stato-online.js` | Modelle online su Mondo Cam Girls: badge e filtro in classifica e nella scheda. |
 | `menu-header.js` | Menu a tendina Dati e Impostazioni dell'intestazione. |
 | `app.js` | Punto di ingresso: importa i moduli, registra le azioni dell'interfaccia, collega l'archivio alle viste, avvia l'applicazione. |

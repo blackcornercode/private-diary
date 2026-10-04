@@ -2,8 +2,8 @@
 
 ## Verifiche
 - `npm test`: test automatici in `tests/` (node:test, nessuna dipendenza). Eseguirli dopo ogni modifica; `npm run dist` li esegue comunque prima della build.
-- L'archivio vive in memoria (`tuttiGliShow`) ed è gestito da js/archivio.js: leggere da `tuttiGliShow`/`trovaShow()`, modificare solo con `aggiungiShow()`, `aggiornaShow()`, `rimuoviShow()` o `salvaArchivio()` (salvano su disco e chiamano `aggiornaViste()`). Mai `electronAPI.readData()`/`saveData()` diretti fuori da archivio.js e utils.js. Per elaborazioni che modificano i record usare `copiaArchivio()`.
-- I record passano da `normalizzaShow()` alla lettura: usare solo i campi attuali (`durata`, `urlProfilo`, `punteggio`, `dataOraISO`, `dataFormattata`).
+- L'archivio vive in memoria (`tuttiGliShow`) ed è gestito da js/archivio.js: leggere da `tuttiGliShow`/`trovaShow()`, modificare solo con `aggiungiShow()`, `aggiornaShow()`, `rimuoviShow()`, `aggiornaShows()`/`rimuoviShows()` (più show, un solo salvataggio) o `salvaArchivio()` (salvano su disco e chiamano `aggiornaViste()`). Mai `electronAPI.readData()`/`saveData()` diretti fuori da archivio.js e utils.js. Per elaborazioni che modificano i record usare `copiaArchivio()`.
+- I record passano da `normalizzaShow()` alla lettura: usare solo i campi attuali (`durata`, `urlProfilo`, `punteggio`, `dataOraISO`, `dataFormattata`). I tag di uno show sono ID nel campo `tag`; nomi e colori stanno nel catalogo `stato.catalogoTag` (tags.json, salvato con `salvaCatalogoTag()` di archivio.js).
 - Calcoli (totali, classifica, statistiche, filtri) in js/calcoli.js come funzioni pure, con test in tests/calcoli.test.js; le viste si limitano a disegnare.
 - Colonne delle tabelle degli show: definite una volta in js/righe-show.js (`COLONNE_SHOW`); niente stili inline nei template, usare classi in style.css.
 - js/ contiene moduli ES: ogni funzione usata da un altro file va esportata e importata esplicitamente (il test `moduli` lo verifica). Stato condiviso solo tramite l'oggetto `stato` di js/stato.js.

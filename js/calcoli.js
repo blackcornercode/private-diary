@@ -89,12 +89,17 @@ export function calcolaClassifica(shows, mappe = { immagini: {}, url: {} }) {
                 nome: show.nome.trim(),
                 foto: show.immagine || mappe.immagini[chiave] || '',
                 urlProfilo: show.urlProfilo || mappe.url[chiave] || '',
-                piattaformaPrevalente: show.piattaforma || '',
-                nicknamePrevalente: show.nickname || '',
+                piattaformaPrevalente: '',
+                nicknamePrevalente: '',
                 elencoShow: []
             });
         }
-        gruppi.get(chiave).elencoShow.push(show);
+        const gruppo = gruppi.get(chiave);
+        // Piattaforma e nickname: dallo show più recente che li ha. I regali non
+        // hanno piattaforma: se l'ultimo show è un regalo vale quello precedente
+        if (!gruppo.piattaformaPrevalente && !show.isRegalo && show.piattaforma) gruppo.piattaformaPrevalente = show.piattaforma;
+        if (!gruppo.nicknamePrevalente && show.nickname) gruppo.nicknamePrevalente = show.nickname;
+        gruppo.elencoShow.push(show);
     });
 
     const classifica = [...gruppi.values()].map(({ elencoShow, ...modella }) => ({ ...modella, ...riepilogoShow(elencoShow) }));
@@ -126,6 +131,27 @@ export function calcolaStatisticheAnno(shows, anno) {
     return { spesa, conteggio, showPerMese };
 }
 
+// Spesa e numero di show per anno, dal più vecchio (per il grafico della spesa).
+// Gli anni senza show tra il primo e l'ultimo compaiono con spesa 0.
+export function spesaPerAnno(shows) {
+    const perAnno = new Map();
+    shows.forEach(show => {
+        const anno = annoDelloShow(show);
+        if (!anno) return;
+        const voce = perAnno.get(anno) || { anno, spesa: 0, conteggio: 0 };
+        voce.spesa += parseFloat(show.costo) || 0;
+        voce.conteggio += 1;
+        perAnno.set(anno, voce);
+    });
+    if (perAnno.size === 0) return [];
+    const anni = [...perAnno.keys()];
+    const risultato = [];
+    for (let anno = Math.min(...anni); anno <= Math.max(...anni); anno++) {
+        risultato.push(perAnno.get(anno) || { anno, spesa: 0, conteggio: 0 });
+    }
+    return risultato;
+}
+
 // Spesa del mese di calendario di "oggi"
 export function spesaMeseCorrente(shows, oggi = new Date()) {
     return shows.reduce((totale, show) => {
@@ -149,18 +175,92 @@ export function statoBudget(spesa, budget) {
 }
 
 // Filtri e ordinamento della cronologia: nome (contiene, senza maiuscole),
-// anni selezionati (nessuno = tutti) e ordine per data ('asc' o 'desc')
-export function filtraOrdinaShows(shows, { nome = '', anni = [], ordine = 'desc' } = {}) {
+// anni selezionati (nessuno = tutti), tag (ID; vuoto = tutti) e ordine per data ('asc' o 'desc')
+export function filtraOrdinaShows(shows, { nome = '', anni = [], ordine = 'desc', tag = '' } = {}) {
     const filtroNome = nome.trim().toLowerCase();
     const anniScelti = new Set(anni);
     const risultato = shows.filter(s =>
         (!filtroNome || (s.nome && s.nome.toLowerCase().includes(filtroNome))) &&
-        (anniScelti.size === 0 || anniScelti.has(annoDelloShow(s))));
+        (anniScelti.size === 0 || anniScelti.has(annoDelloShow(s))) &&
+        (!tag || (s.tag || []).includes(tag)));
     risultato.sort((a, b) => {
         const diff = timestampShow(a) - timestampShow(b);
         return ordine === 'asc' ? diff : -diff;
     });
     return risultato;
+}
+
+// Modifica di più show insieme: applica a ogni show con ID in "ids" i campi
+// presenti in "campi" (piattaforma, punteggio, recensione, durata, nickname;
+// un campo assente resta invariato) e aggiunge/toglie i tag di tagAggiungi/tagTogli. Piattaforma e voto non si applicano ai
+// regali, come nel form. Restituisce un nuovo elenco (gli show non toccati
+// restano gli stessi oggetti), quanti show sono cambiati e quanti regali sono
+// stati esclusi da piattaforma/voto.
+export function applicaModificheMultiple(shows, ids, campi) {
+    const scelti = new Set(ids.map(String));
+    const tocchiPiattaformaVoto = campi.piattaforma !== undefined || campi.punteggio !== undefined;
+    let modificati = 0;
+    let regaliSaltati = 0;
+
+    const risultato = shows.map(show => {
+        if (!scelti.has(String(show.id))) return show;
+        const nuovo = { ...show };
+        let cambiato = false;
+        const imposta = (campo, valore) => {
+            if (nuovo[campo] !== valore) { nuovo[campo] = valore; cambiato = true; }
+        };
+
+        if (show.isRegalo) {
+            if (tocchiPiattaformaVoto) regaliSaltati++;
+        } else {
+            if (campi.piattaforma !== undefined) imposta('piattaforma', campi.piattaforma);
+            if (campi.punteggio !== undefined) imposta('punteggio', campi.punteggio);
+        }
+        if (campi.recensione !== undefined) imposta('recensione', campi.recensione);
+        if (campi.durata !== undefined) imposta('durata', campi.durata);
+        if (campi.nickname !== undefined) imposta('nickname', campi.nickname);
+        if (campi.tagAggiungi || campi.tagTogli) {
+            const attuali = show.tag || [];
+            const nuovi = aggiornaElencoTag(attuali, campi.tagAggiungi, campi.tagTogli);
+            if (nuovi.length !== attuali.length || nuovi.some((id, i) => id !== attuali[i])) {
+                nuovo.tag = nuovi;
+                cambiato = true;
+            }
+        }
+
+        if (!cambiato) return show;
+        modificati++;
+        return nuovo;
+    });
+    return { shows: risultato, modificati, regaliSaltati };
+}
+
+// Tag di uno show dopo aver tolto "togli" e aggiunto "aggiungi" (senza doppioni,
+// l'ordine dei tag già presenti resta)
+export function aggiornaElencoTag(attuali = [], aggiungi = [], togli = []) {
+    const daTogliere = new Set(togli);
+    const risultato = attuali.filter(id => !daTogliere.has(id));
+    aggiungi.forEach(id => { if (!daTogliere.has(id) && !risultato.includes(id)) risultato.push(id); });
+    return risultato;
+}
+
+// Quante volte compare ogni tag negli show, dal più usato; a parità vale
+// l'ordine in cui i tag compaiono (gli show arrivano di solito dal più recente)
+export function conteggioTag(shows) {
+    const conteggi = new Map();
+    shows.forEach(s => (s.tag || []).forEach(id => conteggi.set(id, (conteggi.get(id) || 0) + 1)));
+    return [...conteggi].map(([id, conteggio]) => ({ id, conteggio })).sort((a, b) => b.conteggio - a.conteggio);
+}
+
+// Toglie un tag (eliminato dal catalogo) da tutti gli show che lo usano
+export function togliTagDaShows(shows, id) {
+    let modificati = 0;
+    const risultato = shows.map(s => {
+        if (!(s.tag || []).includes(id)) return s;
+        modificati++;
+        return { ...s, tag: s.tag.filter(altro => altro !== id) };
+    });
+    return { shows: risultato, modificati };
 }
 
 // Una pagina di un elenco. limite 'all' = tutto in una pagina; la pagina

@@ -1,4 +1,17 @@
 {
+  "1.12.0": [
+    "Novità: selezione multipla nella cronologia, con una casella per riga e una per tutta la pagina, per eliminare o modificare più show insieme (piattaforma, voto, recensione, durata, nickname); la selezione resta attiva cambiando pagina o filtri",
+    "Novità: tag personalizzabili per indicare il tipo di show (es. Anal, Lush, Squirt), con nome e colore modificabili da Impostazioni › Gestisci tag",
+    "Novità: tag mostrati nella colonna Tag e note di cronologia, dettaglio del mese e scheda modella (i primi tre, gli altri con un clic), filtro per tag nella cronologia e aggiunta o rimozione di tag nella modifica multipla",
+    "Novità: nella scheda modella la riga Tipi di show riassume i tag dei suoi show, dal più usato",
+    "Novità: badge Sospesa per le modelle con il profilo temporaneamente sospeso su MCG e Rimossa per quelle il cui profilo non esiste più, in classifica e nella scheda modella (verifica in background, ripetuta ogni 12 ore per profilo)",
+    "Novità: grafico dell'andamento della spesa nelle Statistiche, per mese (con la linea del budget) o per anno",
+    "Interfaccia: casella Seleziona tutti nel filtro per anno della cronologia",
+    "Interfaccia: colonne Recensione (intestazione «Rec.») e Piattaforma più strette, così la cronologia non scorre più in orizzontale e le altre colonne hanno più spazio",
+    "Interfaccia: in classifica i criteri di ordinamento e la legenda dei colori sono chiusi; si aprono con un clic sul titolo",
+    "Interfaccia: anche il riquadro Obiettivo e Budget Mensile è chiuso e si apre con un clic sul titolo; accanto al titolo il badge Budget OK/KO mostra lo stato del budget anche a riquadro chiuso",
+    "Fix: in classifica la piattaforma della modella spariva se il suo ultimo show era un regalo; ora vale quella dello show precedente"
+  ],
   "1.11.0": [
     "Novità: durata degli show e costo al minuto (€/min), per singolo show e come media per modella; la media considera solo gli show con durata registrata, regali esclusi",
     "Novità: interfaccia multilingua (italiano e inglese)",

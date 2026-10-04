@@ -66,6 +66,7 @@
   "history": {
     "title": "📋 Cronologia Show",
     "filter_year": "Filtra per Anno:",
+    "select_all_years": "Seleziona tutti",
     "search": "🔍 Cerca Nome:",
     "ph_search": "Filtra per nome...",
     "order": "Ordine:",
@@ -75,6 +76,52 @@
     "results": "risultati",
     "all": "Tutti",
     "reset": "Reset Filtri"
+  },
+  "selection": {
+    "select_page": "Seleziona tutti gli show della pagina",
+    "count": "Selezionati: {n}",
+    "hidden": "(di cui {n} non visibili con i filtri attuali)",
+    "select_all_filtered": "Seleziona tutti i risultati ({n})",
+    "clear": "Deseleziona",
+    "edit": "✏️ Modifica selezionati",
+    "delete": "🗑️ Elimina selezionati",
+    "confirm_delete": "Eliminare definitivamente gli show selezionati ({n})?",
+    "confirm_hidden": "Attenzione: alcuni non sono visibili con i filtri attuali ({n}).",
+    "edit_title": "✏️ Modifica show selezionati",
+    "edit_info": "Show a cui verranno applicate le modifiche: {n}",
+    "edit_note": "I campi lasciati su «non modificare» restano invariati. Piattaforma e voto non vengono applicati ai regali.",
+    "no_change": "— non modificare —",
+    "review_yes": "✅ Fatta",
+    "review_no": "❌ Non fatta",
+    "apply": "Applica modifiche",
+    "nothing_to_change": "Scegli almeno un campo da modificare.",
+    "invalid_duration": "La durata deve essere un numero intero di minuti (0 o più).",
+    "edit_none": "Nessuno show è cambiato: avevano già questi valori.",
+    "edit_done_gifts": "Show aggiornati: {n}. Piattaforma e voto non sono stati applicati ai regali selezionati ({regali})."
+  },
+  "tags": {
+    "label": "🏷️ Tag",
+    "ph_new": "Nuovo tag...",
+    "add": "＋ Aggiungi",
+    "manage": "🏷️ Gestisci tag",
+    "manage_title": "🏷️ Gestisci tag",
+    "manage_hint": "Rinomina un tag scrivendo nel campo: il nuovo nome vale per tutti gli show che lo usano.",
+    "done": "Fatto",
+    "rename": "Nome del tag",
+    "color": "Colore",
+    "delete": "Elimina tag",
+    "usage": "{n} show",
+    "confirm_delete": "Eliminare il tag «{nome}»? Verrà tolto anche dagli show che lo usano ({n}).",
+    "duplicate": "Esiste già un tag con questo nome.",
+    "empty_name": "Il nome del tag non può essere vuoto.",
+    "empty": "Nessun tag: creane uno qui sotto.",
+    "empty_form": "Nessun tag ancora: scrivine uno qui sotto.",
+    "filter": "🏷️ Tag:",
+    "all": "Tutti",
+    "show_types": "Tipi di show:",
+    "bulk_hint": "Clic su un tag: + aggiungi, poi − togli, poi di nuovo non modificare.",
+    "bulk_add": "Verrà aggiunto",
+    "bulk_remove": "Verrà tolto"
   },
   "pagination": {
     "prev": "⬅️ Precedente",
@@ -102,6 +149,12 @@
     "badge": "Online",
     "tooltip": "Online adesso su MondoCamGirls (verificato alle {ora})"
   },
+  "suspended": {
+    "badge": "⛔ Sospesa",
+    "tooltip": "Profilo temporaneamente sospeso su MondoCamGirls: non è possibile acquistare show (verificato il {data})",
+    "badge_removed": "🚫 Rimossa",
+    "removed": "Il profilo non esiste più su MondoCamGirls (verificato il {data})"
+  },
   "budget": {
     "title": "Obiettivo e Budget Mensile",
     "set_label": "Imposta Budget Mensile (€):",
@@ -113,7 +166,9 @@
     "under_budget_badge": "SOTTO BUDGET",
     "exceeded_warning": "ATTENZIONE! Hai superato il budget di",
     "exceeded_badge": "BUDGET SUPERATO",
-    "exceeded_by": "Sforato di"
+    "exceeded_by": "Sforato di",
+    "ok_badge": "Budget OK",
+    "ko_badge": "Budget KO"
   },
   "stats": {
     "title": "📈 Statistiche Mensili",
@@ -125,6 +180,18 @@
     "current": "Attuale",
     "click_details": "Clicca per vedere/nascondere i dettagli degli show",
     "no_shows_month": "Nessuno show in questo mese"
+  },
+  "chart": {
+    "title": "📊 Andamento della spesa",
+    "by_month": "Per mese",
+    "by_year": "Per anno",
+    "shows": "show",
+    "total_year": "Totale {anno}",
+    "total_all": "Totale complessivo",
+    "avg_month": "media mensile",
+    "avg_year": "media annua",
+    "budget": "Budget",
+    "empty": "Nessuna spesa da mostrare."
   },
   "table": {
     "pos": "Posizione",
@@ -148,8 +215,11 @@
     "rating": "Voto",
     "source": "Origine",
     "review": "Recensione",
+    "review_short": "Rec.",
     "notes": "Note",
-    "actions": "Azioni"
+    "actions": "Azioni",
+    "select": "Seleziona",
+    "tags_notes": "Tag e note"
   },
   "modal": {
     "gallery": "🖼️ Galleria Foto Profilo",
