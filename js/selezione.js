@@ -109,7 +109,7 @@ export async function eliminaSelezionati() {
 /* --------------------------------------------------------------------------
    MODIFICA MULTIPLA (finestra #modalModificaMultipla)
    -------------------------------------------------------------------------- */
-const CAMPI_MODIFICA = ['mmPiattaforma', 'mmPunteggio', 'mmRecensione', 'mmDurata', 'mmNickname'];
+const CAMPI_MODIFICA = ['mmSito', 'mmPiattaforma', 'mmPunteggio', 'mmRecensione', 'mmDurata', 'mmNickname'];
 
 export function apriModificaMultipla() {
     const n = stato.selezioneCronologia.size;
@@ -150,6 +150,7 @@ function leggiCampiModifica() {
     }
 
     if (valore('mmNickname')) campi.nickname = valore('mmNickname');
+    if (valore('mmSito')) campi.sito = valore('mmSito');
 
     const sceltaTag = [...stato.tagModificaMultipla];
     if (sceltaTag.length) {

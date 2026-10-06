@@ -20,14 +20,19 @@
     <!-- HEADER & NAVIGAZIONE -->
     <header>
         <div class="header-container">
-            <h1>
-                <span>📔 <span data-i18n="app_title">Diario Privato</span></span>
-                <span id="appVersion" class="version-badge"></span>
-            </h1>
+            <!-- Titolo e, sotto, cosa fa l'app in una riga (come in ? › Informazioni) -->
+            <div class="intestazione-titolo">
+                <h1>
+                    <span>📔 <span data-i18n="app_title">Diario Privato</span></span>
+                    <span id="appVersion" class="version-badge"></span>
+                </h1>
+                <p class="sottotitolo-app" data-i18n="app_subtitle">Ogni show registrato, ogni euro sotto controllo, ogni modella al posto giusto in classifica.</p>
+            </div>
 
             <div class="header-controls">
                 <!-- Stato raggiungibilità Mondo Cam Girls (clic = nuova verifica) -->
-                <div class="mcg-status-container" id="mcgStatusContainer" role="button" tabindex="0">
+                <!-- .solo-mcg: parti legate a Mondo Cam Girls, nascoste se il sito non è in uso (gestione-siti.js) -->
+                <div class="mcg-status-container solo-mcg" id="mcgStatusContainer" role="button" tabindex="0">
                     <span class="status-dot yellow" id="mcgStatusDot"></span>
                     <span class="status-text" id="mcgStatusText">MCG: Verifica...</span>
                 </div>
@@ -37,7 +42,7 @@
                     <button type="button" class="btn-data menu-header-toggle" aria-haspopup="true" aria-expanded="false" data-i18n="menu.data">💾 Dati ▾</button>
                     <div class="menu-header-pannello" role="menu">
                         <!-- Le due importazioni da MCG: descrizione breve sempre visibile, differenza completa nel tooltip -->
-                        <div class="menu-sezione menu-sezione-mcg" role="group" aria-labelledby="titoloSezioneMcg">
+                        <div class="menu-sezione menu-sezione-mcg solo-mcg" role="group" aria-labelledby="titoloSezioneMcg">
                             <span class="titolo-sezione-menu" id="titoloSezioneMcg" data-i18n="menu.mcg_title">🌐 Importa da Mondo Cam Girls</span>
                             <button type="button" class="btn-data voce-menu-mcg" role="menuitem" data-azione="sincronizza-mcg"
                                 title="Legge solo la prima pagina delle transazioni (le ultime 100) e importa gli show nuovi." data-i18n-title="actions.sync_hint">
@@ -48,6 +53,20 @@
                                 title="Legge tutte le pagine delle transazioni e importa tutto ciò che manca." data-i18n-title="actions.sync_all_hint">
                                 <span class="voce-menu-titolo" data-i18n="actions.sync_all">📜 Cronologia completa MCG</span>
                                 <small class="voce-menu-descrizione" data-i18n="actions.sync_all_desc">Tutte le pagine · più lenta</small>
+                            </button>
+                        </div>
+                        <!-- File CSV: storico di qualsiasi sito ed esportazione (js/importa-csv.js) -->
+                        <div class="menu-sezione" role="group" aria-labelledby="titoloSezioneCsv">
+                            <span class="titolo-sezione-menu" id="titoloSezioneCsv" data-i18n="menu.csv_title">📄 File CSV (tutti i siti)</span>
+                            <button type="button" class="btn-data voce-menu-mcg" role="menuitem" data-azione="importa-csv"
+                                title="Importa lo storico degli acquisti scaricato da qualsiasi sito di cam" data-i18n-title="csv.import_hint">
+                                <span class="voce-menu-titolo" data-i18n="csv.import">📥 Importa da CSV</span>
+                                <small class="voce-menu-descrizione" data-i18n="csv.import_desc">Storico di qualsiasi sito</small>
+                            </button>
+                            <button type="button" class="btn-data voce-menu-mcg" role="menuitem" data-azione="esporta-csv"
+                                title="Salva tutta la cronologia in un file CSV, apribile con Excel" data-i18n-title="csv.export_hint">
+                                <span class="voce-menu-titolo" data-i18n="csv.export">📤 Esporta in CSV</span>
+                                <small class="voce-menu-descrizione" data-i18n="csv.export_desc">Tutta la cronologia, per Excel</small>
                             </button>
                         </div>
                         <div class="menu-sezione" role="group" aria-labelledby="titoloSezioneBackup">
@@ -86,11 +105,12 @@
                                 <option value="grey" data-i18n="themes.grey">Neve & Nebbia</option>
                                 <option value="light" data-i18n="themes.light">Luce Chiara</option>
                                 <option value="dark" data-i18n="themes.dark">Eclissi Scura</option>
-                                <option value="mcg" data-i18n="themes.mcg">Bordeaux & Oro (MCG)</option>
+                                <option value="mcg" data-i18n="themes.mcg">Bordeaux & Oro</option>
                             </select>
                         </div>
 
                         <button type="button" class="btn-data" data-azione="apri-gestione-tag" data-i18n="tags.manage">🏷️ Gestisci tag</button>
+                        <button type="button" class="btn-data" data-azione="apri-gestione-siti" data-i18n="sites.manage">🌐 Gestisci siti</button>
 
                         <!-- Privacy (js/privacy.js, main/ipc-privacy.js) -->
                         <div class="impostazioni-privacy">
@@ -149,114 +169,148 @@
             <!-- Il form è chiuso di default: si apre con "Nuovo show" o con "Modifica" -->
             <section class="card-section form-chiuso" id="sezioneForm">
                 <div class="form-intestazione">
-                    <h2 id="titoloForm" data-i18n="form.title">Aggiungi / Modifica Show</h2>
+                    <h2 id="titoloForm" data-i18n="form.title">Aggiungi show</h2>
+                    <!-- Tipo (show o regalo): visibile solo a form aperto. La casella nascosta
+                         isRegalo (nel form) resta il valore usato dal salvataggio -->
+                    <div class="selettore-vista selettore-tipo" role="group" aria-label="Tipo">
+                        <button type="button" class="btn-data attivo" data-azione="tipo-show" data-tipo="show" aria-pressed="true" data-i18n="form.type_show">🎥 Show</button>
+                        <button type="button" class="btn-data" data-azione="tipo-show" data-tipo="regalo" aria-pressed="false" data-i18n="form.gift">🎁 Regalo</button>
+                    </div>
                     <button type="button" id="btnToggleForm" class="btn-primary" data-azione="toggle-form" aria-expanded="false" aria-controls="showForm" data-i18n="form.btn_new">＋ Nuovo show</button>
                 </div>
                 <form id="showForm" class="show-form-grid">
     <input type="hidden" id="editId" value="">
+    <input type="checkbox" id="isRegalo" hidden data-al-cambio="gestisci-regalo">
+    <!-- In modifica: quale show si sta modificando (form-show.js) -->
+    <div id="bannerModifica" class="banner-modifica" role="status" hidden></div>
 
-    <!-- Riga 1: tipo (show o regalo) e data. La casella nascosta isRegalo resta
-         il valore usato dal salvataggio; i due pulsanti la impostano (form-assistito.js) -->
-    <div class="form-riga-tipo">
-        <div class="selettore-vista selettore-tipo" role="group" aria-label="Tipo">
-            <button type="button" class="btn-data attivo" data-azione="tipo-show" data-tipo="show" aria-pressed="true" data-i18n="form.type_show">🎥 Show</button>
-            <button type="button" class="btn-data" data-azione="tipo-show" data-tipo="regalo" aria-pressed="false" data-i18n="form.gift">🎁 Regalo</button>
+    <!-- CHI E QUANDO: modella, sito (predefinito, poi quello dell'ultimo show con
+         la modella: gestione-siti.js), data; sotto, la mini-scheda della modella -->
+    <section class="sezione-form" aria-labelledby="titoloSezioneChi">
+        <h3 id="titoloSezioneChi" class="sezione-form-titolo" data-i18n="form.section_who">Chi e quando</h3>
+        <div class="griglia-form griglia-chi">
+            <div class="form-group campo-modella">
+                <label for="nome"><span data-i18n="form.model_name">Modella</span> <span class="obbligatorio" aria-hidden="true">*</span></label>
+                <input type="text" id="nome" list="listaModelleSuggerite" placeholder="Es. Anna" data-i18n-ph="form.ph_name" required autocomplete="off">
+                <datalist id="listaModelleSuggerite"></datalist>
+            </div>
+            <div class="form-group campo-sito">
+                <span class="etichetta-campo"><span data-i18n="sites.label">🌐 Sito</span> <small id="nomeSitoForm" class="nome-sito-form"></small></span>
+                <div id="sitoForm" class="selettore-tag selettore-sito" role="group" aria-label="Sito"></div>
+            </div>
+            <div class="form-group campo-data">
+                <label for="dataOra"><span data-i18n="form.date">Data e ora</span> <span class="obbligatorio" aria-hidden="true">*</span></label>
+                <input type="datetime-local" id="dataOra" required>
+            </div>
+            <div id="miniSchedaModella" class="mini-scheda" hidden></div>
         </div>
-        <input type="checkbox" id="isRegalo" hidden data-al-cambio="gestisci-regalo">
-        <div class="form-group campo-data">
-            <label for="dataOra" data-i18n="form.date">Data e Ora</label>
-            <input type="datetime-local" id="dataOra" required>
-        </div>
-    </div>
+    </section>
 
-    <!-- Riga 2: modella e, se già conosciuta, la sua mini-scheda -->
-    <div class="form-riga-modella">
-        <div class="form-group campo-modella">
-            <label for="nome" data-i18n="form.model_name">Nome Modella</label>
-            <input type="text" id="nome" list="listaModelleSuggerite" placeholder="Es. Anna" data-i18n-ph="form.ph_name" required autocomplete="off">
-            <datalist id="listaModelleSuggerite"></datalist>
-        </div>
-        <div id="miniSchedaModella" class="mini-scheda" hidden></div>
-    </div>
-
-    <!-- Riga 3: durata (con valori rapidi), costo con il €/min calcolato mentre si scrive,
-         voto e recensione -->
-    <div class="form-row riga-durata-costo">
-        <div class="form-group solo-show">
-            <label for="durataShow" data-i18n="form.label_duration">Durata Show (minuti)</label>
-            <div class="durata-rapida" role="group" aria-label="Durata rapida">
-                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="10">10</button>
-                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="15">15</button>
-                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="20">20</button>
-                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="30">30</button>
-                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="45">45</button>
-                <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="60">60</button>
-                <!-- Facoltativo: senza durata lo show non entra nel calcolo del €/min -->
-                <input type="number" id="durataShow" min="0" placeholder="min" data-i18n-ph="form.ph_minutes" data-al-input="anteprima-costo-minuto">
+    <!-- LO SHOW: durata (valori rapidi o libera), costo (in euro, oppure in token o
+         altra valuta per i siti che la usano: form-assistito.js), €/min calcolato -->
+    <section class="sezione-form" aria-labelledby="titoloSezioneShow">
+        <h3 id="titoloSezioneShow" class="sezione-form-titolo" data-i18n="form.section_show">Lo show</h3>
+        <div class="griglia-form griglia-show">
+            <div class="form-group solo-show">
+                <label for="durataAltro" data-i18n="form.duration_minutes">Durata (minuti)</label>
+                <div class="durata-rapida" role="group" aria-label="Durata rapida">
+                    <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="10">10</button>
+                    <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="15">15</button>
+                    <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="20">20</button>
+                    <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="30">30</button>
+                    <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="45">45</button>
+                    <button type="button" class="btn-data" data-azione="durata-rapida" data-minuti="60">60</button>
+                    <!-- Durata libera (vuota se è scelto un valore rapido). Il valore salvato è
+                         durataShow; facoltativo: senza durata lo show non entra nel calcolo del €/min -->
+                    <input type="number" id="durataAltro" min="0" placeholder="altro…" data-i18n-ph="form.ph_other_minutes" data-al-input="durata-libera">
+                    <input type="hidden" id="durataShow" value="">
+                </div>
+            </div>
+            <div class="form-group campo-costo">
+                <div id="campoCostoEuro">
+                    <label for="costo" data-i18n="form.cost">Costo (€)</label>
+                    <div class="costo-con-azione">
+                        <input type="number" id="costo" step="0.01" min="0" placeholder="0.00" data-al-input="anteprima-costo-minuto">
+                        <button type="button" id="btnCostoUltimo" class="btn-data" data-azione="costo-ultimo" hidden></button>
+                    </div>
+                </div>
+                <!-- Siti che fanno pagare in token, dollari...: si scrive l'importo pagato, il costo in euro si calcola col tasso del sito -->
+                <div id="convertitoreValuta" class="convertitore-valuta" hidden>
+                    <label for="importoValuta" id="etichettaImportoValuta">Token pagati</label>
+                    <div class="costo-con-azione">
+                        <input type="number" id="importoValuta" min="0" step="any" data-al-input="converti-importo">
+                        <span id="equivalenteEuro" class="equivalente-euro" aria-live="polite"></span>
+                    </div>
+                </div>
+                <small id="notaValuta" class="nota-valuta" hidden>
+                    <span id="tassoImportoValuta"></span> ·
+                    <a href="#" id="linkCostoEuro" class="link-web" data-azione="alterna-costo-euro"></a>
+                </small>
+            </div>
+            <div class="form-group solo-show">
+                <span class="etichetta-campo" data-i18n="form.cost_per_minute_label">Costo al minuto</span>
+                <div id="anteprimaCostoMinuto" class="anteprima-costo-minuto" aria-live="polite"></div>
             </div>
         </div>
-        <div class="form-group campo-costo">
-            <label for="costo" data-i18n="form.cost">Costo (€)</label>
-            <div class="costo-con-azione">
-                <input type="number" id="costo" step="0.01" min="0" placeholder="0.00" data-al-input="anteprima-costo-minuto">
-                <button type="button" id="btnCostoUltimo" class="btn-data" data-azione="costo-ultimo" hidden></button>
+    </section>
+
+    <!-- COM'È ANDATA: voto con gli stessi badge colorati della cronologia (nessuno =
+         TBD al salvataggio; la select nascosta punteggio resta il valore salvato) e recensione -->
+    <section class="sezione-form" aria-labelledby="titoloSezioneVoto">
+        <h3 id="titoloSezioneVoto" class="sezione-form-titolo" data-i18n="form.section_how">Com'è andata</h3>
+        <div class="griglia-form griglia-voto">
+            <div class="form-group campo-voto solo-show">
+                <span class="etichetta-campo" data-i18n="form.rating">Voto</span>
+                <div class="scelta-voto" role="group" aria-label="Valutazione">
+                    <button type="button" class="badge-voto voto-pulsante voto-basso" data-azione="voto-stelle" data-voto="1" aria-label="1/5">1</button>
+                    <button type="button" class="badge-voto voto-pulsante voto-basso" data-azione="voto-stelle" data-voto="2" aria-label="2/5">2</button>
+                    <button type="button" class="badge-voto voto-pulsante voto-3" data-azione="voto-stelle" data-voto="3" aria-label="3/5">3</button>
+                    <button type="button" class="badge-voto voto-pulsante voto-4" data-azione="voto-stelle" data-voto="4" aria-label="4/5">4</button>
+                    <button type="button" class="badge-voto voto-pulsante voto-5" data-azione="voto-stelle" data-voto="5" aria-label="5/5">5</button>
+                    <button type="button" class="badge-tbd voto-pulsante" data-azione="voto-stelle" data-voto="TBD">TBD</button>
+                </div>
+                <select id="punteggio" hidden>
+                    <option value=""></option>
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                    <option value="TBD">TBD</option>
+                </select>
             </div>
-            <div id="anteprimaCostoMinuto" class="anteprima-costo-minuto" aria-live="polite"></div>
-        </div>
-        <!-- Voto con gli stessi badge colorati della cronologia (nessuno = TBD al salvataggio).
-             La select nascosta punteggio resta il valore usato dal salvataggio -->
-        <div class="form-group campo-voto">
-            <span class="etichetta-campo" data-i18n="form.rating">Valutazione</span>
-            <div class="scelta-voto" role="group" aria-label="Valutazione">
-                <button type="button" class="badge-voto voto-pulsante voto-basso" data-azione="voto-stelle" data-voto="1" aria-label="1/5">1</button>
-                <button type="button" class="badge-voto voto-pulsante voto-basso" data-azione="voto-stelle" data-voto="2" aria-label="2/5">2</button>
-                <button type="button" class="badge-voto voto-pulsante voto-3" data-azione="voto-stelle" data-voto="3" aria-label="3/5">3</button>
-                <button type="button" class="badge-voto voto-pulsante voto-4" data-azione="voto-stelle" data-voto="4" aria-label="4/5">4</button>
-                <button type="button" class="badge-voto voto-pulsante voto-5" data-azione="voto-stelle" data-voto="5" aria-label="5/5">5</button>
-                <button type="button" class="badge-tbd voto-pulsante" data-azione="voto-stelle" data-voto="TBD">TBD</button>
-            </div>
-            <select id="punteggio" hidden>
-                <option value=""></option>
-                <option value="5">5</option>
-                <option value="4">4</option>
-                <option value="3">3</option>
-                <option value="2">2</option>
-                <option value="1">1</option>
-                <option value="TBD">TBD</option>
-            </select>
-            <label class="checkbox-label casella-recensione" for="recensione">
-                <input type="checkbox" id="recensione">
-                <span data-i18n="form.review_done">✅ Recensione Fatta</span>
+            <label class="interruttore casella-recensione" for="recensione">
+                <input type="checkbox" id="recensione" role="switch">
+                <span data-i18n="form.review_done">Recensione fatta</span>
             </label>
         </div>
-    </div>
+    </section>
 
-    <!-- Riga 5: tag (js/tag.js); quelli usati di solito con la modella sono segnati -->
-    <div class="form-row">
-        <div class="form-group full-width">
-            <span class="etichetta-campo"><span data-i18n="tags.label">🏷️ Tag</span> <small id="notaTagSuggeriti" class="nota-tag-suggeriti" data-i18n="form.tags_suggested" hidden>☆ = usati di solito con lei</small></span>
+    <!-- TAG E NOTE: tag (js/tag.js; ★ su quelli usati di solito con la modella) e note -->
+    <section class="sezione-form" aria-labelledby="titoloSezioneTag">
+        <h3 id="titoloSezioneTag" class="sezione-form-titolo" data-i18n="form.section_tags">Tag e note</h3>
+        <div class="riga-tag-form">
             <div id="tagForm" class="selettore-tag"></div>
-            <div class="nuovo-tag">
-                <input type="text" id="nuovoTagForm" maxlength="40" placeholder="Nuovo tag..." data-i18n-ph="tags.ph_new" aria-label="Nuovo tag">
-                <button type="button" class="btn-data" data-azione="crea-tag-form" data-i18n="tags.add">＋ Aggiungi</button>
-            </div>
+            <button type="button" id="btnNuovoTagForm" class="btn-nuovo-tag" data-azione="mostra-nuovo-tag" data-i18n="tags.new_button">＋ Nuovo tag</button>
         </div>
-    </div>
-
-    <!-- Riga 6: note -->
-    <div class="form-row">
-        <div class="form-group full-width">
-            <label for="note" data-i18n="form.notes">Note / Dettagli Show</label>
-            <textarea id="note" rows="2" placeholder="Inserisci note aggiuntive..." data-i18n-ph="form.ph_notes"></textarea>
+        <small id="notaTagSuggeriti" class="nota-tag-suggeriti" data-i18n="form.tags_suggested" hidden>★ = usati di solito con lei</small>
+        <div id="nuovoTagRiga" class="nuovo-tag" hidden>
+            <input type="text" id="nuovoTagForm" maxlength="40" placeholder="Nuovo tag..." data-i18n-ph="tags.ph_new" aria-label="Nuovo tag">
+            <button type="button" class="btn-data" data-azione="crea-tag-form" data-i18n="tags.add">＋ Aggiungi</button>
         </div>
-    </div>
+        <div class="form-group campo-note">
+            <label for="note" class="sr-only" data-i18n="form.notes">Note</label>
+            <textarea id="note" rows="2" placeholder="Note sullo show…" data-i18n-ph="form.ph_notes"></textarea>
+        </div>
+    </section>
 
-    <!-- Riga 7: dettagli che si compilano da soli (ultimo show della modella, MCG) -->
+    <!-- Dettagli che si compilano da soli (ultimo show della modella, MCG) -->
     <details id="dettagliForm" class="dettagli-form">
         <summary>
-            <span data-i18n="form.details">Dettagli</span>
+            <span class="titolo-dettagli">🔧 <span data-i18n="form.details">Dettagli</span></span>
+            <!-- Riepilogo a "pillole" dei campi compilati (form-assistito.js) -->
             <span id="riepilogoDettagli" class="riepilogo-dettagli"></span>
-            <i class="fa-solid fa-chevron-down riquadro-freccia" aria-hidden="true"></i>
+            <span class="freccia-dettagli"><i class="fa-solid fa-chevron-down riquadro-freccia" aria-hidden="true"></i></span>
         </summary>
         <div class="griglia-dettagli">
             <div class="form-group solo-show">
@@ -297,12 +351,12 @@
         </div>
     </details>
 
-    <!-- Pulsanti d'azione -->
+    <!-- Pulsanti d'azione: barra sempre visibile in fondo allo schermo mentre si compila -->
     <div class="form-actions">
-        <small class="suggerimento-scorciatoie" data-i18n="form.shortcuts">Ctrl+Invio salva · Esc chiude</small>
+        <small class="suggerimento-scorciatoie"><kbd>Ctrl</kbd> + <kbd data-i18n="form.key_enter">Invio</kbd> <span data-i18n="form.shortcut_save">salva</span> · <kbd>Esc</kbd> <span data-i18n="form.shortcut_close">chiude</span></small>
         <button type="button" class="btn-data" data-azione="svuota-form" title="Svuota tutti i campi" data-i18n="form.clear">🧹 Svuota</button>
         <button type="button" id="btnAnnulla" class="btn-secondary" style="display: none;" data-azione="annulla-modifica" data-i18n="form.btn_cancel">Annulla</button>
-        <button type="submit" id="btnSalva" class="btn-primary" data-i18n="form.btn_save">Salva Record</button>
+        <button type="submit" id="btnSalva" class="btn-primary" data-i18n="form.btn_save">💾 Salva show</button>
     </div>
 </form>
             </section>
@@ -320,6 +374,12 @@
                         <div class="filter-item">
                             <label for="searchModellaCronologia" data-i18n="history.search">🔍 Cerca Nome:</label>
                             <input type="text" id="searchModellaCronologia" placeholder="Filtra per nome..." data-i18n-ph="history.ph_search" data-al-input="filtra-cronologia">
+                        </div>
+
+                        <div class="filter-item">
+                            <label for="filtroSitoCronologia" data-i18n="sites.filter">🌐 Sito:</label>
+                            <!-- Opzioni generate da js/gestione-siti.js (aggiornaSelectSiti) -->
+                            <select id="filtroSitoCronologia" data-al-cambio="filtra-cronologia"></select>
                         </div>
 
                         <div class="filter-item">
@@ -428,7 +488,11 @@
                         <label for="searchModellaClassifica" data-i18n="ranking.search">🔎 Cerca Modella:</label>
                         <input type="text" id="searchModellaClassifica" placeholder="Inserisci il nome..." data-i18n-ph="ranking.ph_search" data-al-input="filtra-classifica">
                     </div>
-                    <label class="checkbox-label" for="filtroSoloOnline">
+                    <div class="filter-item">
+                        <label for="filtroSitoClassifica" data-i18n="sites.filter">🌐 Sito:</label>
+                        <select id="filtroSitoClassifica" data-al-cambio="filtra-classifica"></select>
+                    </div>
+                    <label class="checkbox-label solo-mcg" for="filtroSoloOnline">
                         <input type="checkbox" id="filtroSoloOnline" data-al-cambio="filtra-classifica">
                         <span data-i18n="ranking.only_online">Solo online</span>
                     </label>
@@ -502,6 +566,7 @@
                         <div class="selettore-vista" role="group" aria-label="Vista del grafico">
                             <button type="button" class="btn-data" data-azione="vista-grafico-spesa" data-vista="mesi" aria-pressed="true" data-i18n="chart.by_month">Per mese</button>
                             <button type="button" class="btn-data" data-azione="vista-grafico-spesa" data-vista="anni" aria-pressed="false" data-i18n="chart.by_year">Per anno</button>
+                            <button type="button" class="btn-data" data-azione="vista-grafico-spesa" data-vista="siti" aria-pressed="false" data-i18n="chart.by_site">Per sito</button>
                         </div>
                     </div>
                     <p id="riepilogoGraficoSpesa" class="riepilogo-grafico"></p>
@@ -521,7 +586,7 @@
             <div id="modalHeader" class="modal-header-info"></div>
             
             <!-- SEZIONE GALLERIA FOTO -->
-            <div id="sezioneGalleriaModella" style="margin-top: 15px; margin-bottom: 20px;">
+            <div id="sezioneGalleriaModella" class="solo-mcg" style="margin-top: 15px; margin-bottom: 20px;">
                 <h3 data-i18n="modal.gallery">🖼️ Galleria Foto Profilo</h3>
                 <div id="contenitoreFotoDinamiche" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; min-height: 80px; align-items: center;">
                     <span style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="modal.loading_photos">Caricamento foto in corso...</span>
@@ -561,6 +626,10 @@
             <p id="infoModificaMultipla" class="info-modifica-multipla"></p>
 
             <div class="griglia-modifica-multipla">
+                <div class="form-group">
+                    <label for="mmSito" data-i18n="sites.label">🌐 Sito</label>
+                    <select id="mmSito"></select>
+                </div>
                 <div class="form-group">
                     <label for="mmPiattaforma" data-i18n="form.platform">Piattaforma</label>
                     <select id="mmPiattaforma">
@@ -613,6 +682,141 @@
             <div class="modal-footer">
                 <button type="button" class="btn-data" data-azione="chiudi-modifica-multipla" data-i18n="form.btn_cancel">Annulla</button>
                 <button type="button" class="btn-primary" data-azione="applica-modifica-multipla" data-i18n="selection.apply">Applica modifiche</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNISCI / SEPARA MODELLE dalla scheda della modella (js/unisci-modelle.js) -->
+    <div id="modalUnisciModella" class="modal">
+        <div class="modal-content modal-modifica-multipla">
+            <button type="button" class="close-btn" aria-label="Chiudi" data-azione="chiudi-unisci-modella">&times;</button>
+            <h2 id="titoloUnisciModella"></h2>
+            <div id="campiUnisciModella" class="form-group">
+                <label for="altraModellaUnisci" data-i18n="models.merge_with">Show registrati con il nome</label>
+                <input type="text" id="altraModellaUnisci" list="listaModelleUnisci" autocomplete="off" data-al-input="anteprima-unisci-modella" placeholder="Nome della modella da unire" data-i18n-ph="models.merge_placeholder">
+                <datalist id="listaModelleUnisci"></datalist>
+            </div>
+            <div id="campiSeparaModella" class="griglia-modifica-multipla">
+                <div class="form-group">
+                    <label for="sitoSepara" data-i18n="models.split_site">Show del sito</label>
+                    <select id="sitoSepara" data-al-cambio="sito-separa-modella"></select>
+                </div>
+                <div class="form-group">
+                    <label for="nuovoNomeSepara" data-i18n="models.split_new_name">Diventano della modella</label>
+                    <input type="text" id="nuovoNomeSepara" autocomplete="off" data-al-input="anteprima-unisci-modella">
+                </div>
+            </div>
+            <p id="anteprimaUnisciModella" class="info-modifica-multipla"></p>
+            <p class="nota-modifica-multipla" data-i18n="models.note">Ogni show ricorda il nome con cui è stato acquistato.</p>
+            <div class="modal-footer">
+                <button type="button" class="btn-data" data-azione="chiudi-unisci-modella" data-i18n="form.btn_cancel">Annulla</button>
+                <button type="button" class="btn-primary" id="btnConfermaUnisciModella" data-azione="conferma-unisci-modella" data-i18n="models.confirm">Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BENVENUTO AL PRIMO AVVIO, con l'archivio vuoto (js/gestione-siti.js) -->
+    <div id="modalBenvenuto" class="modal">
+        <div class="modal-content modal-benvenuto">
+            <h2 data-i18n="welcome.title">👋 Benvenuto in Diario Privato</h2>
+            <!-- Etichetta in entrambe le lingue: si capisce anche prima di scegliere -->
+            <div class="riga-lingua-benvenuto">
+                <label for="linguaBenvenuto">🌍 Lingua / Language:</label>
+                <select id="linguaBenvenuto" data-al-cambio="cambia-lingua">
+                    <option value="it">Italiano</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <p class="benvenuto-testo" data-i18n="welcome.text">Il tuo diario privato degli show in cam. Per iniziare, indica su quali siti acquisti gli show.</p>
+            <p class="nota-modifica-multipla" data-i18n="welcome.hint">Solo questi compariranno nel form. Con Mondo Cam Girls si attivano anche l'importazione automatica, le modelle online e le foto; per gli altri siti puoi importare lo storico da CSV. Potrai cambiare scelta in Impostazioni › Gestisci siti.</p>
+            <div id="sceltaSitiBenvenuto" class="scelta-siti-benvenuto"></div>
+            <div class="riga-sito-predefinito">
+                <label for="sitoPredefinitoBenvenuto" data-i18n="welcome.main_site">Sito principale (predefinito per i nuovi show):</label>
+                <select id="sitoPredefinitoBenvenuto"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnConfermaBenvenuto" class="btn-primary" data-azione="conferma-benvenuto" data-i18n="welcome.start" disabled>Inizia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORTAZIONE DA CSV (js/importa-csv.js) -->
+    <div id="modalImportaCsv" class="modal">
+        <div class="modal-content modal-importa-csv">
+            <button type="button" class="close-btn" aria-label="Chiudi" data-azione="chiudi-importa-csv">&times;</button>
+            <h2 data-i18n="csv.title">📥 Importa da CSV</h2>
+            <p id="infoFileCsv" class="info-modifica-multipla"></p>
+
+            <h3 class="titolo-passo-csv" data-i18n="csv.step_columns">1. Colonne del file</h3>
+            <div id="mappaturaCsv" class="griglia-modifica-multipla"></div>
+
+            <h3 class="titolo-passo-csv" data-i18n="csv.step_options">2. Sito e importi</h3>
+            <div class="griglia-modifica-multipla">
+                <div class="form-group">
+                    <label for="csvSito" data-i18n="sites.label">🌐 Sito</label>
+                    <select id="csvSito" data-al-cambio="sito-csv"></select>
+                </div>
+                <div class="form-group">
+                    <label for="csvValuta" data-i18n="csv.currency">Importi in</label>
+                    <select id="csvValuta" data-al-cambio="anteprima-csv">
+                        <option value="EUR" data-i18n="currency.EUR">euro</option>
+                        <option value="USD" data-i18n="currency.USD">dollari</option>
+                        <option value="GBP" data-i18n="currency.GBP">sterline</option>
+                        <option value="token" data-i18n="currency.token">token</option>
+                        <option value="crediti" data-i18n="currency.crediti">crediti</option>
+                    </select>
+                </div>
+                <div class="form-group" id="gruppoCsvTasso">
+                    <label for="csvTasso" id="etichettaCsvTasso">Valore di 1 token in €</label>
+                    <input type="number" id="csvTasso" min="0.0001" step="any" data-al-input="anteprima-csv">
+                </div>
+                <div class="form-group">
+                    <label for="csvFormatoData" data-i18n="csv.date_format">Formato della data</label>
+                    <select id="csvFormatoData" data-al-cambio="anteprima-csv">
+                        <option value="auto" data-i18n="csv.date_auto">gg/mm/aaaa o aaaa-mm-gg</option>
+                        <option value="usa" data-i18n="csv.date_usa">mm/gg/aaaa (USA)</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3 class="titolo-passo-csv" data-i18n="csv.step_preview">3. Anteprima</h3>
+            <div id="riepilogoCsv" class="riepilogo-csv"></div>
+            <div class="table-container tabella-csv">
+                <table>
+                    <thead><tr>
+                        <th data-i18n="csv.col_row">Riga</th><th data-i18n="csv.col_status">Stato</th><th data-i18n="table.date">Data & Ora</th>
+                        <th data-i18n="table.name">Nome</th><th data-i18n="table.cost">Costo</th><th data-i18n="table.duration">Durata</th><th data-i18n="table.tags_notes">Tag e note</th>
+                    </tr></thead>
+                    <tbody id="anteprimaCsv"></tbody>
+                </table>
+            </div>
+            <p id="altreRigheCsv" class="nota-modifica-multipla"></p>
+            <p class="nota-modifica-multipla" data-i18n="csv.note">Le righe già presenti (stessa modella alla stessa data e ora) e quelle con errori vengono saltate. Gli show importati sono senza voto (TBD): puoi completarli dopo.</p>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-data" data-azione="chiudi-importa-csv" data-i18n="form.btn_cancel">Annulla</button>
+                <button type="button" id="btnConfermaCsv" class="btn-primary" data-azione="conferma-importa-csv">Importa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GESTIONE DEL CATALOGO DEI SITI (js/gestione-siti.js) -->
+    <div id="modalGestioneSiti" class="modal">
+        <div class="modal-content modal-gestione-tag">
+            <button type="button" class="close-btn" aria-label="Chiudi" data-azione="chiudi-gestione-siti">&times;</button>
+            <h2 data-i18n="sites.manage_title">🌐 Gestisci siti</h2>
+            <p class="nota-modifica-multipla" data-i18n="sites.manage_hint">Il sito indica dove hai acquistato lo show. Togli la spunta ai siti che non usi: spariscono dal form (e, per Mondo Cam Girls, si spengono le sue funzioni). Nome, sigla, valuta e colore valgono subito per tutti gli show di quel sito.</p>
+            <div class="riga-sito-predefinito">
+                <label for="selectSitoPredefinito" data-i18n="sites.default_label">Sito predefinito per i nuovi show:</label>
+                <select id="selectSitoPredefinito" data-al-cambio="cambia-sito-predefinito"></select>
+            </div>
+            <div id="elencoGestioneSiti" class="elenco-gestione-tag"></div>
+            <div class="nuovo-tag">
+                <input type="text" id="nuovoSitoGestione" maxlength="40" placeholder="Nuovo sito..." data-i18n-ph="sites.ph_new" aria-label="Nuovo sito">
+                <button type="button" class="btn-data" data-azione="crea-sito-gestione" data-i18n="tags.add">＋ Aggiungi</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" data-azione="chiudi-gestione-siti" data-i18n="tags.done">Fatto</button>
             </div>
         </div>
     </div>

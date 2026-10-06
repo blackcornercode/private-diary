@@ -1,4 +1,5 @@
-import { chiaveModella, showsDiModella, riepilogoShow, conteggioTag } from './calcoli.js';
+import { chiaveModella, showsDiModella, riepilogoShow, conteggioTag, profiliPerSito } from './calcoli.js';
+import { badgeSito } from './gestione-siti.js';
 import { apriModalImmagine } from './galleria.js';
 import { t } from './i18n.js';
 import { COLONNE_SCHEDA, intestazioneShow, righeShow } from './righe-show.js';
@@ -6,11 +7,17 @@ import { badgeSospesa } from './profili-sospesi.js';
 import { badgeOnline } from './stato-online.js';
 import { stato } from './stato.js';
 import { tagDaId, etichettaTag } from './tag.js';
-import { escapeHtml, urlProfiloPredefinito, formattaCostoAlMinuto, formattaDurata } from './utils.js';
+import { escapeHtml, formattaCostoAlMinuto, formattaDurata } from './utils.js';
+import { SITO_MCG, sitoDaId } from './siti.js';
+import { funzioneDisponibile, urlModelleDelSito, FUNZIONI } from './connettori.js';
+import { urlProfiloPredefinito } from './connettore-mcg.js';
 
 /* ==========================================================================
    MODALE DETTAGLIO MODELLA E FOTO DINAMICHE
    ========================================================================== */
+const testoModelle = (chiave, valori = {}) =>
+    Object.entries(valori).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), t(chiave));
+
 export async function apriModalModella(nomeModella) {
     const modal = document.getElementById('modalModella');
     const header = document.getElementById('modalHeader');
@@ -37,9 +44,41 @@ export async function apriModalModella(nomeModella) {
     const statBox = (etichetta, valore, extra = '') =>
         `<div class="stat-box"${extra}><span class="stat-box-etichetta">${escapeHtml(etichetta)}</span><strong class="stat-box-valore">${valore}</strong></div>`;
 
-    const urlHtml = urlProfilo
-        ? `<a href="#" class="modella-url" title="${escapeHtml(urlProfilo)}" data-azione="apri-link" data-url="${escapeHtml(urlProfilo)}">🌐 ${escapeHtml(urlProfilo)}</a>`
-        : `<span class="modella-url modella-url-vuoto">${escapeHtml(t('modal.no_website'))}</span>`;
+    // Profili della modella sui vari siti (fase 4): con un solo sito resta il solo indirizzo
+    const profili = profiliPerSito(stato.tuttiGliShow, nomeModella);
+    const piuSiti = profili.length > 1;
+    const linkProfilo = (url, sito) =>
+        `<a href="#" class="modella-url" title="${escapeHtml(url)}" data-azione="apri-link" data-url="${escapeHtml(url)}">${sito ? badgeSito(sito) + ' ' : '🌐 '}${escapeHtml(url)}</a>`;
+    const urlHtml = piuSiti && profili.some(p => p.urlProfilo)
+        ? `<div class="modella-profili">${profili.filter(p => p.urlProfilo).map(p => linkProfilo(p.urlProfilo, p.sito)).join('')}</div>`
+        : urlProfilo
+            ? linkProfilo(urlProfilo)
+            : `<span class="modella-url modella-url-vuoto">${escapeHtml(t('modal.no_website'))}</span>`;
+
+    // Totali per sito, solo se la modella ha show su più siti
+    const nomeCorrente = chiave;
+    const perSitoHtml = piuSiti ? `
+        <div class="modella-per-sito">
+            <span class="modella-tipi-etichetta">${escapeHtml(t('models.per_site'))}</span>
+            <table class="tabella-per-sito">
+                <thead><tr><th>${escapeHtml(t('sites.label'))}</th><th>${escapeHtml(t('table.total_shows'))}</th><th>${escapeHtml(t('table.total_duration'))}</th>
+                    <th>${escapeHtml(t('table.total_spent'))}</th><th>${escapeHtml(t('table.avg_cost_per_minute'))}</th><th>${escapeHtml(t('table.avg_rating'))}</th></tr></thead>
+                <tbody>${profili.map(p => {
+                    // Nomi diversi da quello attuale con cui la modella compare sul sito (show uniti)
+                    const altriNomi = p.nomi.filter(n => chiaveModella(n) !== nomeCorrente);
+                    const comeNome = altriNomi.length ? ` <small class="modella-altri-nomi">${escapeHtml(testoModelle('models.as_name', { nomi: altriNomi.join(', ') }))}</small>` : '';
+                    return `<tr><td title="${escapeHtml(sitoDaId(p.sito)?.nome || p.sito)}">${badgeSito(p.sito)}${comeNome}</td><td>${p.totaleShow}</td><td>${formattaDurata(p.totaleDurata)}</td>
+                        <td>€ ${p.spesaTotale.toFixed(2)}</td><td>${formattaCostoAlMinuto(p.costoMedioMinuto)}</td><td>${p.mediaTxt !== 'N/D' ? p.mediaTxt + ' / 5' : 'N/D'}</td></tr>`;
+                }).join('')}</tbody>
+            </table>
+        </div>` : '';
+
+    // Unisci con un'altra modella; separa solo se ci sono show su più siti
+    const azioniHtml = `
+        <div class="modella-azioni">
+            <button type="button" class="btn-data btn-compatto" title="${escapeHtml(t('models.merge_tip'))}" data-azione="apri-unisci-modella" data-modo="unisci" data-nome="${escapeHtml(nomeModella)}">${escapeHtml(t('models.merge'))}</button>
+            ${piuSiti ? `<button type="button" class="btn-data btn-compatto" title="${escapeHtml(t('models.split_tip'))}" data-azione="apri-unisci-modella" data-modo="separa" data-nome="${escapeHtml(nomeModella)}">${escapeHtml(t('models.split'))}</button>` : ''}
+        </div>`;
 
     // Tipi di show proposti dalla modella: i suoi tag, dal più usato
     const tipiShow = conteggioTag(showsModella)
@@ -67,9 +106,15 @@ export async function apriModalModella(nomeModella) {
             </div>
         </div>
         ${tipiShowHtml}
+        ${perSitoHtml}
+        ${azioniHtml}
     `;
 
-    caricaFotoDinamicheModella(nomeModella, stato.mappaUrlModelle);
+    // Galleria dal profilo: solo se la modella ha show su un sito in uso il cui connettore offre le foto
+    const sitoGalleria = [...new Set(showsModella.map(s => s.sito))].find(id => funzioneDisponibile(id, FUNZIONI.FOTO));
+    const sezioneGalleria = document.getElementById('sezioneGalleriaModella');
+    if (sezioneGalleria) sezioneGalleria.hidden = !sitoGalleria;
+    if (sitoGalleria) caricaFotoDinamicheModella(nomeModella, urlModelleDelSito(sitoGalleria), sitoGalleria);
 
     const intestazione = document.getElementById('intestazioneScheda');
     if (intestazione) intestazione.innerHTML = intestazioneShow(COLONNE_SCHEDA);
@@ -91,7 +136,8 @@ export function aggiornaBadgeSchedaModella() {
     span.innerHTML = badgeOnline(modal.dataset.nomeModella) + badgeSospesa(modal.dataset.nomeModella);
 }
 
-export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
+// L'indirizzo dedotto dal nome vale per MCG, l'unico connettore che offre le foto
+export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl, sito = SITO_MCG) {
     const contenitoreFoto = document.getElementById('contenitoreFotoDinamiche');
     if (!contenitoreFoto) return;
 
@@ -101,8 +147,8 @@ export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl) {
     let profileUrl = rawUrl.replace(/\/+$/, '');
     let targetUrlFoto = `${profileUrl}/?pag=0#mp-foto`;
 
-    if (window.electronAPI && window.electronAPI.fetchModellaFoto) {
-        const result = await window.electronAPI.fetchModellaFoto(profileUrl);
+    if (window.electronAPI?.fotoModella) {
+        const result = await window.electronAPI.fotoModella(sito, profileUrl);
 
         if (result.success && result.images && result.images.length > 0) {
             contenitoreFoto.innerHTML = '';

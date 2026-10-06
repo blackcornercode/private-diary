@@ -276,3 +276,100 @@ test('scheda rapida della modella nel form: ultimo show vero e tag più usati', 
     assert.equal(f.schedaRapidaModella(shows, 'Sconosciuta'), null);
     assert.equal(f.schedaRapidaModella([shows[2]], 'Loca').ultimoShow, null);
 });
+
+test('righe: badge del sito nella cella della data, con 🤖 se importato e 👤 se inserito a mano', () => {
+    f.stato.catalogoSiti = [{ id: 'mcg', nome: 'Mondo Cam Girls', sigla: 'MCG', colore: 'rosso' }, { id: 'stripchat', nome: 'Stripchat', sigla: 'SC', colore: 'rosa' }];
+    const base = { id: 1, nome: 'A', dataFormattata: '02/10/2026 21:30', costo: 10 };
+    const importato = f.rigaShow({ ...base, sito: 'mcg', importatoDa: 'mcg' }, ['data']);
+    assert.match(importato, /class="badge-sito tag-colore-rosso" title="Mondo Cam Girls · [^"]*">🤖 MCG</);
+    assert.match(importato, /data-giorno">02\/10\/2026<.*data-ora">21:30 /s);
+    assert.match(f.rigaShow({ ...base, sito: 'stripchat', importatoDa: null }, ['data']), /tag-colore-rosa"[^>]*>👤 SC</);
+    // Sito non più nel catalogo: grigio, con il suo ID
+    assert.match(f.rigaShow({ ...base, sito: 'cam4', importatoDa: null }, ['data']), /tag-colore-grigio"[^>]*>👤 CAM4</);
+    f.stato.catalogoSiti = [];
+});
+
+test('siti: filtro della cronologia, modifica multipla, spesa per sito e ultimo sito della modella', () => {
+    const shows = [
+        { id: 1, nome: 'Ana', sito: 'mcg', costo: 60, durata: 30, punteggio: 5, dataOraISO: iso(2026, 1, 1) },
+        { id: 2, nome: 'Ana', sito: 'stripchat', costo: 20, durata: 20, punteggio: 4, dataOraISO: iso(2026, 2, 1) },
+        { id: 3, nome: 'Bea', sito: 'mcg', costo: 40, isRegalo: true, punteggio: null, dataOraISO: iso(2026, 3, 1) }
+    ];
+    assert.deepEqual(f.filtraOrdinaShows(shows, { sito: 'mcg' }).map(s => s.id), [3, 1]);
+    assert.equal(f.filtraOrdinaShows(shows, { sito: '' }).length, 3);
+
+    const r = f.applicaModificheMultiple(shows, [1, 3], { sito: 'chaturbate' });
+    assert.equal(r.modificati, 2, 'il sito si applica anche ai regali');
+    assert.equal(r.regaliSaltati, 0);
+    assert.deepEqual(r.shows.map(s => s.sito), ['chaturbate', 'stripchat', 'chaturbate']);
+
+    assert.deepEqual(f.spesaPerSito(shows), [
+        { sito: 'mcg', spesa: 100, conteggio: 2, costoMedioMinuto: 2 },
+        { sito: 'stripchat', spesa: 20, conteggio: 1, costoMedioMinuto: 1 }
+    ]);
+    assert.equal(f.schedaRapidaModella(shows, 'Ana').sitoUltimo, 'stripchat');
+});
+
+test('siti in uso: elenco per form e filtri, funzioni di Mondo Cam Girls solo se in uso', async () => {
+    const siti = await import('../js/siti.js');
+    f.stato.catalogoSiti = [];
+    assert.equal(siti.mcgAttivo(), true, 'catalogo non ancora caricato: MCG considerato in uso');
+    f.stato.catalogoSiti = [{ id: 'mcg', nome: 'MCG', attivo: false }, { id: 'sc', nome: 'SC', attivo: true }, { id: 'cb', nome: 'CB' }];
+    assert.equal(siti.mcgAttivo(), false);
+    assert.deepEqual(siti.sitiVisibili().map(s => s.id), ['sc', 'cb'], 'senza "attivo" il sito è in uso');
+    assert.deepEqual(siti.sitiVisibili(['mcg']).map(s => s.id), ['mcg', 'sc', 'cb'], 'i siti indicati restano visibili');
+    f.stato.catalogoSiti = [];
+});
+
+test('connettori: una funzione è disponibile solo se il sito è in uso e il suo connettore la offre', async () => {
+    const { funzioneDisponibile, FUNZIONI } = await import('../js/connettori.js');
+    f.stato.connettori = { mcg: ['online', 'foto'] };
+    f.stato.catalogoSiti = [];
+    assert.equal(funzioneDisponibile('mcg', FUNZIONI.ONLINE), true, 'catalogo non ancora caricato');
+    assert.equal(funzioneDisponibile('mcg', FUNZIONI.PING), false, 'funzione non offerta');
+    assert.equal(funzioneDisponibile('stripchat', FUNZIONI.ONLINE), false, 'sito senza connettore');
+    f.stato.catalogoSiti = [{ id: 'mcg', nome: 'MCG', attivo: false }, { id: 'stripchat', nome: 'SC' }];
+    assert.equal(funzioneDisponibile('mcg', FUNZIONI.FOTO), false, 'sito non in uso');
+    f.stato.catalogoSiti[0].attivo = true;
+    assert.equal(funzioneDisponibile('mcg', FUNZIONI.FOTO), true);
+    f.stato.connettori = {};
+    f.stato.catalogoSiti = [];
+});
+
+test('modelle su più siti: profili e totali per sito, indirizzi per sito', () => {
+    const shows = [
+        { id: 1, nome: 'Anna', sito: 'mcg', costo: 30, durata: 10, punteggio: 4, urlProfilo: 'https://anna.mondocamgirls.com', dataOraISO: '2026-01-01T20:00:00Z' },
+        { id: 2, nome: 'anna', sito: 'stripchat', costo: 10, durata: 10, punteggio: 5, urlProfilo: 'https://stripchat.com/AnnaX', nomeOriginale: 'AnnaX', dataOraISO: '2026-02-01T20:00:00Z' },
+        { id: 3, nome: 'Anna', sito: 'mcg', costo: 20, durata: 10, punteggio: 'TBD', dataOraISO: '2026-03-01T20:00:00Z' }
+    ];
+    const profili = f.profiliPerSito(shows, 'ANNA');
+    assert.deepEqual(profili.map(p => [p.sito, p.totaleShow, p.spesaTotale, p.urlProfilo]),
+        [['mcg', 2, 50, 'https://anna.mondocamgirls.com'], ['stripchat', 1, 10, 'https://stripchat.com/AnnaX']]);
+    assert.deepEqual(profili[1].nomi, ['AnnaX']);
+    const mappe = f.calcolaMappeModelle(shows);
+    assert.equal(mappe.url.anna, 'https://stripchat.com/AnnaX', "l'indirizzo generale è l'ultimo");
+    assert.deepEqual(mappe.urlPerSito.anna, { mcg: 'https://anna.mondocamgirls.com', stripchat: 'https://stripchat.com/AnnaX' });
+    assert.deepEqual(f.urlDelSito(mappe.urlPerSito, 'mcg'), { anna: 'https://anna.mondocamgirls.com' });
+});
+
+test('unisci / separa modelle: rinomina con il nome originale ricordato', () => {
+    const shows = [
+        { id: 1, nome: 'AnnaX', sito: 'stripchat' },
+        { id: 2, nome: 'Anna', sito: 'mcg' },
+        { id: 3, nome: 'Anna', sito: 'stripchat' },
+        { id: 4, nome: 'Bea', sito: 'mcg' }
+    ];
+    const unione = f.rinominaModella(shows, 'annax', 'Anna');
+    assert.equal(unione.modificati, 1);
+    assert.deepEqual(unione.shows[0], { id: 1, nome: 'Anna', sito: 'stripchat', nomeOriginale: 'AnnaX' });
+    assert.equal(shows[0].nome, 'AnnaX', "l'originale non viene modificato");
+
+    const separazione = f.rinominaModella(unione.shows, 'Anna', 'Anna (SC)', 'stripchat');
+    assert.equal(separazione.modificati, 2);
+    assert.deepEqual(separazione.shows.map(s => [s.nome, s.nomeOriginale]),
+        [['Anna (SC)', 'AnnaX'], ['Anna', undefined], ['Anna (SC)', 'Anna'], ['Bea', undefined]], 'il primo nome originale resta');
+
+    const ritorno = f.rinominaModella(separazione.shows, 'Anna (SC)', 'Anna');
+    assert.equal(ritorno.shows[2].nomeOriginale, undefined, 'tornata al nome originale: il campo sparisce');
+    assert.equal(f.rinominaModella(shows, 'Anna', '').modificati, 0);
+});

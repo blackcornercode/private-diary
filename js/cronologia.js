@@ -33,7 +33,7 @@ export function inizializzaFiltroAnni(shows) {
 
     const anni = anniDisponibili(shows);
     if (anni.length === 0) {
-        container.innerHTML = '<span class="filtro-anni-vuoto">Nessun anno disponibile</span>';
+        container.innerHTML = `<span class="filtro-anni-vuoto">${t('history.no_years')}</span>`;
         return;
     }
 
@@ -97,7 +97,8 @@ export function caricaCronologia(shows) {
         nome: document.getElementById('searchModellaCronologia')?.value || '',
         anni: [...stato.anniSelezionati],
         ordine: document.getElementById('ordineData')?.value || 'desc',
-        tag: document.getElementById('filtroTagCronologia')?.value || ''
+        tag: document.getElementById('filtroTagCronologia')?.value || '',
+        sito: document.getElementById('filtroSitoCronologia')?.value || ''
     });
     const { elementi, pagina, totalePagine } = paginaDi(filtrati, limite, stato.paginaCorrente);
     stato.paginaCorrente = pagina;
@@ -153,6 +154,8 @@ export function resetFiltriCronologia() {
     if (searchInput) searchInput.value = '';
     const filtroTag = document.getElementById('filtroTagCronologia');
     if (filtroTag) filtroTag.value = '';
+    const filtroSito = document.getElementById('filtroSitoCronologia');
+    if (filtroSito) filtroSito.value = '';
 
     stato.anniSelezionati.clear();
     localStorage.removeItem('anniSelezionatiFiltro');

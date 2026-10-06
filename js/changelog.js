@@ -7,7 +7,8 @@ export async function initChangelogCheck() {
     try {
         if (!window.electronAPI || !window.electronAPI.checkForUpdateChangelog) return;
         const esito = await window.electronAPI.checkForUpdateChangelog();
-        if (esito && esito.shouldShow) apriModalChangelog();
+        // Al primissimo avvio le novità non servono (c'è il benvenuto): si vedranno dal prossimo aggiornamento
+        if (esito && esito.shouldShow && !esito.primoAvvio) apriModalChangelog();
     } catch (err) {
         logger.error("Errore nel controllo delle novità di versione", err);
     }

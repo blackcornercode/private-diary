@@ -1,6 +1,8 @@
-import { spesaPerAnno } from './calcoli.js';
+import { spesaPerAnno, spesaPerSito } from './calcoli.js';
 import { t } from './i18n.js';
-import { escapeHtml } from './utils.js';
+import { sitoDaId, siglaSito } from './siti.js';
+import { COLORI_TAG } from './tag.js';
+import { escapeHtml, formattaCostoAlMinuto } from './utils.js';
 
 /* ==========================================================================
    GRAFICO DELLA SPESA (scheda Statistiche)
@@ -14,9 +16,12 @@ import { escapeHtml } from './utils.js';
 const CHIAVE_VISTA = 'graficoSpesaVista';
 const MESI = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
+const VISTE = ['mesi', 'anni', 'siti'];
+
 export function vistaGraficoSpesa() {
     try {
-        return localStorage.getItem(CHIAVE_VISTA) === 'anni' ? 'anni' : 'mesi';
+        const vista = localStorage.getItem(CHIAVE_VISTA);
+        return VISTE.includes(vista) ? vista : 'mesi';
     } catch {
         return 'mesi';
     }
@@ -24,7 +29,7 @@ export function vistaGraficoSpesa() {
 
 export function impostaVistaGraficoSpesa(vista) {
     try {
-        localStorage.setItem(CHIAVE_VISTA, vista === 'anni' ? 'anni' : 'mesi');
+        localStorage.setItem(CHIAVE_VISTA, VISTE.includes(vista) ? vista : 'mesi');
     } catch { /* preferenza non salvata: resta la vista predefinita */ }
 }
 
@@ -59,7 +64,8 @@ export function graficoBarre(voci, { soglia = 0, etichettaSoglia = '' } = {}) {
     const barre = voci.map((voce, i) => {
         const centro = margine.sinistra + slot * (i + 0.5);
         const altezza = Math.max(0, y(0) - y(voce.valore));
-        const classi = ['barra', soglia > 0 && voce.valore > soglia ? 'oltre-soglia' : '', voce.evidenziata ? 'evidenziata' : ''].filter(Boolean).join(' ');
+        // voce.classe: colore proprio della barra (vista per sito: il colore del sito)
+        const classi = ['barra', voce.classe || '', soglia > 0 && voce.valore > soglia ? 'oltre-soglia' : '', voce.evidenziata ? 'evidenziata' : ''].filter(Boolean).join(' ');
         return `<g>
             <title>${escapeHtml(voce.dettaglio)}</title>
             <rect class="${classi}" x="${centro - larghezzaBarra / 2}" y="${y(voce.valore)}" width="${larghezzaBarra}" height="${altezza}" rx="4"/>
@@ -92,7 +98,22 @@ export function disegnaGraficoSpesa({ shows, anno, spesaMesi, conteggioMesi, bud
 
     const showTxt = (n) => `${n} ${t('chart.shows')}`;
     let voci, testoRiepilogo, opzioni = {};
-    if (vista === 'anni') {
+    if (vista === 'siti') {
+        // Tutti gli anni: spesa per sito, dal sito con più spesa; il tooltip riporta anche il €/min
+        const siti = spesaPerSito(shows);
+        voci = siti.map(s => {
+            const sito = sitoDaId(s.sito);
+            const minuto = s.costoMedioMinuto !== null ? ` · ${formattaCostoAlMinuto(s.costoMedioMinuto, null)} ${t('form.per_minute')}` : '';
+            return {
+                etichetta: siglaSito(s.sito) || '–',
+                valore: s.spesa,
+                dettaglio: `${sito?.nome || s.sito || '–'}: ${euro(s.spesa)} · ${showTxt(s.conteggio)}${minuto}`,
+                classe: `tag-colore-${sito && COLORI_TAG.includes(sito.colore) ? sito.colore : 'grigio'}`
+            };
+        });
+        const totale = siti.reduce((s, x) => s + x.spesa, 0);
+        testoRiepilogo = `${t('chart.total_sites').replace('{n}', siti.length)}: ${euro(totale)} · ${showTxt(siti.reduce((s, x) => s + x.conteggio, 0))}`;
+    } else if (vista === 'anni') {
         const anni = spesaPerAnno(shows);
         voci = anni.map(a => ({
             etichetta: String(a.anno),

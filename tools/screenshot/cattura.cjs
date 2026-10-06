@@ -25,14 +25,20 @@ setImmediate(() => {
                     return;
                 }
                 await pausa(2500);
+                // Finestra in primo piano e attesa più lunga: altrimenti la cattura può
+                // restituire un'immagine non ancora ridisegnata (es. a metà di una dissolvenza)
                 const foto = async (nome) => {
-                    await pausa(450);
+                    win.show();
+                    win.focus();
+                    await pausa(1000);
                     fs.writeFileSync(path.join(USCITA, `${nome}.png`), (await win.webContents.capturePage()).toPNG());
                     console.log(`  ${nome}.png`);
                 };
                 const tema = (nome) => js(`(() => { const s = document.getElementById('selectTema'); s.value = '${nome}'; s.dispatchEvent(new Event('change', { bubbles: true })); return true; })()`);
                 const scheda = (id) => js(`document.querySelector('[data-tab="${id}"]').click(); window.scrollTo(0, 0); true`);
                 await js(`document.getElementById('confirmChangelogBtn')?.click(); true`);
+                // Lascia il tempo alla verifica di raggiungibilità di MCG e alla chiusura del popup
+                await pausa(2500);
 
                 // 1. Cronologia (tema Neve & Nebbia)
                 await tema('grey');
@@ -47,7 +53,9 @@ setImmediate(() => {
                     q('[data-azione="toggle-form"]').click();
                     q('#nome').value = 'LunaVelvet'; q('#nome').dispatchEvent(new Event('input', { bubbles: true }));
                     q('[data-azione="durata-rapida"][data-minuti="30"]').click();
-                    q('#costo').value = '65'; q('#costo').dispatchEvent(new Event('input', { bubbles: true }));
+                    // Su un sito a token (LunaVelvet ha l'ultimo show su Stripchat) si scrive l'importo in token
+                    if (!q('#convertitoreValuta').hidden) { q('#importoValuta').value = '812'; q('#importoValuta').dispatchEvent(new Event('input', { bubbles: true })); }
+                    else { q('#costo').value = '65'; q('#costo').dispatchEvent(new Event('input', { bubbles: true })); }
                     q('[data-azione="voto-stelle"][data-voto="5"]').click();
                     q('#tagForm [data-id="lovense"]').click();
                     q('#note').value = 'Amazing as always.';

@@ -1,14 +1,16 @@
 import { t } from './i18n.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
-import { slugProfiloMcg } from './stato-online.js';
+import { slugProfiloMcg } from './connettore-mcg.js';
 import { escapeHtml } from './utils.js';
+import { SITO_MCG } from './siti.js';
+import { funzioneDisponibile, urlProfiloSulSito, urlModelleDelSito, FUNZIONI } from './connettori.js';
 
 /* ==========================================================================
    PROFILI SOSPESI O RIMOSSI SU MONDO CAM GIRLS
    ==========================================================================
    MCG non segnala la sospensione nell'elenco delle modelle: va letta la pagina
-   di ogni profilo (get-profilo-sospeso, che cerca l'avviso "PROFILE TEMPORARYLY
+   di ogni profilo (funzione "profilo" del connettore MCG, che cerca l'avviso "PROFILE TEMPORARYLY
    SUSPENDED"). Un profilo eliminato non ha più il suo sottodominio: risulta "rimosso". Le pagine sono pesanti, quindi l'esito di ogni profilo resta
    valido per VALIDITA_MS e viene conservato in localStorage: a ogni avvio si
    riscaricano solo i profili non verificati di recente. È solo una cache:
@@ -37,7 +39,7 @@ function salvaCache() {
     } catch { /* cache non disponibile: si riverificherà al prossimo avvio */ }
 }
 
-const slugDellaModella = (nome) => slugProfiloMcg(stato.mappaUrlModelle[String(nome || '').trim().toLowerCase()]);
+const slugDellaModella = (nome) => slugProfiloMcg(urlProfiloSulSito(nome, SITO_MCG));
 
 export function eModellaSospesa(nome) {
     const slug = slugDellaModella(nome);
@@ -71,8 +73,8 @@ export function profiliDaVerificare(mappaUrl, cache, adesso = Date.now()) {
 }
 
 export async function verificaProfiliSospesi() {
-    if (verificaInCorso || !window.electronAPI?.getProfiloSospeso) return;
-    const coda = [...profiliDaVerificare(stato.mappaUrlModelle, profili)];
+    if (verificaInCorso || !window.electronAPI?.statoProfilo || !funzioneDisponibile(SITO_MCG, FUNZIONI.PROFILO)) return;
+    const coda = [...profiliDaVerificare(urlModelleDelSito(SITO_MCG), profili)];
     if (coda.length === 0) return;
 
     verificaInCorso = true;
@@ -81,7 +83,7 @@ export async function verificaProfiliSospesi() {
         while (coda.length) {
             const [slug, url] = coda.shift();
             try {
-                const esito = await window.electronAPI.getProfiloSospeso(url);
+                const esito = await window.electronAPI.statoProfilo(SITO_MCG, url);
                 // Profilo non riconosciuto (pagina non scaricata o cambiata): l'esito precedente resta
                 if (esito?.success) {
                     profili[slug] = { sospeso: esito.sospeso, rimosso: Boolean(esito.rimosso), verificato: Date.now() };

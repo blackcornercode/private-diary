@@ -7,8 +7,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openDataFolder: () => ipcRenderer.invoke('open-data-folder'),
     exportData: (impostazioni) => ipcRenderer.invoke('export-data', impostazioni),
     importData: () => ipcRenderer.invoke('import-data'),
+    apriCsv: () => ipcRenderer.invoke('open-csv'),
+    salvaCsv: (testo) => ipcRenderer.invoke('save-csv', testo),
     readTags: () => ipcRenderer.invoke('read-tags'),
     saveTags: (catalogo) => ipcRenderer.invoke('save-tags', catalogo),
+    readSites: () => ipcRenderer.invoke('read-sites'),
+    saveSites: (catalogo) => ipcRenderer.invoke('save-sites', catalogo),
 
     // Logging & Utility di Sistema
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
@@ -18,12 +22,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getChangelog: () => ipcRenderer.invoke('get-changelog'),
     checkForUpdateChangelog: () => ipcRenderer.invoke('check-for-update-changelog'),
 
-    // Web Scraping & Status Online
-    fetchTransazioniHtml: (opzioni) => ipcRenderer.invoke('fetch-transazioni-html', opzioni),
-    salvaDumpMcg: (dump) => ipcRenderer.invoke('salva-dump-mcg', dump),
-    getModelleOnline: () => ipcRenderer.invoke('get-modelle-online'),
-    fetchModellaFoto: (urlProfilo) => ipcRenderer.invoke('fetch-modella-foto', urlProfilo),
-    getProfiloSospeso: (urlProfilo) => ipcRenderer.invoke('get-profilo-sospeso', urlProfilo),
+    // Connettori dei siti (main/connettori/): elenco con le capacità e funzioni per sito
+    elencoConnettori: () => ipcRenderer.invoke('get-connectors'),
+    importaTransazioni: (sito, opzioni) => ipcRenderer.invoke('connector-transactions', sito, opzioni),
+    salvaCopiaImportazione: (sito, dump) => ipcRenderer.invoke('connector-save-dump', sito, dump),
+    modelleOnline: (sito) => ipcRenderer.invoke('connector-online-models', sito),
+    statoProfilo: (sito, urlProfilo) => ipcRenderer.invoke('connector-profile-status', sito, urlProfilo),
+    fotoModella: (sito, urlProfilo) => ipcRenderer.invoke('connector-model-photos', sito, urlProfilo),
+    pingSito: (sito) => ipcRenderer.invoke('connector-ping', sito),
 
     // Apertura Link Esterni
     openExternal: (url) => ipcRenderer.invoke('open-external', url),
@@ -43,8 +49,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     salvaPreferenza: (chiave, valore) => ipcRenderer.invoke('save-preference', chiave, valore),
     impostaPin: (dati) => ipcRenderer.invoke('set-pin', dati),
     verificaPin: (pin) => ipcRenderer.invoke('verify-pin', pin),
-    riduciFinestra: () => ipcRenderer.invoke('minimize-window'),
-
-    // Stato raggiungibilità Mondo Cam Girls
-    pingMCG: () => ipcRenderer.invoke('ping-mcg')
+    riduciFinestra: () => ipcRenderer.invoke('minimize-window')
 });

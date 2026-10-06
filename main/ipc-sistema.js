@@ -104,7 +104,8 @@ function registra() {
 
         if (store && lastVersion !== currentVersion) {
             store.set('last_seen_version', currentVersion);
-            return { shouldShow: true, version: currentVersion };
+            // primoAvvio: nessuna versione vista prima, cioè app appena installata
+            return { shouldShow: true, primoAvvio: lastVersion === null, version: currentVersion };
         }
         return { shouldShow: false, version: currentVersion };
     });

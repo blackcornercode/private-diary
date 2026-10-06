@@ -6,7 +6,7 @@ const { caricaModuli } = require('./carica-script');
 
 let f;
 before(async () => {
-    f = await caricaModuli(['stato.js', 'i18n.js', 'utils.js', 'sincronizzazione.js']);
+    f = await caricaModuli(['stato.js', 'i18n.js', 'utils.js', 'connettore-mcg.js', 'sincronizzazione.js']);
     f.impostaTraduzioni({ units: { min: 'm', hour: 'h' }, table: { cost_per_minute_compare: 'Media: {media}' } });
 });
 
@@ -41,7 +41,7 @@ test('normalizzaShow converte i campi delle versioni precedenti', () => {
 });
 
 test('normalizzaShow lascia invariati i record già nel formato attuale', () => {
-    const attuale = { id: 2, nome: 'B', dataOraISO: '2026-01-10T20:00:00.000Z', dataFormattata: '10/01/2026 21:00', urlProfilo: 'https://b.mondocamgirls.com', punteggio: 'TBD', costo: 40, durata: 30 };
+    const attuale = { id: 2, nome: 'B', dataOraISO: '2026-01-10T20:00:00.000Z', dataFormattata: '10/01/2026 21:00', urlProfilo: 'https://b.mondocamgirls.com', punteggio: 'TBD', costo: 40, durata: 30, sito: 'stripchat', importatoDa: null };
     assert.deepEqual(f.normalizzaShow(attuale), attuale);
     // durata assente resta assente (non viene aggiunto 0 a ogni record)
     assert.ok(!('durata' in f.normalizzaShow({ costo: 10, dataOraISO: attuale.dataOraISO })));
@@ -50,6 +50,24 @@ test('normalizzaShow lascia invariati i record già nel formato attuale', () => 
     assert.equal(f.normalizzaShow({ punteggio: 5, voto: 1 }).punteggio, 5);
     // i regali non ricevono un voto dal campo vecchio
     assert.equal(f.normalizzaShow({ isRegalo: true, punteggio: null, voto: 3 }).punteggio, null);
+});
+
+test('normalizzaShow: sito di provenienza e origine (roadmap multi-sito, fase 1)', () => {
+    // Show salvati prima dei siti: tutti di Mondo Cam Girls, isAutoImport diventa importatoDa
+    const importato = f.normalizzaShow({ id: 1, costo: 10, isAutoImport: true });
+    assert.equal(importato.sito, 'mcg');
+    assert.equal(importato.importatoDa, 'mcg');
+    assert.ok(!('isAutoImport' in importato));
+    const manuale = f.normalizzaShow({ id: 2, costo: 10, isAutoImport: false });
+    assert.equal(manuale.sito, 'mcg');
+    assert.equal(manuale.importatoDa, null);
+    assert.equal(f.normalizzaShow({ id: 3, costo: 10 }).importatoDa, null);
+    // Sito e origine già presenti restano invariati
+    const nuovo = f.normalizzaShow({ id: 4, costo: 10, sito: 'chaturbate', importatoDa: null });
+    assert.equal(nuovo.sito, 'chaturbate');
+    assert.equal(nuovo.importatoDa, null);
+    // Una seconda normalizzazione non cambia nulla
+    assert.deepEqual(f.normalizzaShow(importato), importato);
 });
 
 test('costo al minuto: singolo show e media ponderata', () => {
@@ -120,4 +138,19 @@ test('tasto rapido per nascondere l\'app: combinazione dal tasto premuto e combi
     assert.equal(p.problemaCombinazione('Ctrl+Invio'), 'riservata', 'Ctrl+Invio salva il form');
     assert.equal(p.problemaCombinazione('F5'), 'riservata');
     assert.equal(p.tastoRapido(), p.TASTO_RAPIDO_PREDEFINITO);
+});
+
+test('lingua del primo avvio: italiano se il sistema è in italiano, altrimenti inglese', async () => {
+    const { linguaDiSistema } = await import('../js/i18n.js');
+    const originale = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    const prova = (lingua) => { Object.defineProperty(globalThis, 'navigator', { value: { language: lingua }, configurable: true }); return linguaDiSistema(); };
+    try {
+        assert.equal(prova('it-IT'), 'it');
+        assert.equal(prova('it'), 'it');
+        assert.equal(prova('en-US'), 'en');
+        assert.equal(prova('de-DE'), 'en', 'lingue non tradotte: inglese');
+        assert.equal(prova(undefined), 'en');
+    } finally {
+        if (originale) Object.defineProperty(globalThis, 'navigator', originale);
+    }
 });

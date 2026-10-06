@@ -1,14 +1,16 @@
-// Gestori IPC di Mondo Cam Girls: lettura delle transazioni (con login),
-// copia diagnostica della sincronizzazione, modelle online, profili sospesi o
-// rimossi, foto e raggiungibilità.
-const { BrowserWindow, ipcMain, net } = require('electron');
+// Connettore di Mondo Cam Girls (registro in main/connettori/index.js): lettura
+// delle transazioni (con login), copia diagnostica della sincronizzazione,
+// modelle online, profili sospesi o rimossi, foto e raggiungibilità.
+const { BrowserWindow } = require('electron');
 const dns = require('dns').promises;
-const canali = require('./canali');
-const percorsi = require('./percorsi');
-const { scriviFileAtomico } = require('./file');
-const { logToFile } = require('./log');
-const { urlMcgValido, slugProfiloMcg, downloadHtmlPage, profiloSospeso, USER_AGENT } = require('./rete');
-const { leggiPaginaCorrente, leggiTutteLePagine } = require('./mcg-pagine');
+const percorsi = require('../../percorsi');
+const { scriviFileAtomico } = require('../../file');
+const { logToFile } = require('../../log');
+const { downloadHtmlPage, ping, USER_AGENT } = require('../../rete');
+const { urlMcgValido, slugProfiloMcg, profiloSospeso } = require('./indirizzi');
+const { leggiPaginaCorrente, leggiTutteLePagine } = require('./pagine');
+
+const SITO_MCG = 'mcg';   // ID del sito nel catalogo (main/catalogo-siti.js)
 
 const URL_TRANSAZIONI = 'https://www.mondocamgirls.com/it/areacliente_transazioni.html?pagina_vis=0';
 
@@ -197,54 +199,28 @@ async function fotoModella(urlProfilo) {
     }
 }
 
-// Verifica se il sito MCG è raggiungibile (indicatore nell'header).
-// Il timeout è gestito a mano: net.request di Electron non ha un'opzione "timeout".
-function pingMcg() {
-    return new Promise((resolve) => {
-        let concluso = false;
-        const fine = (esito) => {
-            if (concluso) return;
-            concluso = true;
-            clearTimeout(timer);
-            resolve(esito);
-        };
-
-        const request = net.request({ method: 'HEAD', url: 'https://www.mondocamgirls.com' });
-        const timer = setTimeout(() => {
-            request.abort();
-            fine({ online: false, error: 'timeout' });
-        }, 5000);
-
-        request.on('response', (response) => {
-            const status = response.statusCode;
-            response.on('data', () => {});
-            fine({ online: status >= 200 && status < 400, status });
-        });
-        request.on('error', (error) => fine({ online: false, error: error.message }));
-        request.end();
-    });
+// Salva le tabelle lette durante l'ultima sincronizzazione e l'esito di ogni riga.
+// Il file viene sovrascritto a ogni sincronizzazione e resta solo in locale.
+async function salvaCopia(dump) {
+    try {
+        if (!dump || typeof dump !== 'object') throw new Error('contenuto non valido');
+        await scriviFileAtomico(percorsi.copiaSincronizzazioneMcg, JSON.stringify(dump, null, 2));
+        return { success: true, path: percorsi.copiaSincronizzazioneMcg };
+    } catch (error) {
+        await logToFile('WARN', 'Salvataggio copia sincronizzazione MCG non riuscito', error.message);
+        return { success: false, error: error.message };
+    }
 }
 
-function registra() {
-    ipcMain.handle(canali.LEGGI_TRANSAZIONI_MCG, (event, opzioni) => leggiTransazioni(opzioni));
-
-    // Salva le tabelle lette durante l'ultima sincronizzazione e l'esito di ogni riga.
-    // Il file viene sovrascritto a ogni sincronizzazione e resta solo in locale.
-    ipcMain.handle(canali.SALVA_COPIA_SINCRONIZZAZIONE, async (event, dump) => {
-        try {
-            if (!dump || typeof dump !== 'object') throw new Error('contenuto non valido');
-            await scriviFileAtomico(percorsi.copiaSincronizzazioneMcg, JSON.stringify(dump, null, 2));
-            return { success: true, path: percorsi.copiaSincronizzazioneMcg };
-        } catch (error) {
-            await logToFile('WARN', 'Salvataggio copia sincronizzazione MCG non riuscito', error.message);
-            return { success: false, error: error.message };
-        }
-    });
-
-    ipcMain.handle(canali.MODELLE_ONLINE, () => modelleOnline());
-    ipcMain.handle(canali.FOTO_MODELLA, (event, urlProfilo) => fotoModella(urlProfilo));
-    ipcMain.handle(canali.PROFILO_SOSPESO, (event, urlProfilo) => statoSospensioneProfilo(urlProfilo));
-    ipcMain.handle(canali.PING_MCG, () => pingMcg());
-}
-
-module.exports = { registra };
+module.exports = {
+    id: SITO_MCG,
+    capacita: {
+        transazioni: leggiTransazioni,
+        copia: salvaCopia,
+        online: modelleOnline,
+        profilo: statoSospensioneProfilo,
+        foto: fotoModella,
+        // Raggiungibilità del sito (indicatore nell'header)
+        ping: () => ping('https://www.mondocamgirls.com')
+    }
+};

@@ -1,5 +1,5 @@
 // Lettura delle pagine della cronologia transazioni di Mondo Cam Girls, nella
-// finestra di sincronizzazione già autenticata. Usato da main.js.
+// finestra di sincronizzazione già autenticata. Usato da index.js (connettore MCG).
 
 const ATTESA_TRA_PAGINE_MS = 400;   // pausa tra una pagina e l'altra, per non sovraccaricare il sito
 const MAX_PAGINE = 300;             // limite di sicurezza

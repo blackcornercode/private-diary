@@ -9,10 +9,17 @@ export const stato = {
     tuttiGliShow: [],
     mappaImmaginiModelle: {},
     mappaUrlModelle: {},
+    // Ultimo profilo di ogni modella per sito { chiave: { mcg: url, ... } } (calcolaMappeModelle)
+    mappaUrlPerSito: {},
     elencoModelleUniche: [],
     // Catalogo dei tag [{ id, nome, colore }] (tags.json, gestito da archivio.js);
     // gli show salvano gli ID nel campo "tag"
     catalogoTag: [],
+    // Catalogo dei siti di provenienza [{ id, nome, sigla, colore, urlProfilo? }]
+    // (siti.json, gestito da archivio.js); gli show salvano l'ID nel campo "sito"
+    catalogoSiti: [],
+    // Funzioni dei connettori per sito { mcg: ['transazioni', 'online', ...] } (connettori.js)
+    connettori: {},
     // Costo medio al minuto di tutti gli show: riferimento per colorare i €/min
     costoMinutoRiferimento: null,
     // ID più alto già usato: generaIdUnico() parte da qui (utils.js)

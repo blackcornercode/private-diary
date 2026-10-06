@@ -1,4 +1,4 @@
-import { calcolaMappeModelle, calcolaModelleUniche, applicaModificheMultiple, togliTagDaShows } from './calcoli.js';
+import { calcolaMappeModelle, calcolaModelleUniche, applicaModificheMultiple, togliTagDaShows, rinominaModella } from './calcoli.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
 import { normalizzaShow, salvaOAvvisa, costoMedioAlMinuto } from './utils.js';
@@ -39,6 +39,24 @@ export async function leggiCatalogoTag() {
     return Array.isArray(catalogo) ? catalogo : [];
 }
 
+// Catalogo dei siti: letto con l'archivio, salvato a parte (siti.json)
+export async function leggiCatalogoSiti() {
+    if (!window.electronAPI.readSites) return [];
+    const catalogo = await window.electronAPI.readSites();
+    return Array.isArray(catalogo) ? catalogo : [];
+}
+
+export async function salvaCatalogoSiti(nuovoCatalogo) {
+    const esito = await window.electronAPI.saveSites(nuovoCatalogo);
+    if (!esito || !esito.success) {
+        const messaggio = esito?.error || 'errore sconosciuto';
+        alert(`❌ Salvataggio dei siti non riuscito: ${messaggio}`);
+        throw new Error(messaggio);
+    }
+    stato.catalogoSiti = nuovoCatalogo;
+    aggiornaViste();
+}
+
 export async function salvaCatalogoTag(nuovoCatalogo) {
     const esito = await window.electronAPI.saveTags(nuovoCatalogo);
     if (!esito || !esito.success) {
@@ -73,6 +91,11 @@ export async function aggiornaShow(id, campi) {
     return salvaArchivio(stato.tuttiGliShow.map(s => String(s.id) === String(id) ? { ...s, ...campi } : s));
 }
 
+// Aggiunge più show con un solo salvataggio su disco (importazione CSV)
+export function aggiungiShows(nuovi) {
+    return salvaArchivio([...stato.tuttiGliShow, ...nuovi]);
+}
+
 // Elimina più show con un solo salvataggio su disco
 export function rimuoviShows(ids) {
     const daTogliere = new Set(ids.map(String));
@@ -85,6 +108,13 @@ export async function aggiornaShows(ids, campi) {
     const { shows, modificati, regaliSaltati } = applicaModificheMultiple(stato.tuttiGliShow, ids, campi);
     if (modificati > 0) await salvaArchivio(shows);
     return { modificati, regaliSaltati };
+}
+
+// Unisci / separa modelle (scheda della modella): un solo salvataggio
+export async function rinominaShowsModella(daNome, aNome, sito = null) {
+    const { shows, modificati } = rinominaModella(stato.tuttiGliShow, daNome, aNome, sito);
+    if (modificati > 0) await salvaArchivio(shows);
+    return modificati;
 }
 
 export function rimuoviShow(id) {
@@ -113,6 +143,7 @@ export function aggiornaViste() {
     const mappe = calcolaMappeModelle(stato.tuttiGliShow);
     stato.mappaImmaginiModelle = mappe.immagini;
     stato.mappaUrlModelle = mappe.url;
+    stato.mappaUrlPerSito = mappe.urlPerSito;
     stato.elencoModelleUniche = calcolaModelleUniche(stato.tuttiGliShow);
 
     ascoltatori.forEach(funzione => funzione());
@@ -129,6 +160,14 @@ export async function aggiornaInterfaccia() {
             logger.error('Catalogo dei tag non caricato', err);
             alert(`⚠️ ${err.message}`);
             stato.catalogoTag = [];
+        }
+        try {
+            stato.catalogoSiti = await leggiCatalogoSiti();
+        } catch (err) {
+            // Senza catalogo i siti si mostrano con il loro ID
+            logger.error('Catalogo dei siti non caricato', err);
+            alert(`⚠️ ${err.message}`);
+            stato.catalogoSiti = [];
         }
         logger.info(`Dati letti. Totale show caricati: ${stato.tuttiGliShow.length}`);
         aggiornaViste();

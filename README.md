@@ -6,7 +6,7 @@
 
 **Your private cam-show diary: every session logged, every euro under control, every model in the right place in the ranking.**
 
-[![Version](https://img.shields.io/badge/version-1.12.3-6d2336)](https://github.com/blackcornercode/private-diary/releases)
+[![Version](https://img.shields.io/badge/version-2.0.0-6d2336)](https://github.com/blackcornercode/private-diary/releases)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078d4)
 [![Tests](https://github.com/blackcornercode/private-diary/actions/workflows/test.yml/badge.svg)](https://github.com/blackcornercode/private-diary/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/license-ISC-c5a05a)](LICENSE)
@@ -22,6 +22,8 @@
 - 📝 **Smart show log**: model mini-card with her stats, *repeat last show*, quick durations, live **€/min** compared with your average, colour-coded ratings.
 - 🏆 **Model ranking**: average rating, number of shows, total time and spending, average €/min, plus a detailed card for every model.
 - 🏷️ **Custom tags**: colour tags for the type of show, filters, bulk editing and a "show types" summary for each model.
+- 🌐 **Any cam site**: every show records the site you bought it on (Mondo Cam Girls, Chaturbate, Stripchat… or your own), with colour badges, filters, per-site ranking and a spending chart by site.
+- 📄 **CSV import and export**: import the purchase history downloaded from any site (columns guessed automatically, preview, duplicate check, tokens converted to euros) and export your history for Excel.
 - 📊 **Budget and charts**: monthly budget with OK/KO badge, spending chart by month or by year, monthly breakdown.
 - 🔄 **Mondo Cam Girls sync**: imports your transactions (refunds included) with your own login, shows who is **online**, flags **suspended** or **removed** profiles.
 - 🔒 **Privacy first**: PIN lock with auto-lock, blurred photos, neutral window name and icon ("Agenda"), a customisable hotkey to hide the app instantly.
@@ -54,9 +56,10 @@ The executable is not digitally signed and, being new, has no "reputation" yet: 
 
 ## 🚀 Getting started
 
-1. **Add your first show** with **＋ New show**, or import your history from Mondo Cam Girls from the **💾 Data** menu: **🔄 Sync MCG** reads your latest transactions, **📜 Full MCG history** reads every page.
-2. **Set a monthly budget** in **Monthly Stats**: the badge next to the tab tells you at a glance whether you are within it.
-3. **Protect the app** from **⚙️ Settings › 🔒 Privacy**: PIN, blurred photos, neutral name and the hide hotkey (default **Ctrl+Shift+H**).
+1. **Choose your sites**: on first launch the app asks which cam sites you buy shows on. Only those appear in the form, and the Mondo Cam Girls features are switched on only if you use it.
+2. **Add your first show** with **＋ New show**, or bring in your history: from Mondo Cam Girls via the **💾 Data** menu (**🔄 Sync MCG** for the latest transactions, **📜 Full MCG history** for every page), from any other site via **📥 Import from CSV**.
+3. **Set a monthly budget** in **Monthly Stats**: the badge next to the tab tells you at a glance whether you are within it.
+4. **Protect the app** from **⚙️ Settings › 🔒 Privacy**: PIN, blurred photos, neutral name and the hide hotkey (default **Ctrl+Shift+H**).
 
 The full user guide (in Italian) is in [docs/GUIDA.md](docs/GUIDA.md).
 
@@ -75,7 +78,7 @@ npm test           # automated tests
 npm run dist       # Windows installer and portable executable in dist/
 ```
 
-Architecture, tests and build details (in Italian): [docs/SVILUPPO.md](docs/SVILUPPO.md). Version history: [CHANGELOG.md](CHANGELOG.md).
+Architecture, tests and build details (in Italian): [docs/SVILUPPO.md](docs/SVILUPPO.md). Version history: [CHANGELOG.md](CHANGELOG.md). Where the project is heading (multi-site support): [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## ⚠️ Disclaimer
 

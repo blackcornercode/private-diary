@@ -2,7 +2,7 @@
 // I gestori IPC stanno in main/, divisi per area:
 //   main/ipc-dati.js     archivio degli show, esportazione e importazione backup
 //   main/ipc-sistema.js  versione, log, link esterni, changelog
-//   main/ipc-mcg.js      Mondo Cam Girls (transazioni, modelle online, foto, ping)
+//   main/ipc-connettori.js  connettori dei siti (main/connettori/: transazioni, modelle online, foto, ping)
 //   main/ipc-privacy.js  aspetto neutro, PIN di sblocco, riduzione a icona rapida
 const { app, BrowserWindow, clipboard, dialog, Menu, screen, shell } = require('electron');
 const path = require('path');
@@ -20,7 +20,7 @@ const percorsi = require('./main/percorsi');
 const { logToFile, convertiLogVecchioFormato } = require('./main/log');
 const ipcDati = require('./main/ipc-dati');
 const ipcSistema = require('./main/ipc-sistema');
-const ipcMcg = require('./main/ipc-mcg');
+const ipcConnettori = require('./main/ipc-connettori');
 const ipcPrivacy = require('./main/ipc-privacy');
 
 let mainWindow = null;
@@ -84,7 +84,7 @@ function mostraInformazioni() {
         message: `Diario Privato (Private Diary)  ·  v${app.getVersion()}`,
         detail: [
             'Il tuo diario privato degli show: ogni incontro registrato, ogni euro sotto controllo, ogni modella al posto giusto in classifica.',
-            'Scopri chi vale davvero il tuo tempo con voti, costo al minuto, tag e statistiche; tieni d\'occhio il budget del mese e importa tutto da Mondo Cam Girls con un clic.',
+            'Scopri chi vale davvero il tuo tempo con voti, costo al minuto, tag e statistiche; tieni d\'occhio il budget del mese e porta dentro lo storico dei tuoi siti di cam: da Mondo Cam Girls con un clic, dagli altri con un file CSV.',
             'E la discrezione viene prima di tutto: PIN, foto sfocate, nome neutro e un tasto per sparire all\'istante.',
             COPYRIGHT
         ].join('\n\n')
@@ -221,7 +221,7 @@ async function createWindow() {
 const finestraPrincipale = () => mainWindow;
 ipcDati.registra({ finestraPrincipale });
 ipcSistema.registra();
-ipcMcg.registra();
+ipcConnettori.registra();
 ipcPrivacy.registra({ finestraPrincipale });
 
 app.whenReady().then(async () => {

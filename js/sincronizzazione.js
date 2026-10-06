@@ -1,9 +1,10 @@
 import { copiaArchivio, salvaArchivio } from './archivio.js';
 import { t } from './i18n.js';
 import { logger } from './logger.js';
-import { slugProfiloMcg } from './stato-online.js';
+import { slugProfiloMcg, urlProfiloPredefinito } from './connettore-mcg.js';
 import { stato } from './stato.js';
-import { generaIdUnico, parseDataItaliana, dataDelloShow, urlProfiloPredefinito } from './utils.js';
+import { generaIdUnico, parseDataItaliana, dataDelloShow } from './utils.js';
+import { SITO_MCG } from './siti.js';
 
 /* ==========================================================================
    SINCRONIZZAZIONE TRANSAZIONI MONDO CAM GIRLS
@@ -44,14 +45,14 @@ export function tipoTransazione(testo) {
 // Salva in locale (userData/mcg_ultima_sincronizzazione.json) le tabelle lette e
 // l'esito di ogni riga: serve a capire la struttura reale della pagina di MCG
 export async function salvaCopiaSincronizzazione(doc, esiti) {
-    if (!window.electronAPI || !window.electronAPI.salvaDumpMcg) return;
+    if (!window.electronAPI?.salvaCopiaImportazione) return;
     const tabelle = [...doc.querySelectorAll('table')].map((tabella, indice) => ({
         indice,
         intestazioni: [...tabella.querySelectorAll('th')].map(testoCella),
         righe: [...tabella.querySelectorAll('tr')].map(tr => [...tr.children].map(testoCella)).filter(r => r.length),
         html: tabella.outerHTML
     }));
-    const esito = await window.electronAPI.salvaDumpMcg({
+    const esito = await window.electronAPI.salvaCopiaImportazione(SITO_MCG, {
         dataSincronizzazione: new Date().toISOString(),
         versioneApp: await window.electronAPI.getAppVersion(),
         numeroTabelle: tabelle.length,
@@ -86,7 +87,7 @@ export function analizzaTransazioniMcg(doc, showsEsistenti) {
     // Un indirizzo diverso (inserito a mano) non viene toccato.
     const aggiornaLinkProfilo = (show, r) => {
         if (!r.urlProfilo || show.urlProfilo === r.urlProfilo) return false;
-        if (show.urlProfilo && show.urlProfilo !== urlProfiloPredefinito(show.nome)) return false;
+        if (show.urlProfilo && show.urlProfilo !== urlProfiloPredefinito(show.nomeOriginale || show.nome)) return false;
         show.urlProfilo = r.urlProfilo;
         linkAggiornati++;
         return true;
@@ -96,14 +97,17 @@ export function analizzaTransazioniMcg(doc, showsEsistenti) {
     const p2 = (n) => String(n).padStart(2, '0');
     const chiaveShow = (nome, d) =>
         `${nome}|${p2(d.getDate())}/${p2(d.getMonth() + 1)}/${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
-    const stessoNome = (show, nome) => (show.nome || '').toLowerCase().trim() === nome;
+    // Gli show uniti o separati nella scheda della modella hanno un nome diverso da
+    // quello su MCG: il confronto usa il nome con cui sono stati acquistati
+    const nomeSuMcg = (show) => (show.nomeOriginale || show.nome || '').toLowerCase().trim();
+    const stessoNome = (show, nome) => nomeSuMcg(show) === nome;
 
     // Show già salvati, raggruppati per modella. Ogni rappresentazione della data
     // salvata nel record (ISO, dataFormattata, data) conta come corrispondenza.
     // Ogni show può corrispondere a una sola transazione ("usato").
     const archivioPerNome = new Map();
     showsEsistenti.forEach(s => {
-        const nome = (s.nome || '').toLowerCase().trim();
+        const nome = nomeSuMcg(s);
         if (!nome) return;
         const date = [dataDelloShow(s), parseDataItaliana(s.dataFormattata)].filter(Boolean);
         const voce = {
@@ -172,28 +176,39 @@ export function analizzaTransazioniMcg(doc, showsEsistenti) {
         }
     });
 
+    // Nome attuale delle modelle rinominate (unite o separate): nome su MCG -> nome
+    // nell'archivio, dallo show più recente. Gli show nuovi seguono la stessa modella.
+    const nomeInArchivio = new Map();
+    [...showsEsistenti].filter(s => s.nomeOriginale && s.sito === SITO_MCG)
+        .sort((a, b) => (dataDelloShow(a) || 0) - (dataDelloShow(b) || 0))
+        .forEach(s => nomeInArchivio.set(nomeSuMcg(s), s.nome));
+
     // 2c: i pagamenti rimasti sono show nuovi
     pagamenti.filter(r => !r.esito).forEach(r => {
+        const nome = nomeInArchivio.get(r.nomeNormalizzato) || r.nome;
+        const chiaveNome = nome.toLowerCase().trim();
         // Dati noti della modella dagli show precedenti (piattaforma, nickname):
         // prima la piattaforma era sempre "Teams"
-        const modellaMemory = stato.elencoModelleUniche.find(m => m.nome.toLowerCase() === r.nomeNormalizzato);
+        const modellaMemory = stato.elencoModelleUniche.find(m => m.nome.toLowerCase() === chiaveNome);
 
         const nuovoShow = {
             id: generaIdUnico(),
             dataOraISO: r.data.toISOString(),
             dataFormattata: r.testoData,
             meseAnno: r.data.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }),
-            nome: r.nome,
+            nome,
             isRegalo: false,
             piattaforma: (modellaMemory && modellaMemory.piattaforma) || 'Teams',
             punteggio: 'TBD',
             costo: r.importo,
-            immagine: stato.mappaImmaginiModelle[r.nomeNormalizzato] || '',
-            urlProfilo: r.urlProfilo || stato.mappaUrlModelle[r.nomeNormalizzato] || urlProfiloPredefinito(r.nome),
+            immagine: stato.mappaImmaginiModelle[chiaveNome] || '',
+            urlProfilo: r.urlProfilo || stato.mappaUrlPerSito[chiaveNome]?.[SITO_MCG] || urlProfiloPredefinito(r.nome),
             recensione: false,
             note: '',
-            isAutoImport: true
+            sito: SITO_MCG,
+            importatoDa: SITO_MCG
         };
+        if (nome !== r.nome) nuovoShow.nomeOriginale = r.nome;
         if (modellaMemory && modellaMemory.nickname) nuovoShow.nickname = modellaMemory.nickname;
 
         // Pagamento nuovo già rimborsato: si collega subito al suo rimborso nella pagina
@@ -270,7 +285,7 @@ export function importaCronologiaCompletaMcg() {
 export async function sincronizzaTransazioniMondoCamGirls(opzioni = {}) {
     const tutteLePagine = Boolean(opzioni.tutteLePagine);
     try {
-        if (!window.electronAPI || !window.electronAPI.fetchTransazioniHtml) {
+        if (!window.electronAPI?.importaTransazioni) {
             alert("Errore: Funzione di sincronizzazione non supportata.");
             return;
         }
@@ -279,7 +294,7 @@ export async function sincronizzaTransazioniMondoCamGirls(opzioni = {}) {
             ? "Avvio importazione della cronologia completa da MondoCamGirls..."
             : "Avvio sincronizzazione transazioni da MondoCamGirls...");
 
-        const lettura = await window.electronAPI.fetchTransazioniHtml({ tutteLePagine });
+        const lettura = await window.electronAPI.importaTransazioni(SITO_MCG, { tutteLePagine });
 
         if (!lettura || !Array.isArray(lettura.pagine) || lettura.pagine.length === 0) {
             logger.warn("Sincronizzazione annullata o finestra chiusa.");

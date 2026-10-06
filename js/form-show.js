@@ -1,9 +1,11 @@
 import { aggiungiShow, aggiornaShow, rimuoviShow, trovaShow } from './archivio.js';
-import { aggiornaVistaTipo, aggiornaStelle, aggiornaMiniScheda, aggiornaRiepilogoDettagli, sincronizzaFormAssistito, ultimoShowModella } from './form-assistito.js';
+import { aggiornaVistaTipo, aggiornaStelle, aggiornaMiniScheda, aggiornaRiepilogoDettagli, sincronizzaFormAssistito, ultimoShowModella, importoOriginaleForm, impostaCostoInEuro, nascondiNuovoTag } from './form-assistito.js';
 import { t } from './i18n.js';
 import { logger } from './logger.js';
 import { stato, iconePiattaformaHTML } from './stato.js';
+import { impostaSitoForm, sitoSceltoForm } from './gestione-siti.js';
 import { impostaTagForm, tagSceltiForm } from './tag.js';
+import { urlProfiloSulSito } from './connettori.js';
 import { escapeHtml, generaIdUnico } from './utils.js';
 
 /* ==========================================================================
@@ -84,10 +86,11 @@ export function autocompilaDatiModella() {
     const inputUrlProfilo = document.getElementById('urlProfilo');
     const inputNickname = document.getElementById('nickname');
 
+    // Profilo della modella sul sito scelto nel form (una modella può averne uno per sito)
+    const urlSulSito = urlProfiloSulSito(nomeInserito, sitoSceltoForm());
+    if (urlSulSito && inputUrlProfilo) inputUrlProfilo.value = urlSulSito;
+
     if (modellaTrovata) {
-        if (modellaTrovata.urlProfilo && inputUrlProfilo) {
-            inputUrlProfilo.value = modellaTrovata.urlProfilo;
-        }
         if (modellaTrovata.immagine && inputImmagine) {
             inputImmagine.value = modellaTrovata.immagine;
         }
@@ -101,11 +104,24 @@ export function autocompilaDatiModella() {
         if (stato.mappaImmaginiModelle[nomeInserito] && inputImmagine) {
             inputImmagine.value = stato.mappaImmaginiModelle[nomeInserito];
         }
-        if (stato.mappaUrlModelle[nomeInserito] && inputUrlProfilo) {
-            inputUrlProfilo.value = stato.mappaUrlModelle[nomeInserito];
-        }
     }
     aggiornaRiepilogoDettagli();
+}
+
+// Cambiando il sito di uno show nuovo, l'indirizzo del profilo segue il sito: se era
+// quello della modella su un altro sito (o vuoto) diventa quello sul sito scelto
+function aggiornaUrlProfiloPerSito() {
+    const inputUrlProfilo = document.getElementById('urlProfilo');
+    const nome = document.getElementById('nome')?.value.trim() || '';
+    if (!inputUrlProfilo || !nome || document.getElementById('editId')?.value) return;
+    const profiliNoti = Object.values(stato.mappaUrlPerSito[nome.toLowerCase()] || {});
+    if (inputUrlProfilo.value && !profiliNoti.includes(inputUrlProfilo.value)) return;   // scritto a mano
+    inputUrlProfilo.value = urlProfiloSulSito(nome, sitoSceltoForm());
+    aggiornaRiepilogoDettagli();
+}
+
+export function inizializzaUrlProfiloForm() {
+    document.addEventListener('sito-form-cambiato', aggiornaUrlProfiloPerSito);
 }
 
 // "Ripeti ultimo show": stessi dettagli, durata, costo e tag dell'ultimo show con la
@@ -123,7 +139,11 @@ export function ripetiUltimoShow() {
     imposta('immagine', ultimo.immagine);
     imposta('durataShow', ultimo.durata || '');
     imposta('costo', ultimo.costo);
+    // Importo in token o altra valuta come nell'ultimo show; se era in euro si ripete in euro
+    imposta('importoValuta', ultimo.importoOriginale?.valore);
+    impostaCostoInEuro(!ultimo.importoOriginale);
     impostaTagForm(ultimo.tag || []);
+    impostaSitoForm(ultimo.sito);
     sincronizzaFormAssistito();
     logger.info(`Form precompilato dall'ultimo show con ${ultimo.nome}`);
 }
@@ -158,14 +178,6 @@ if (showForm) {
         }
         const isRegalo = isRegaloCheckbox ? isRegaloCheckbox.checked : false;
 
-        let isAutoImport = false;
-        if (editId) {
-            const itemEsistente = stato.tuttiGliShow.find(s => String(s.id) === String(editId));
-            if (itemEsistente && itemEsistente.isAutoImport) {
-                isAutoImport = true;
-            }
-        }
-
         const valPunteggio = punteggioSelect ? punteggioSelect.value : '';
 
         const showData = {
@@ -183,9 +195,14 @@ if (showForm) {
             urlProfilo: inputUrlProfilo ? inputUrlProfilo.value.trim() : '',
             recensione: inputRecensione ? inputRecensione.checked : false,
             note: inputNote ? inputNote.value : '',
-            isAutoImport: isAutoImport,
+            // Sito scelto nel form; uno show nuovo è inserito a mano, in modifica l'origine
+            // resta quella salvata (aggiornaShow unisce i campi a quelli esistenti)
+            sito: sitoSceltoForm(),
+            ...(editId ? {} : { importatoDa: null }),
             nickname: inputNickname ? inputNickname.value.trim() : '',
-            tag: tagSceltiForm()
+            tag: tagSceltiForm(),
+            // Importo pagato nella valuta del sito (token, dollari...), se indicato
+            importoOriginale: importoOriginaleForm()
         };
 
         try {
@@ -267,6 +284,17 @@ export async function modificaShow(id) {
     const noteInput = document.getElementById('note');
     if (noteInput) noteInput.value = item.note || '';
     impostaTagForm(item.tag || []);
+    impostaSitoForm(item.sito);
+    const importoValuta = document.getElementById('importoValuta');
+    if (importoValuta) importoValuta.value = item.importoOriginale?.valore ?? '';
+    // Show salvato in euro su un sito a token: si modifica il costo in euro
+    impostaCostoInEuro(!item.importoOriginale);
+
+    const banner = document.getElementById('bannerModifica');
+    if (banner) {
+        banner.textContent = t('form.editing').replace('{data}', (item.dataFormattata || '').split(' ')[0]).replace('{nome}', item.nome || '');
+        banner.hidden = false;
+    }
 
     const btnSalva = document.getElementById('btnSalva');
     const btnAnnulla = document.getElementById('btnAnnulla');
@@ -305,9 +333,10 @@ export function impostaFormAperto(aperto) {
 export function aggiornaPulsanteForm() {
     const btnSalva = document.getElementById('btnSalva');
     const editIdInput = document.getElementById('editId');
-    if (btnSalva) {
-        btnSalva.textContent = t(editIdInput && editIdInput.value ? 'form.btn_update' : 'form.btn_save');
-    }
+    const inModifica = Boolean(editIdInput && editIdInput.value);
+    if (btnSalva) btnSalva.textContent = t(inModifica ? 'form.btn_update' : 'form.btn_save');
+    const titolo = document.getElementById('titoloForm');
+    if (titolo) titolo.textContent = t(inModifica ? 'form.title_edit' : 'form.title');
 
     const btn = document.getElementById('btnToggleForm');
     if (!btn) return;
@@ -370,9 +399,17 @@ export function resetForm() {
     const nickInput = document.getElementById('nickname');
     if (nickInput) nickInput.value = '';
     impostaTagForm([]);
+    impostaSitoForm(null);
+    const importoValuta = document.getElementById('importoValuta');
+    if (importoValuta) importoValuta.value = '';
+    impostaCostoInEuro(false);
+    nascondiNuovoTag();
+    const banner = document.getElementById('bannerModifica');
+    if (banner) banner.hidden = true;
     const dettagli = document.getElementById('dettagliForm');
     if (dettagli) dettagli.open = false;
     sincronizzaFormAssistito();
+    aggiornaPulsanteForm();
 }
 
 // "Svuota": tutti i campi tornano vuoti (data all'ora attuale), il form resta aperto.

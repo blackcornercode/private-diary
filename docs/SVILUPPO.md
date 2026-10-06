@@ -1,6 +1,6 @@
 # 🛠️ Diario Privato: documentazione per lo sviluppo
 
-Architettura, struttura del codice, test e build. Le regole per chi modifica il codice sono riassunte anche in [CLAUDE.md](../CLAUDE.md).
+Architettura, struttura del codice, test e build. Le regole per chi modifica il codice sono riassunte anche in [CLAUDE.md](../CLAUDE.md). L'evoluzione prevista verso una cronologia multi-sito è descritta in [ROADMAP.md](ROADMAP.md).
 
 ## 🗂️ Struttura del Progetto
 
@@ -8,13 +8,16 @@ Architettura, struttura del codice, test e build. Le regole per chi modifica il 
 | :--- | :--- |
 | `main.js` | Processo principale Electron: ciclo di vita dell'app, finestre, menu e stato della finestra. Registra i gestori IPC di `main/`. |
 | `main/ipc-dati.js` | Archivio degli show e catalogo dei tag: lettura, salvataggio (con copia `.bak`), esportazione e importazione dei backup. |
+| `main/catalogo-siti.js` | Catalogo dei siti di provenienza: validazione e siti iniziali (Mondo Cam Girls sempre presente). |
+| `main/conversione.js` | Riconosce un archivio delle versioni precedenti alla 2.0, di cui `ipc-dati.js` salva una copia (`shows_data.prima-2.0.json`) prima che l'interfaccia lo converta. |
 | `main/catalogo-tag.js` | Validazione del catalogo dei tag, colori disponibili e tag iniziali. |
 | `main/ipc-sistema.js` | Versione, log, apertura di cartelle e link esterni, changelog e avviso "Novità". |
 | `main/ipc-privacy.js`, `main/privacy.js` | Privacy: nome e icona neutri della finestra, PIN di sblocco (verificato solo nel processo principale), riduzione a icona rapida. |
-| `main/ipc-mcg.js` | Mondo Cam Girls: lettura delle transazioni con login, copia diagnostica, modelle online, foto, raggiungibilità. |
-| `main/mcg-pagine.js` | Lettura pagina per pagina della cronologia transazioni di MCG. |
+| `main/ipc-connettori.js` | Canali generici dei connettori: l'interfaccia indica il sito e la funzione (transazioni, copia diagnostica, modelle online, stato del profilo, foto, raggiungibilità). |
+| `main/connettori/index.js` | Registro dei connettori e delle funzioni che ciascuno offre. Per un nuovo sito: `main/connettori/<id>/index.js` che esporta `{ id, capacita }`. |
+| `main/connettori/mcg/` | Connettore di Mondo Cam Girls: `index.js` (lettura delle transazioni con login, modelle online, profili sospesi o rimossi, foto, ping), `indirizzi.js` (URL dei profili e pagina sospesa, funzioni pure), `pagine.js` (lettura pagina per pagina della cronologia transazioni). |
 | `main/canali.js` | Nomi dei canali IPC tra interfaccia e processo principale. |
-| `main/log.js`, `main/rete.js`, `main/file.js`, `main/percorsi.js` | Supporto: log, download e validazione degli URL MCG, scrittura atomica dei file, percorsi dei dati. |
+| `main/log.js`, `main/rete.js`, `main/file.js`, `main/percorsi.js` | Supporto: log, download di pagine e ping con timeout (comuni ai connettori), scrittura atomica dei file e lettura del testo dei CSV (UTF-8 o Windows-1252), percorsi dei dati. |
 | `tests/` | Test automatici (`npm test`), esclusi dalla build. |
 | `tools/` | Strumenti di sviluppo, esclusi dalla build: screenshot del README con dati dimostrativi (`npm run screenshot`) e `CHANGELOG.md` da `changelog.json` (`npm run changelog`). |
 | `docs/` | Guida all'uso, questa documentazione, screenshot e note di rilascio. |
@@ -46,11 +49,18 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
 | `dati.js` | Esportazione e importazione dei backup, apertura della cartella dati. |
 | `cronologia.js` | Cronologia show, filtri e paginazione. |
 | `tag.js` | Tag degli show: etichette colorate, selettore del form, scelta nella modifica multipla, filtro della cronologia e finestra Gestisci tag. |
+| `siti.js` | Siti di provenienza degli show (solo dati): `SITO_MCG`, ricerca nel catalogo, sigla, sito predefinito (localStorage). |
+| `gestione-siti.js` | Siti nell'interfaccia: badge nelle tabelle, scelta del sito nel form, filtri di cronologia e classifica, campo della modifica multipla, finestra Gestisci siti. |
+| `csv.js` | CSV come funzioni pure: lettura (separatore, virgolette, BOM), abbinamento delle colonne, lettura di date, importi e durate, preparazione dell'importazione (nuovi, doppioni, errori, conversione di valuta) ed esportazione. Verificato da `tests/csv.test.js`. |
+| `importa-csv.js` | Finestra di importazione da CSV ed esportazione della cronologia. |
 | `selezione.js` | Selezione multipla della cronologia: barra della selezione, eliminazione e modifica di più show insieme. |
 | `grafico-spesa.js` | Grafico a barre della spesa (per mese o per anno), disegnato in SVG senza librerie esterne. |
 | `statistiche.js` | Statistiche mensili e indicatori budget. |
 | `classifica.js` | Classifica modelle. |
-| `modale-modella.js` | Scheda dettaglio modella e foto da Mondo Cam Girls. |
+| `modale-modella.js` | Scheda dettaglio modella: profili e totali per sito, foto dal sito che le offre. |
+| `unisci-modelle.js` | Unisci / separa modelle dalla scheda (rinomina degli show con `rinominaModella` di `calcoli.js`, che salva il nome di acquisto in `nomeOriginale`). |
+| `connettori.js` | Funzioni dei connettori ricevute dal processo principale (`caricaConnettori`) e `funzioneDisponibile(sito, funzione)`, da controllare prima di contattare un sito; profilo di una modella su un sito (`urlProfiloSulSito`, `urlModelleDelSito`). |
+| `connettore-mcg.js` | Parti del connettore MCG usate dall'interfaccia: sottodominio del profilo e indirizzo dedotto dal nome. |
 | `sincronizzazione.js` | Importazione transazioni da Mondo Cam Girls. |
 | `changelog.js` | Modale novità. |
 | `stato-mcg.js` | Indicatore di raggiungibilità di Mondo Cam Girls. |
@@ -95,7 +105,7 @@ npm test
 Esegue i test in `tests/` con il test runner integrato di Node (nessuna dipendenza aggiuntiva), in meno di un secondo:
 - **funzioni dell'interfaccia** (`utils.js`, `calcoli.js`, `righe-show.js`, `archivio.js`, parte di `sincronizzazione.js`): date, normalizzazione dei record vecchi, €/min, voti, durate, importi e tipi delle transazioni MCG. I moduli ES di `js/` vengono importati in Node con sostituti minimi di `document` e `localStorage` (`js/package.json` indica a Node che sono moduli ES);
 - **struttura dei moduli** (`moduli.test.js`): ogni nome importato esiste nel modulo di origine, ogni funzione di un altro modulo usata nel codice è importata, ogni azione usata nell'HTML è registrata in `app.js`, e l'HTML non contiene JavaScript inline;
-- **funzioni del processo principale** (`main/rete.js`, `main/mcg-pagine.js`);
+- **funzioni del processo principale** (`main/connettori/mcg/indirizzi.js`, `main/connettori/mcg/pagine.js`, registro dei connettori);
 - **coerenza dei canali IPC**: ogni canale usato in `preload.js` deve essere definito in `main/canali.js` e avere un gestore registrato (il preload, in sandbox, non può importare `canali.js`).
 
 `npm run dist` esegue automaticamente i test prima della build (`predist`): se un test fallisce, l'eseguibile non viene creato.

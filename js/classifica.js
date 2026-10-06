@@ -5,6 +5,8 @@ import { badgeSospesa } from './profili-sospesi.js';
 import { eModellaOnline, badgeOnline } from './stato-online.js';
 import { stato } from './stato.js';
 import { escapeHtml, formattaCostoAlMinuto, formattaDurata } from './utils.js';
+import { SITO_MCG } from './siti.js';
+import { funzioneDisponibile, FUNZIONI } from './connettori.js';
 
 /* ==========================================================================
    CLASSIFICA MODELLE E MEDIE
@@ -80,9 +82,15 @@ export function filtraClassificaModelle() {
     const input = document.getElementById('searchModellaClassifica');
     if (!input) return;
     const filtro = input.value.trim().toLowerCase();
-    const soloOnline = Boolean(document.getElementById('filtroSoloOnline')?.checked);
+    // Lo stato online viene da Mondo Cam Girls: senza il sito in uso il filtro non vale
+    const soloOnline = funzioneDisponibile(SITO_MCG, FUNZIONI.ONLINE) && Boolean(document.getElementById('filtroSoloOnline')?.checked);
+    // Con un sito scelto la classifica si ricalcola sui soli show di quel sito
+    const sito = document.getElementById('filtroSitoClassifica')?.value || '';
+    const classifica = sito
+        ? calcolaClassifica(stato.tuttiGliShow.filter(s => s.sito === sito), { immagini: stato.mappaImmaginiModelle, url: stato.mappaUrlModelle })
+        : stato.classificaCompletaCache;
 
-    const filtrati = stato.classificaCompletaCache.filter(m =>
+    const filtrati = classifica.filter(m =>
         m.nome.toLowerCase().includes(filtro) && (!soloOnline || eModellaOnline(m.nome) === true));
     mostraClassifica(filtrati);
 }

@@ -1,4 +1,25 @@
 {
+  "2.0.0": [
+    "Novità: Diario Privato diventa una cronologia per tutti i siti di cam, non solo per Mondo Cam Girls: ogni sito ha le sue impostazioni e Mondo Cam Girls resta integrato in automatico",
+    "Novità: ogni show indica il sito su cui è stato acquistato (Mondo Cam Girls, Chaturbate, Stripchat, BongaCams, LiveJasmin, OnlyFans o siti aggiunti da te): scelta nel form con l'ultimo sito usato con la modella già proposto, badge colorato sotto l'ora in tutte le tabelle, filtro per sito in cronologia e classifica, vista Per sito nel grafico della spesa e sito nella modifica multipla",
+    "Novità: Impostazioni › Gestisci siti, per nome, sigla e colore di ogni sito, nuovi siti e sito predefinito per gli show nuovi",
+    "Novità: importazione da CSV dello storico degli acquisti di qualsiasi sito (menu Dati): colonne riconosciute dalle intestazioni, scelta di sito, valuta e formato della data, anteprima con lo stato di ogni riga e controllo dei doppioni",
+    "Novità: esportazione della cronologia in CSV, apribile con Excel e reimportabile",
+    "Novità: valuta e tasso in euro per ogni sito (euro, dollari, sterline, token, crediti): il costo resta in euro, l'importo pagato in token o dollari viene ricordato e nel form un campo lo converte da solo",
+    "Interfaccia: form Aggiungi / Modifica show più leggibile: quattro sezioni con un titolo (Chi e quando, Lo show, Com'è andata, Tag e note), modella, sito e data sulla stessa riga, durata in una barra unica, costo al minuto in evidenza, voti, siti e tag con un contorno ben visibile finché non sono scelti, recensione con un interruttore, sezione Dettagli in un riquadro ben visibile con il riepilogo a pillole, barra dei pulsanti sempre visibile e, in modifica, una striscia che ricorda quale show stai modificando",
+    "Interfaccia: sui siti che fanno pagare in token o in un'altra valuta il campo principale del costo è l'importo pagato, con l'equivalente in euro accanto; «inserisci in euro» permette di scrivere direttamente il costo in euro",
+    "Interfaccia: sotto il titolo dell'app un sottotitolo riassume in una riga a cosa serve",
+    "Novità: siti in uso (Impostazioni › Gestisci siti): nel form compaiono solo i siti che usi, e le funzioni di Mondo Cam Girls (indicatore, importazione automatica, modelle online, profili sospesi, foto) si attivano solo se lo usi",
+    "Novità: al primo avvio, con l'archivio vuoto, una finestra di benvenuto chiede la lingua (proposta in base a quella di Windows), su quali siti acquisti gli show e qual è il sito principale",
+    "Novità: modelle su più siti: la scheda mostra il profilo della modella su ogni sito e una tabella con show, spesa, €/min e voti per sito; nel form l'indirizzo del profilo segue il sito scelto",
+    "Novità: Unisci / Separa nella scheda della modella: unisci gli show registrati con un altro nome (la stessa modella su un altro sito) o separa gli show di un sito quando lo stesso nome indica persone diverse. La sincronizzazione con Mondo Cam Girls ricorda il nome originale e non crea doppioni",
+    "Interfaccia: testi generici al posto dei riferimenti a Mondo Cam Girls fuori dalla sua sezione (nome del tema Bordeaux & Oro, finestra Informazioni)",
+    "Interfaccia: al primo avvio dopo l'installazione non compare la finestra delle novità, ma solo il benvenuto",
+    "Tecnico: primo passo verso il supporto a più siti di cam (docs/ROADMAP.md, fase 1): ogni show ricorda il sito di provenienza (per gli show esistenti Mondo Cam Girls) e da quale sito è stato importato; nuovo catalogo dei siti incluso nel backup (formato versione 2, i backup precedenti restano importabili)",
+    "Tecnico: all'avvio della 2.0 una copia dell'archivio delle versioni precedenti viene salvata in shows_data.prima-2.0.json prima della conversione al nuovo formato",
+    "Tecnico: il codice che contatta Mondo Cam Girls diventa il primo «connettore» (docs/ROADMAP.md, fase 3): ogni sito dichiara le funzioni che offre (importazione, modelle online, profili sospesi, foto, raggiungibilità) e badge, galleria e indicatore compaiono solo per i siti che le supportano. Nessun cambiamento per chi usa Mondo Cam Girls",
+    "Fix: «Nessun anno disponibile» nel filtro per anno restava in italiano con l'interfaccia in inglese"
+  ],
   "1.12.3": [
     "Interfaccia: Sincronizza MCG e Cronologia completa MCG sono nel menu Dati, in una sezione evidenziata «Importa da Mondo Cam Girls», con una descrizione sotto ogni voce e un tooltip che spiega la differenza; il pulsante Sincronizza MCG non è più nell'intestazione",
     "Novità: installer per Windows (PrivateDiary-setup.exe), per utente e senza permessi di amministratore, oltre alla versione portable; disinstallando l'app i dati restano",

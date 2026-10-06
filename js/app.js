@@ -8,17 +8,21 @@ import { aggiornaInterfaccia, alCambioArchivio, aggiornaViste } from './archivio
 import { inizializzaAzioni, registraAzioni } from './azioni.js';
 import { initChangelogCheck, inizializzaListenerChangelogMenu, apriModalChangelog, chiudiModalChangelog } from './changelog.js';
 import { caricaMedieEStoricizzazione, filtraClassificaModelle } from './classifica.js';
+import { caricaConnettori } from './connettori.js';
 import { inizializzaFiltriCronologia, inizializzaFiltroAnni, caricaCronologia, cambiaPagina, resetFiltriCronologia, filtraCronologiaPerNome } from './cronologia.js';
 import { esportaDati, importaDati, apriCartellaDati } from './dati.js';
-import { impostaTipo, cliccaVoto, durataRapida, aggiornaAnteprimaCostoMinuto, aggiornaRiepilogoDettagli, sincronizzaFormAssistito, ultimoShowModella } from './form-assistito.js';
-import { impostaDataOraAttuale, autocompilaDatiModella, aggiornaPulsanteForm, aggiornaDatalistModelle, toggleForm, annullaModifica, gestisciStatoRegalo, modificaShow, eliminaShow, ripetiUltimoShow, inizializzaScorciatoieForm, svuotaForm } from './form-show.js';
+import { impostaTipo, cliccaVoto, durataRapida, aggiornaAnteprimaCostoMinuto, aggiornaRiepilogoDettagli, sincronizzaFormAssistito, ultimoShowModella, convertiImportoValuta, inizializzaConvertitoreValuta, alternaCostoInEuro, mostraNuovoTag, durataLibera } from './form-assistito.js';
+import { inizializzaUrlProfiloForm, impostaDataOraAttuale, autocompilaDatiModella, aggiornaPulsanteForm, aggiornaDatalistModelle, toggleForm, annullaModifica, gestisciStatoRegalo, modificaShow, eliminaShow, ripetiUltimoShow, inizializzaScorciatoieForm, svuotaForm } from './form-show.js';
 import { apriModalImmagine, chiudiModalImmagine, navigaGalleria } from './galleria.js';
+import { disegnaSelettoreSitoForm, scegliSitoForm, aggiornaSelectSiti, apriGestioneSiti, chiudiGestioneSiti, disegnaGestioneSiti, creaSitoDaGestione, rinominaSito, cambiaSiglaSito, cambiaColoreSito, cambiaValutaSito, cambiaTassoSito, cambiaAttivoSito, applicaSitiAttivi, controllaBenvenuto, aggiornaBenvenuto, confermaBenvenuto, eliminaSito, cambiaSitoPredefinito, inizializzaSiti } from './gestione-siti.js';
+import { avviaImportazioneCsv, chiudiImportazioneCsv, confermaImportazioneCsv, aggiornaAnteprimaCsv, impostaValutaDalSito, esportaCronologiaCsv } from './importa-csv.js';
 import { impostaVistaGraficoSpesa } from './grafico-spesa.js';
 import { caricaLingua, linguaCorrente } from './i18n.js';
 import { logger } from './logger.js';
 import { inizializzaMenuHeader } from './menu-header.js';
 import { apriModalModella, chiudiModalModella, aggiornaBadgeSchedaModella } from './modale-modella.js';
 import { verificaProfiliSospesi, inizializzaProfiliSospesi } from './profili-sospesi.js';
+import { apriUnisciModella, chiudiUnisciModella, cambiaSitoSepara, aggiornaAnteprimaUnisci, confermaUnisciModella } from './unisci-modelle.js';
 import { inizializzaPrivacy, aggiornaTestiPrivacy, cambiaSfocatura, cambiaAspettoNeutro, cambiaBloccoMinuti, apriFinestraPin, chiudiFinestraPin, salvaPin, sblocca, registraTastoRapido, ripristinaTastoRapido } from './privacy.js';
 import { mostraVersioneApp, inizializzaTema, inizializzaFont, inizializzaGestioneBudget, apriTab, cambiaTema, aumentaFont, riduciFont } from './preferenze.js';
 import { selezionaShow, selezionaPagina, selezionaTuttiFiltrati, deselezionaTutti, eliminaSelezionati, apriModificaMultipla, applicaModificaMultipla, chiudiModificaMultipla } from './selezione.js';
@@ -91,6 +95,34 @@ registraAzioni({
     'colore-tag': (el) => cambiaColoreTag(el),
     'elimina-tag': (el) => eliminaTag(el),
 
+    // Siti di provenienza degli show
+    'scegli-sito-form': (el) => scegliSitoForm(el),
+    'apri-gestione-siti': () => apriGestioneSiti(),
+    'chiudi-gestione-siti': () => chiudiGestioneSiti(),
+    'crea-sito-gestione': () => creaSitoDaGestione(),
+    'rinomina-sito': (el) => rinominaSito(el),
+    'sigla-sito': (el) => cambiaSiglaSito(el),
+    'colore-sito': (el) => cambiaColoreSito(el),
+    'valuta-sito': (el) => cambiaValutaSito(el),
+    'tasso-sito': (el) => cambiaTassoSito(el),
+    'attivo-sito': (el) => cambiaAttivoSito(el),
+    'benvenuto-siti': () => aggiornaBenvenuto(),
+    'conferma-benvenuto': () => confermaBenvenuto(),
+    'converti-importo': () => convertiImportoValuta(),
+    'durata-libera': (el) => durataLibera(el),
+    'alterna-costo-euro': () => alternaCostoInEuro(),
+    'mostra-nuovo-tag': () => mostraNuovoTag(),
+
+    // File CSV: importazione dello storico di qualsiasi sito ed esportazione della cronologia
+    'importa-csv': () => avviaImportazioneCsv(),
+    'esporta-csv': () => esportaCronologiaCsv(),
+    'anteprima-csv': () => aggiornaAnteprimaCsv(),
+    'sito-csv': () => { impostaValutaDalSito(); aggiornaAnteprimaCsv(); },
+    'chiudi-importa-csv': () => chiudiImportazioneCsv(),
+    'conferma-importa-csv': () => confermaImportazioneCsv(),
+    'elimina-sito': (el) => eliminaSito(el),
+    'cambia-sito-predefinito': (el) => cambiaSitoPredefinito(el),
+
     // Classifica, statistiche, scheda modella
     'filtra-classifica': () => filtraClassificaModelle(),
     'cambia-anno-statistiche': () => aggiornaStatisticheMensili(),
@@ -98,6 +130,11 @@ registraAzioni({
     'seleziona-mese': (el) => selezionaMeseDettaglio(el.dataset.mese === '' ? null : Number(el.dataset.mese)),
     'apri-scheda-modella': (el) => apriModalModella(el.dataset.nome),
     'chiudi-scheda-modella': () => chiudiModalModella(),
+    'apri-unisci-modella': (el) => apriUnisciModella(el),
+    'chiudi-unisci-modella': () => chiudiUnisciModella(),
+    'sito-separa-modella': () => cambiaSitoSepara(),
+    'anteprima-unisci-modella': () => aggiornaAnteprimaUnisci(),
+    'conferma-unisci-modella': () => confermaUnisciModella(),
 
     // Privacy
     'cambia-sfocatura': (el) => cambiaSfocatura(el),
@@ -128,6 +165,11 @@ function ridisegnaViste() {
     inizializzaFiltroAnni(stato.tuttiGliShow);
     // Tag: prima il filtro (usato da caricaCronologia), poi form, modifica multipla e gestione
     aggiornaFiltroTag();
+    // Siti: select dei filtri e della modifica multipla, scelta nel form, gestione
+    applicaSitiAttivi();
+    aggiornaSelectSiti();
+    disegnaSelettoreSitoForm();
+    disegnaGestioneSiti();
     disegnaSelettoreTagForm();
     disegnaTagModificaMultipla();
     disegnaGestioneTag();
@@ -138,6 +180,8 @@ function ridisegnaViste() {
     // Mantiene l'eventuale ricerca e il filtro "Solo online" della classifica
     filtraClassificaModelle();
     aggiornaIndicatoreBudgetHomepage(stato.tuttiGliShow);
+    // Primo avvio con l'archivio vuoto: quali siti usi?
+    controllaBenvenuto();
     // Verifica in background i profili MCG non controllati di recente (anche delle modelle nuove)
     verificaProfiliSospesi();
 }
@@ -253,6 +297,8 @@ async function avvia() {
     await caricaLingua(linguaCorrente);
     // Prima dei dati: con un PIN l'app parte già bloccata
     await inizializzaPrivacy();
+    // Funzioni dei connettori dei siti: servono a indicatore, stato online e profili sospesi
+    await caricaConnettori();
 
     mostraVersioneApp();
     impostaDataOraAttuale();
@@ -267,7 +313,10 @@ async function avvia() {
     inizializzaControlliCronologia();
     inizializzaModali();
     inizializzaTag();
+    inizializzaSiti();
+    inizializzaConvertitoreValuta();
     inizializzaScorciatoieForm();
+    inizializzaUrlProfiloForm();
     sincronizzaFormAssistito();
 
     // Mostra automaticamente le novità al primo avvio dopo un aggiornamento

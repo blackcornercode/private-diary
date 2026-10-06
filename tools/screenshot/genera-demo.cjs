@@ -52,10 +52,14 @@ const NOTE = [
     '', '', ''
 ];
 
+const SITO_MODELLA = { ScarlettRose: 'stripchat', NoirKitty: 'chaturbate', RubyMoon: 'stripchat' };
+
 const shows = [];
 let id = 1780000000000;
 const aggiungi = (modella, data, extra = {}) => {
     const [nome, da, a, piattaforma, nickname, prezzo, voto, preferiti] = modella;
+    // Sito di provenienza: per mostrare il supporto a più siti, alcune modelle stanno su Stripchat o Chaturbate
+    const sito = SITO_MODELLA[nome] || 'mcg';
     const durata = scegli([10, 15, 15, 20, 30, 30, 45, 60]);
     const costo = Math.round(prezzo * (0.6 + durata / 40) / 5) * 5;
     const iniziali = nome.replace(/[^A-Z]/g, '').slice(0, 2);
@@ -74,7 +78,8 @@ const aggiungi = (modella, data, extra = {}) => {
         urlProfilo: '',
         recensione: caso() < 0.4,
         note: scegli(NOTE),
-        isAutoImport: caso() < 0.5,
+        // Solo Mondo Cam Girls ha l'importazione automatica
+        sito, importatoDa: sito === 'mcg' && caso() < 0.6 ? 'mcg' : null,
         nickname,
         tag: preferiti.filter(() => caso() < 0.7).concat(caso() < 0.2 ? [scegli(TAG).id] : []).filter((t, i, e) => e.indexOf(t) === i),
         ...extra
@@ -99,8 +104,11 @@ shows.push({
     id: id++, dataOraISO: new Date(2026, 8, 14, 21, 0).toISOString(), dataFormattata: '14/09/2026 21:00',
     nome: regalo[0], isRegalo: true, piattaforma: '', punteggio: null, costo: 25, durata: 0,
     immagine: shows.find(s => s.nome === regalo[0]).immagine, urlProfilo: '', recensione: false,
-    note: 'Birthday gift.', isAutoImport: false, nickname: regalo[4], tag: []
+    note: 'Birthday gift.', sito: 'mcg', importatoDa: null, nickname: regalo[4], tag: []
 });
+
+// LunaVelvet anche su Stripchat, con un altro nome (unita nella scheda): mostra la tabella Per sito
+aggiungi(regalo, new Date(2026, 8, 25, 22, 0), { sito: 'stripchat', importatoDa: null, nomeOriginale: 'Luna_V', urlProfilo: 'https://stripchat.com/Luna_V' });
 
 fs.mkdirSync(cartella, { recursive: true });
 fs.writeFileSync(path.join(cartella, 'shows_data.json'), JSON.stringify(shows, null, 2));

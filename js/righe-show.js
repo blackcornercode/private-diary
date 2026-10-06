@@ -1,5 +1,6 @@
 import { chiaveModella } from './calcoli.js';
 import { t } from './i18n.js';
+import { badgeSitoShow } from './gestione-siti.js';
 import { stato, iconePiattaformaHTML } from './stato.js';
 import { tagDelloShow, etichettaTag } from './tag.js';
 import { generaLinkChat, escapeHtml, cellaCosto, costoAlMinuto, cellaNote, formattaCostoAlMinuto, formattaVoto, formattaDurata } from './utils.js';
@@ -63,16 +64,12 @@ export function cellaTagNote(show) {
         <div class="tag-show">${etichette}</div>${nota ? `<div class="testo-note">${nota}</div>` : ''}</td>`;
 }
 
-// Data sopra e ora sotto: più stretta di "gg/mm/aaaa hh:mm" su una riga.
-// extra: HTML aggiunto dopo l'ora (in cronologia, l'origine del record).
-function cellaData(show, extra = '') {
+// Data sopra e, sotto, ora e badge del sito (sigla colorata, 🤖 se importato,
+// 👤 se inserito a mano): più stretta di "gg/mm/aaaa hh:mm" su una riga
+function cellaData(show) {
     const [giorno, ora = ''] = String(show.dataFormattata || '').split(' ');
-    return `<td class="col-data"><span class="data-giorno">${escapeHtml(giorno)}</span><span class="data-ora">${escapeHtml(ora)}${extra}</span></td>`;
+    return `<td class="col-data"><span class="data-giorno">${escapeHtml(giorno)}</span><span class="data-ora">${escapeHtml(ora)} ${badgeSitoShow(show)}</span></td>`;
 }
-
-const badgeOrigine = (show) => show.isAutoImport
-    ? '<span class="badge-origine auto" title="Importato da MCG">🤖 MCG</span>'
-    : '<span class="badge-origine manuale" title="Inserito a mano">👤</span>';
 
 const selezionato = (show) => stato.selezioneCronologia.has(String(show.id));
 
@@ -85,9 +82,7 @@ export const COLONNE_SHOW = {
                     () => `<input type="checkbox" id="selezionaPaginaCronologia" class="casella-selezione"
                         title="${escapeHtml(t('selection.select_page'))}" aria-label="${escapeHtml(t('selection.select_page'))}" data-al-cambio="seleziona-pagina">`],
     foto:          ['table.photo', '', cellaFoto],
-    data:          ['table.date', '', s => cellaData(s)],
-    // Cronologia: l'origine (MCG o manuale) sta accanto all'ora invece che in una colonna a sé
-    dataOrigine:   ['table.date', '', s => cellaData(s, ` ${badgeOrigine(s)}`)],
+    data:          ['table.date', '', cellaData],
     nome:          ['table.name', '', s => `<td class="col-nowrap"><strong>${escapeHtml(s.nome)}</strong></td>`],
     nomeCliccabile:['table.name', '', s => `<td class="col-nowrap"><strong class="cliccabile" data-azione="apri-scheda-modella" data-nome="${escapeHtml(s.nome)}">${escapeHtml(s.nome)}</strong></td>`],
     piattaforma:   ['table.platform', '', s => `<td>${getPiattaformaFormatted(s)}</td>`],
@@ -106,7 +101,7 @@ export const COLONNE_SHOW = {
                     </td>`]
 };
 
-export const COLONNE_CRONOLOGIA = ['selezione', 'foto', 'dataOrigine', 'nome', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note', 'azioni'];
+export const COLONNE_CRONOLOGIA = ['selezione', 'foto', 'data', 'nome', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note', 'azioni'];
 export const COLONNE_DETTAGLIO_MESE = ['foto', 'data', 'nomeCliccabile', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note'];
 export const COLONNE_SCHEDA = ['data', 'piattaforma', 'durata', 'costo', 'costoMinuto', 'voto', 'recensione', 'note'];
 

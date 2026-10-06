@@ -1,6 +1,8 @@
 import { chiaveModella, schedaRapidaModella } from './calcoli.js';
 import { t } from './i18n.js';
+import { suggerisciSitoForm, sitoSceltoForm } from './gestione-siti.js';
 import { badgeSospesa } from './profili-sospesi.js';
+import { sitoDaId } from './siti.js';
 import { badgeOnline } from './stato-online.js';
 import { stato } from './stato.js';
 import { tagDaId, etichettaTag, impostaTagSuggeriti } from './tag.js';
@@ -63,21 +65,41 @@ export function durataRapida(pulsante) {
     aggiornaAnteprimaCostoMinuto();
 }
 
+// Durata scritta nel campo "altro…"
+export function durataLibera(campo) {
+    const durata = el('durataShow');
+    if (durata) durata.value = campo.value;
+    aggiornaAnteprimaCostoMinuto();
+}
+
 export function aggiornaAnteprimaCostoMinuto() {
     const durata = el('durataShow')?.value || '';
-    document.querySelectorAll('[data-azione="durata-rapida"]').forEach(btn => btn.classList.toggle('attivo', btn.dataset.minuti === durata));
+    let rapida = false;
+    document.querySelectorAll('[data-azione="durata-rapida"]').forEach(btn => {
+        const scelta = btn.dataset.minuti === durata;
+        btn.classList.toggle('attivo', scelta);
+        btn.setAttribute('aria-pressed', String(scelta));
+        rapida ||= scelta;
+    });
+    // Il campo "altro…" mostra la durata solo se non è uno dei valori rapidi
+    const altro = el('durataAltro');
+    if (altro && document.activeElement !== altro) altro.value = rapida ? '' : durata;
 
     const box = el('anteprimaCostoMinuto');
     if (!box) return;
-    const valore = costoAlMinuto({
+    // Con il costo ancora vuoto si mostra cosa manca invece di € 0.00
+    const valore = el('costo')?.value === '' ? null : costoAlMinuto({
         costo: parseFloat(el('costo')?.value) || 0,
         durata: parseInt(durata, 10) || 0,
         isRegalo: Boolean(el('isRegalo')?.checked)
     });
     const riferimento = stato.costoMinutoRiferimento;
-    box.innerHTML = valore === null ? '' :
-        `${formattaCostoAlMinuto(valore)} ${escapeHtml(t('form.per_minute'))}` +
-        (riferimento ? ` <span class="anteprima-media">(${escapeHtml(t('form.per_min_avg').replace('{media}', euro(riferimento)))})</span>` : '');
+    box.classList.toggle('vuota', valore === null);
+    box.innerHTML = valore === null
+        ? `<span class="anteprima-media">${escapeHtml(t('form.per_min_empty'))}</span>`
+        : `<strong>${formattaCostoAlMinuto(valore)}</strong>` +
+          (riferimento ? ` <span class="anteprima-media">${escapeHtml(t('form.per_min_avg').replace('{media}', euro(riferimento)))}</span>` : '');
+    aggiornaEquivalenteEuro();
 }
 
 /* --- Mini-scheda della modella --- */
@@ -94,6 +116,8 @@ export function aggiornaMiniScheda() {
 
     // Tag usati di solito con lei, segnati nel selettore dei tag
     impostaTagSuggeriti(schedaCorrente?.tagFrequenti || []);
+    // Per uno show nuovo il sito diventa quello dell'ultimo show con lei (se non scelto a mano)
+    if (!inModifica) suggerisciSitoForm(schedaCorrente?.sitoUltimo);
     const notaTag = el('notaTagSuggeriti');
     if (notaTag) notaTag.hidden = !schedaCorrente?.tagFrequenti.length;
 
@@ -147,12 +171,101 @@ export function aggiornaRiepilogoDettagli() {
     if (el('nickname')?.value.trim()) parti.push(el('nickname').value.trim());
     if (el('urlProfilo')?.value.trim()) parti.push(`🌐 ${t('form.details_profile')}`);
     if (el('immagine')?.value.trim()) parti.push(`🖼️ ${t('form.details_photo')}`);
-    box.textContent = parti.join(' · ');
+    box.innerHTML = parti.map(parte => `<span class="pillola-dettaglio">${escapeHtml(parte)}</span>`).join('');
 }
 
 // Allinea tutte le parti assistite ai valori dei campi (dopo modifica, reset, autocompilazione)
+/* --- Costo in valuta: per i siti che fanno pagare in token, dollari... il campo
+   principale è l'importo pagato e il costo in euro si calcola col tasso del sito.
+   "inserisci in euro" torna al costo in euro (es. per uno show pagato a parte) --- */
+const sitoInValuta = () => {
+    const sito = sitoDaId(sitoSceltoForm());
+    return sito && sito.valuta && sito.valuta !== 'EUR' ? sito : null;
+};
+let costoInEuro = false;
+
+// Prima lettera maiuscola: "token pagati" -> "Token pagati"
+const maiuscola = (testo) => testo.charAt(0).toUpperCase() + testo.slice(1);
+
+export function aggiornaConvertitoreValuta() {
+    const box = el('convertitoreValuta');
+    if (!box) return;
+    const sito = sitoInValuta();
+    const inValuta = Boolean(sito) && !costoInEuro;
+    box.hidden = !inValuta;
+    el('campoCostoEuro').hidden = inValuta;
+    el('notaValuta').hidden = !sito;
+    if (!sito) return;
+    const valuta = t(`currency.${sito.valuta}`);
+    el('etichettaImportoValuta').textContent = maiuscola(t('form.amount_in').replace('{valuta}', valuta));
+    el('tassoImportoValuta').textContent = t('form.amount_rate').replace('{unita}', t(`currency_unit.${sito.valuta}`)).replace('{tasso}', euro(sito.tasso).replace('.00', '')).replace('{sito}', sito.nome);
+    el('linkCostoEuro').textContent = costoInEuro ? t('form.enter_in_currency').replace('{valuta}', valuta) : t('form.enter_in_euro');
+    aggiornaEquivalenteEuro();
+}
+
+// "= € 64,96" accanto all'importo in valuta
+function aggiornaEquivalenteEuro() {
+    const span = el('equivalenteEuro');
+    if (!span) return;
+    const costo = parseFloat(el('costo')?.value);
+    span.textContent = costo > 0 && el('importoValuta')?.value ? `= ${euro(costo)}` : '= € –';
+}
+
+export function convertiImportoValuta() {
+    const sito = sitoInValuta();
+    const valore = parseFloat(el('importoValuta')?.value);
+    if (!sito || !(valore >= 0)) return;
+    el('costo').value = (Math.round(valore * sito.tasso * 100) / 100).toFixed(2);
+    aggiornaAnteprimaCostoMinuto();
+}
+
+// Passa dal costo in valuta a quello in euro e viceversa: l'importo in valuta
+// si svuota passando agli euro (non corrisponderebbe più al costo)
+export function alternaCostoInEuro() {
+    costoInEuro = !costoInEuro;
+    const importo = el('importoValuta');
+    if (costoInEuro && importo) importo.value = '';
+    aggiornaConvertitoreValuta();
+    (costoInEuro ? el('costo') : importo)?.focus();
+}
+
+// In modifica: costo in euro se lo show non ha un importo in valuta; per uno show nuovo false
+export function impostaCostoInEuro(valore) {
+    costoInEuro = Boolean(valore);
+    aggiornaConvertitoreValuta();
+}
+
+// Importo originale da salvare nello show (null se il sito è in euro, se il costo
+// è stato inserito in euro o se il campo è vuoto)
+export function importoOriginaleForm() {
+    const sito = sitoInValuta();
+    const valore = parseFloat(el('importoValuta')?.value);
+    return sito && !costoInEuro && valore > 0 ? { valore, valuta: sito.valuta } : null;
+}
+
+/* --- Nuovo tag: il campo compare con il pulsante "＋ Nuovo tag" --- */
+export function mostraNuovoTag() {
+    const riga = el('nuovoTagRiga');
+    if (!riga) return;
+    riga.hidden = false;
+    el('btnNuovoTagForm').hidden = true;
+    el('nuovoTagForm')?.focus();
+}
+
+export function nascondiNuovoTag() {
+    const riga = el('nuovoTagRiga');
+    if (riga) riga.hidden = true;
+    const btn = el('btnNuovoTagForm');
+    if (btn) btn.hidden = false;
+}
+
+export function inizializzaConvertitoreValuta() {
+    document.addEventListener('sito-form-cambiato', aggiornaConvertitoreValuta);
+}
+
 export function sincronizzaFormAssistito() {
     aggiornaVistaTipo();
+    aggiornaConvertitoreValuta();
     aggiornaStelle();
     aggiornaAnteprimaCostoMinuto();
     aggiornaMiniScheda();

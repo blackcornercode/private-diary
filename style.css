@@ -195,6 +195,13 @@ header {
     gap: 15px;
 }
 
+.intestazione-titolo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sottotitolo-app {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
 h1 {
     font-size: 1.6rem;
     font-weight: 700;
@@ -1772,108 +1779,335 @@ button.campione-colore.attivo { box-shadow: 0 0 0 2px var(--text-color); }
 /* ==========================================================================
    FORM ASSISTITO (js/form-assistito.js)
    ========================================================================== */
-.form-riga-tipo {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 15px;
-    flex-wrap: wrap;
-}
+/* Intestazione: titolo, tipo (show/regalo, solo a form aperto) e Nuovo show / Chiudi */
+.form-intestazione .selettore-tipo { margin-left: auto; }
+.card-section.form-chiuso .form-intestazione .selettore-tipo { display: none; }
 .selettore-tipo button { padding: 8px 18px; font-size: 0.9rem; }
-.campo-data { width: 230px; }
+.selettore-tipo button.attivo { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
 
-.form-riga-modella {
-    display: grid;
-    grid-template-columns: minmax(220px, 320px) 1fr;
-    gap: 15px;
-    align-items: end;
+/* In modifica: quale show si sta modificando */
+.banner-modifica {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--warning-color);
+    background: color-mix(in srgb, var(--warning-color) 14%, var(--bg-card));
+    color: var(--text-color);
+    font-weight: 600;
 }
+
+/* Sezioni con titolo: Chi e quando, Lo show, Com'è andata, Tag e note */
+/* Linea tra le sezioni: dal colore del testo, visibile anche sui temi chiari */
+.sezione-form + .sezione-form {
+    padding-top: 16px;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 22%, transparent);
+}
+.sezione-form-titolo {
+    margin: 0 0 12px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary-color);
+}
+.griglia-form {
+    display: grid;
+    gap: 14px 24px;
+    align-items: start;
+}
+.griglia-form > .form-group { margin: 0; min-width: 0; }
+.griglia-chi { grid-template-columns: minmax(200px, 1.3fr) minmax(220px, 1.6fr) minmax(190px, 1fr); }
+.griglia-show { grid-template-columns: minmax(280px, 1.35fr) minmax(220px, 1.15fr) minmax(170px, 0.8fr); }
+.griglia-voto { grid-template-columns: auto 1fr; gap: 14px 48px; align-items: end; }
+@media (max-width: 900px) {
+    .griglia-chi, .griglia-show, .griglia-voto { grid-template-columns: 1fr; }
+}
+
+/* Etichette leggibili: stesse per <label> ed etichette di gruppo */
+.show-form-grid label,
+.show-form-grid .etichetta-campo {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+.obbligatorio { color: var(--danger-color); }
+.nome-sito-form { color: var(--text-muted); font-weight: 500; }
+.show-form-grid input[type="text"],
+.show-form-grid input[type="number"],
+.show-form-grid input[type="datetime-local"],
+.show-form-grid input[type="url"] { min-height: 42px; font-size: 0.98rem; }
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* Scelte a "pillola" (siti, tag): contorno ben visibile finché non scelte,
+   piene nel colore del sito o del tag quando scelte */
+.show-form-grid button.etichetta-tag.selezionabile {
+    height: 34px;
+    padding: 0 13px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-color);
+    font-size: 0.86rem;
+    opacity: 1;
+}
+.show-form-grid button.etichetta-tag.selezionabile:hover { border-color: var(--tag-testo, var(--secondary-color)); }
+.show-form-grid button.etichetta-tag.selezionabile[aria-pressed="true"] {
+    background: var(--tag-testo, var(--secondary-color));
+    border-color: var(--tag-testo, var(--secondary-color));
+    color: var(--tag-sfondo, #fff);
+}
+.show-form-grid .selettore-tag { margin: 0; }
+.selettore-sito { gap: 6px; }
+
+/* Mini-scheda della modella: a tutta larghezza sotto la prima riga */
 .mini-scheda {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    gap: 12px;
-    min-height: 38px;
-    padding: 8px 12px;
-    border: 1px dashed var(--border-color);
-    border-radius: var(--radius-sm);
-    background: var(--bg-main);
-    font-size: 0.85rem;
+    gap: 14px;
+    padding: 10px 14px;
+    /* Staccata dallo sfondo con una tinta del colore principale e il bordo a sinistra */
+    border: 1px solid color-mix(in srgb, var(--primary-color) 35%, transparent);
+    border-left: 4px solid var(--primary-color);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--primary-color) 7%, var(--bg-card));
+    box-shadow: var(--shadow-sm);
+    font-size: 0.88rem;
 }
 .mini-scheda-foto { flex-shrink: 0; }
 .mini-scheda-testo { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
 .mini-scheda-ultimo { color: var(--text-muted); }
 .mini-scheda-tag .etichetta-tag { font-size: 0.7rem; }
 .mini-scheda-nuova { color: var(--text-muted); font-style: italic; }
-.mini-scheda-ripeti { flex-shrink: 0; padding: 7px 12px; }
+.mini-scheda-ripeti { flex-shrink: 0; padding: 8px 14px; margin-left: auto; }
 
-.riga-durata-costo { align-items: flex-start; flex-wrap: wrap; }
-.riga-durata-costo > .form-group { flex: 1; min-width: 240px; }
-/* La durata ha 6 pulsanti e il campo libero: le serve più spazio di costo e voto */
-.riga-durata-costo > .form-group:first-child { flex: 1.35; }
-.durata-rapida { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-.durata-rapida button { padding: 7px 8px; min-width: 38px; }
-.durata-rapida button.attivo,
-.selettore-tipo button.attivo { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-.durata-rapida input { width: 72px; flex: 0 0 auto; }
-.costo-con-azione { display: flex; gap: 8px; align-items: center; }
-.costo-con-azione input { max-width: 160px; }
-.costo-con-azione button { padding: 7px 12px; white-space: nowrap; }
-.anteprima-costo-minuto { min-height: 1.3em; font-size: 0.9rem; font-weight: 700; }
-.anteprima-media { color: var(--text-muted); font-weight: 500; }
-
-/* Voto: stessi badge colorati della cronologia; tenui finché non scelti */
-.campo-voto { flex: 0 1 auto; min-width: 250px; }
-.scelta-voto { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-button.voto-pulsante {
-    min-width: 40px;
-    height: 34px;
-    padding: 0 10px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    border: 2px solid transparent;
-    border-radius: 6px;
-    opacity: 0.55;
+/* Durata: barra unica di valori rapidi, l'ultimo spazio è il campo libero */
+.durata-rapida {
+    display: flex;
+    height: 42px;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-card);
 }
-button.voto-pulsante:hover { opacity: 0.8; }
-button.voto-pulsante.scelto { opacity: 1; border-color: currentColor; box-shadow: var(--shadow-sm); }
-.casella-recensione { height: auto; margin-top: 4px; }
+.durata-rapida button {
+    flex: 1;
+    min-width: 0;
+    padding: 0 4px;
+    border: 0;
+    border-right: 1.5px solid var(--border-color);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+.durata-rapida button:hover { background: var(--bg-card-secondary); }
+.durata-rapida button.attivo { background: var(--primary-color); color: #fff; }
+.show-form-grid .durata-rapida input[type="number"] {
+    flex: 1.5;
+    min-width: 64px;
+    min-height: 0;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    text-align: center;
+    box-shadow: none;
+}
 
-/* Etichette dei campi senza <label> (voto, tag) con lo stesso stile delle altre */
-.show-form-grid .etichetta-campo { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+/* Costo: in euro (con "= ultimo") oppure nella valuta del sito con l'equivalente in euro */
+.costo-con-azione { display: flex; gap: 10px; align-items: center; }
+.costo-con-azione input { flex: 1; min-width: 0; }
+.costo-con-azione button { padding: 8px 12px; white-space: nowrap; }
+.equivalente-euro { font-weight: 700; font-size: 1.02rem; white-space: nowrap; }
+.nota-valuta { display: block; margin-top: 6px; color: var(--text-muted); font-size: 0.8rem; }
+.nota-valuta .link-web { font-weight: 600; }
 
-button.etichetta-tag.suggerito { opacity: 0.8; border-style: dashed; border-color: var(--tag-testo); }
-.nota-tag-suggeriti { color: var(--text-muted); font-weight: 500; margin-left: 6px; }
+/* €/min calcolato mentre si scrive, con la media personale */
+.anteprima-costo-minuto {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    min-height: 42px;
+    padding: 9px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card-secondary);
+    border: 1px solid var(--border-color);
+    font-size: 1.05rem;
+}
+.anteprima-costo-minuto.vuota { font-size: 0.85rem; }
+.anteprima-media { color: var(--text-muted); font-size: 0.8rem; font-weight: 500; }
 
-/* Campi che non valgono per i regali (durata, voto, piattaforma) */
+/* Voto: contorno neutro finché non scelto, poi i colori della cronologia */
+.scelta-voto { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+button.voto-pulsante {
+    min-width: 44px;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+button.voto-pulsante:not(.scelto) { background: var(--bg-card); color: var(--text-color); }
+button.voto-pulsante:not(.scelto):hover { border-color: var(--secondary-color); }
+button.voto-pulsante.scelto { border-color: currentColor; box-shadow: var(--shadow-sm); }
+
+/* Recensione: interruttore */
+.show-form-grid label.interruttore {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 8px;
+    cursor: pointer;
+}
+.interruttore input[type="checkbox"] {
+    appearance: none;
+    position: relative;
+    flex-shrink: 0;
+    width: 44px;
+    height: 24px;
+    margin: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--secondary-color) 45%, transparent);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.interruttore input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s;
+}
+.interruttore input[type="checkbox"]:checked { background: var(--success-color); }
+.interruttore input[type="checkbox"]:checked::after { transform: translateX(20px); }
+.interruttore input[type="checkbox"]:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+
+/* Tag e note */
+.riga-tag-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.riga-tag-form .selettore-tag { display: contents; }
+.btn-nuovo-tag {
+    height: 34px;
+    padding: 0 13px;
+    border-radius: 999px;
+    border: 1.5px dashed var(--primary-color);
+    background: transparent;
+    color: var(--primary-color);
+    font-size: 0.86rem;
+}
+.btn-nuovo-tag:hover { background: var(--bg-card-secondary); }
+.nota-tag-suggeriti { display: block; margin-top: 8px; color: var(--text-muted); font-size: 0.8rem; }
+.nota-tag-suggeriti[hidden] { display: none; }
+.nuovo-tag { display: flex; gap: 8px; align-items: center; max-width: 380px; margin-top: 10px; }
+.nuovo-tag input { flex: 1; min-width: 0; }
+.campo-note { margin: 12px 0 0; }
+.campo-note textarea { min-height: 64px; }
+
+/* Campi che non valgono per i regali (durata, €/min, voto, piattaforma) */
 .show-form-grid.modalita-regalo .solo-show { display: none; }
 
+/* Dettagli: riquadro staccato dallo sfondo, con intestazione cliccabile e riepilogo a pillole */
 .dettagli-form {
-    border: 1px solid var(--border-color);
-    border-left: 4px solid var(--primary-color);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    background: var(--bg-main);
+    margin-top: 14px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 22%, transparent);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
 }
 .dettagli-form > summary {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 11px 14px 11px 16px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
     list-style: none;
+    color: var(--text-color);
+    transition: background 0.15s;
 }
 .dettagli-form > summary::-webkit-details-marker { display: none; }
-.dettagli-form > summary { color: var(--text-color); }
-.riepilogo-dettagli { color: var(--text-muted); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dettagli-form[open] > summary { margin-bottom: 12px; }
+.dettagli-form > summary:hover { background: color-mix(in srgb, var(--primary-color) 7%, var(--bg-card)); }
+.dettagli-form > summary:focus-visible { outline: 2px solid var(--primary-color); outline-offset: -2px; }
+.titolo-dettagli { flex-shrink: 0; font-weight: 700; font-size: 0.95rem; }
+.riepilogo-dettagli {
+    display: flex;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+}
+.pillola-dettaglio {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 260px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card-secondary);
+    color: var(--text-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.freccia-dettagli {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    margin-left: auto;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--text-color) 22%, transparent);
+    color: var(--primary-color);
+}
+.freccia-dettagli .riquadro-freccia { margin: 0; }
+.dettagli-form[open] > summary { border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent); }
 .griglia-dettagli {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px 15px;
+    padding: 14px 16px 16px;
 }
-.form-actions { align-items: center; }
-.suggerimento-scorciatoie { color: var(--text-muted); margin-right: auto; }
+
+/* Barra dei pulsanti: resta in fondo allo schermo mentre si scorre il form */
+.show-form-grid .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    align-items: center;
+    margin: 4px -20px -20px;
+    padding: 12px 20px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.05);
+}
+.suggerimento-scorciatoie { color: var(--text-muted); margin-right: auto; font-size: 0.85rem; }
+.suggerimento-scorciatoie kbd {
+    padding: 1px 6px;
+    border: 1px solid var(--border-color);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: var(--bg-card);
+    color: var(--text-color);
+    font: 600 0.78rem var(--font-family);
+}
+.show-form-grid #btnSalva { padding: 11px 24px; font-size: 1rem; }
 
 /* ==========================================================================
    PRIVACY (js/privacy.js)
@@ -1959,7 +2193,8 @@ kbd.tasto-rapido.in-registrazione { border-color: var(--primary-color); color: v
     border-left: 4px solid var(--primary-color);
     background: color-mix(in srgb, var(--primary-color) 9%, var(--bg-card));
 }
-.menu-header-pannello .voce-menu-mcg {
+.menu-header-pannello .voce-menu-mcg,
+.menu-header-pannello .voce-menu-descritta {
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
@@ -1971,3 +2206,104 @@ kbd.tasto-rapido.in-registrazione { border-color: var(--primary-color); color: v
 .menu-sezione-mcg .titolo-sezione-menu,
 .voce-menu-titolo,
 .voce-menu-descrizione { white-space: nowrap; }
+
+/* Siti di provenienza (js/gestione-siti.js) */
+.badge-sito {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 2px;
+    padding: 0 6px;
+    border-radius: 8px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    white-space: nowrap;
+    background-color: var(--tag-sfondo);
+    color: var(--tag-testo);
+}
+.riga-gestione-sito {
+    display: grid;
+    grid-template-columns: 88px minmax(110px, 1fr) 64px 92px 78px auto 64px auto;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.riga-gestione-sito > .etichetta-tag { justify-self: start; }
+.sigla-gestione-sito { text-transform: uppercase; text-align: center; }
+.riga-gestione-sito .btn-delete:disabled { opacity: 0.35; cursor: not-allowed; }
+.riga-sito-predefinito { display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; }
+.riga-sito-predefinito select { width: auto; min-width: 200px; }
+/* Grafico per sito: barre nel colore del sito */
+.grafico-spesa .barra[class*="tag-colore-"] { fill: var(--tag-testo); }
+
+/* Valute dei siti (gestione-siti.js) e convertitore del form (form-assistito.js) */
+.modal-gestione-tag:has(.riga-gestione-sito) { max-width: 960px; }
+.tasso-gestione-sito:disabled { opacity: 0.5; }
+.segno-valuta { color: var(--text-muted); font-size: 0.75em; }
+
+/* Importazione CSV (importa-csv.js) */
+.modal-importa-csv { max-width: 980px; }
+.titolo-passo-csv { margin: 16px 0 8px; font-size: 1rem; }
+.riepilogo-csv { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.badge-csv { padding: 2px 9px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+.badge-csv.nuovo { background: var(--success-bg); color: var(--success-text); }
+.badge-csv.doppione { background: var(--neutral-bg); color: var(--neutral-text); }
+.badge-csv.errore { background: var(--danger-bg); color: var(--danger-text); }
+.tabella-csv { max-height: 320px; overflow-y: auto; }
+tr.riga-csv-doppione td, tr.riga-csv-errore td { color: var(--text-muted); }
+#btnConfermaCsv:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Siti in uso (fase 7): senza Mondo Cam Girls in uso le sue parti spariscono */
+body.senza-mcg .solo-mcg { display: none !important; }
+.casella-sito-attivo { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.casella-sito-attivo input { width: 16px; height: 16px; accent-color: var(--primary-color); }
+.riga-gestione-sito.sito-non-usato > :not(.casella-sito-attivo) { opacity: 0.45; }
+
+/* Benvenuto al primo avvio */
+.modal-benvenuto { max-width: 620px; }
+.benvenuto-testo { margin: 10px 0 6px; font-size: 1rem; }
+.scelta-siti-benvenuto { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 16px; margin: 12px 0; }
+.scelta-sito-benvenuto { height: auto; padding: 4px 0; }
+#btnConfermaBenvenuto:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Senza la sezione MCG la prima sezione del menu Dati non ha il separatore in cima */
+body.senza-mcg .menu-sezione-mcg + .menu-sezione { padding-top: 0; border-top: none; }
+
+/* Lingua nel benvenuto */
+.riga-lingua-benvenuto { display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; }
+.riga-lingua-benvenuto select { width: auto; min-width: 160px; }
+
+/* Scheda modella su più siti (fase 4): profili, totali per sito, unisci/separa */
+.modella-profili {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+}
+.modella-profili .modella-url { max-width: 100%; }
+.modella-per-sito { margin-top: 12px; }
+.tabella-per-sito {
+    width: auto;
+    margin-top: 6px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.tabella-per-sito th,
+.tabella-per-sito td {
+    padding: 4px 12px 4px 0;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-color);
+}
+.tabella-per-sito th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+.modella-altri-nomi { color: var(--text-muted); }
+.modella-azioni {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 18px;
+}

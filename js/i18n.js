@@ -2,7 +2,10 @@
    TRADUZIONI (i18n)
    ========================================================================== */
 export let traduzioniCorrenti = {};
-export let linguaCorrente = localStorage.getItem('appLang') || 'it';
+// Senza una scelta salvata (primissimo avvio) si parte dalla lingua del sistema:
+// italiano se è l'italiano, altrimenti inglese
+export const linguaDiSistema = () => (String(globalThis.navigator?.language || '').toLowerCase().startsWith('it') ? 'it' : 'en');
+export let linguaCorrente = localStorage.getItem('appLang') || linguaDiSistema();
 
 // Carica il file JSON della lingua
 export async function caricaLingua(lang) {
@@ -14,9 +17,11 @@ export async function caricaLingua(lang) {
 
         aggiornaTestiDOM();
 
-        // Allinea il selettore nell'header se presente
-        const select = document.getElementById('selectLingua');
-        if (select) select.value = lang;
+        // Allinea i selettori della lingua (Impostazioni e benvenuto al primo avvio)
+        for (const id of ['selectLingua', 'linguaBenvenuto']) {
+            const select = document.getElementById(id);
+            if (select) select.value = lang;
+        }
     } catch (err) {
         console.error(`Errore nel caricamento della lingua ${lang}:`, err);
     }

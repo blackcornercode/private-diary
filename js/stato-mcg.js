@@ -1,6 +1,8 @@
 import { t } from './i18n.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
+import { SITO_MCG } from './siti.js';
+import { funzioneDisponibile, FUNZIONI } from './connettori.js';
 
 /* ==========================================================================
    INDICATORE STATO MONDO CAM GIRLS
@@ -29,6 +31,8 @@ export function aggiornaTestoStatoMCG() {
 }
 
 export async function verificaStatoMCG() {
+    // Mondo Cam Girls non in uso: l'indicatore è nascosto e il sito non viene contattato
+    if (!funzioneDisponibile(SITO_MCG, FUNZIONI.PING)) return;
     // Evita ping sovrapposti (clic ripetuti o timer mentre una verifica è in corso)
     if (pingMCGInCorso) return;
     pingMCGInCorso = true;
@@ -37,11 +41,11 @@ export async function verificaStatoMCG() {
     aggiornaTestoStatoMCG();
 
     try {
-        if (!window.electronAPI || typeof window.electronAPI.pingMCG !== 'function') {
+        if (typeof window.electronAPI?.pingSito !== 'function') {
             statoMCG = { stato: 'error', motivo: 'API non disponibile' };
             return;
         }
-        const risposta = await window.electronAPI.pingMCG();
+        const risposta = await window.electronAPI.pingSito(SITO_MCG);
         statoMCG = (risposta && risposta.online)
             ? { stato: 'online', motivo: '' }
             : { stato: 'offline', motivo: String(risposta?.status || risposta?.error || '?') };

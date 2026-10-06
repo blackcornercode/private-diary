@@ -1,6 +1,7 @@
 import { t } from './i18n.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
+import { SITO_MCG } from './siti.js';
 
 /* ==========================================================================
    UTILITIES ED HELPER
@@ -84,6 +85,13 @@ export function normalizzaShow(originale) {
     delete s.data;
 
     if (typeof s.costo !== 'number') s.costo = parseFloat(s.costo) || 0;
+
+    // Sito di provenienza (roadmap multi-sito, fase 1): gli show salvati prima
+    // vengono tutti da Mondo Cam Girls. "isAutoImport" diventa "importatoDa",
+    // l'ID del sito da cui lo show è stato importato (null se inserito a mano).
+    if (!s.sito) s.sito = SITO_MCG;
+    if (s.importatoDa === undefined) s.importatoDa = s.isAutoImport ? SITO_MCG : null;
+    delete s.isAutoImport;
     return s;
 }
 
@@ -107,15 +115,6 @@ export function annoDelloShow(show) {
 export function timestampShow(show) {
     const d = dataDelloShow(show);
     return d ? d.getTime() : (Number(show.id) || 0);
-}
-
-// URL MCG dedotto dal nome quando non ne è stato salvato uno: "Giulìa Rossi" -> giuliarossi.mondocamgirls.com.
-// Il minuscolo va fatto prima del filtro, altrimenti le maiuscole venivano scartate ("Giulia" -> "iulia").
-export function urlProfiloPredefinito(nome) {
-    const sottodominio = String(nome || '').toLowerCase()
-        .normalize('NFD').replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-z0-9]/g, '');
-    return `https://${sottodominio}.mondocamgirls.com`;
 }
 
 // Salva l'archivio e, se il processo principale segnala un errore, lo mostra
@@ -143,7 +142,9 @@ export function cellaCosto(show) {
         const titolo = `Rimborsato: pagato ${formattaEuro(show.costoOriginale)}`;
         return `<td class="col-nowrap testo-attenuato" title="${escapeHtml(titolo)}">${formattaEuro(show.costo)} ↩</td>`;
     }
-    return `<td class="col-nowrap${show.isRegalo ? ' testo-attenuato' : ''}">${formattaEuro(show.costo)}</td>`;
+    // Pagato in un'altra valuta (token, dollari...): l'importo originale nel tooltip
+    const originale = show.importoOriginale ? ` title="${escapeHtml(`${show.importoOriginale.valore} ${show.importoOriginale.valuta}`)}"` : '';
+    return `<td class="col-nowrap${show.isRegalo ? ' testo-attenuato' : ''}"${originale}>${formattaEuro(show.costo)}${show.importoOriginale ? ' <span class="segno-valuta">¤</span>' : ''}</td>`;
 }
 
 export function minutiDelloShow(show) {

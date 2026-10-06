@@ -1,27 +1,8 @@
-// Accesso alla rete del processo principale: validazione degli URL di Mondo Cam
-// Girls e download di pagine con timeout.
+// Accesso alla rete del processo principale, comune a tutti i connettori
+// (main/connettori/): download di pagine e verifica di raggiungibilità, con timeout.
 const { net } = require('electron');
 
-const DOMINIO_MCG = 'mondocamgirls.com';
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-
-// Accetta solo URL https/http su mondocamgirls.com o suoi sottodomini
-function urlMcgValido(targetUrl) {
-    try {
-        const u = new URL(targetUrl);
-        const host = u.hostname.toLowerCase();
-        return ['http:', 'https:'].includes(u.protocol) &&
-            (host === DOMINIO_MCG || host.endsWith(`.${DOMINIO_MCG}`));
-    } catch {
-        return false;
-    }
-}
-
-// Sottodominio del profilo MCG ("https://anna.mondocamgirls.com/it" -> "anna")
-function slugProfiloMcg(url) {
-    const m = /^https?:\/\/([a-z0-9_-]+)\.mondocamgirls\.com/i.exec(String(url || ''));
-    return m && m[1].toLowerCase() !== 'www' ? m[1].toLowerCase() : null;
-}
 
 // Scarica una pagina e ne restituisce il testo, o '' in caso di errore,
 // risposta non 2xx o timeout
@@ -68,15 +49,32 @@ function downloadHtmlPage(targetUrl, timeoutMs = 15000) {
     });
 }
 
-// Profilo sospeso su MCG: la pagina mostra un avviso come
-//   <p class="mp-badge mp-badge--warn">WARNING! PROFILE TEMPORARYLY SUSPENDED!! ...</p>
-// (in italiano "sospeso"). Restituisce true/false, oppure null se la pagina
-// non sembra un profilo (scaricamento fallito o struttura cambiata).
-function profiloSospeso(html) {
-    if (!html) return null;
-    const avvisi = [...html.matchAll(/class="[^"]*\bmp-badge--warn\b[^"]*"[^>]*>([^<]*)</gi)].map(m => m[1]);
-    if (avvisi.some(testo => /suspend|sospes/i.test(testo))) return true;
-    return /class="[^"]*\bmp-top__/.test(html) ? false : null;
+// Il sito risponde? Richiesta HEAD: { online, status } oppure { online: false, error }.
+// Il timeout è gestito a mano: net.request di Electron non ha un'opzione "timeout".
+function ping(targetUrl, timeoutMs = 5000) {
+    return new Promise((resolve) => {
+        let concluso = false;
+        const fine = (esito) => {
+            if (concluso) return;
+            concluso = true;
+            clearTimeout(timer);
+            resolve(esito);
+        };
+
+        const request = net.request({ method: 'HEAD', url: targetUrl });
+        const timer = setTimeout(() => {
+            request.abort();
+            fine({ online: false, error: 'timeout' });
+        }, timeoutMs);
+
+        request.on('response', (response) => {
+            const status = response.statusCode;
+            response.on('data', () => {});
+            fine({ online: status >= 200 && status < 400, status });
+        });
+        request.on('error', (error) => fine({ online: false, error: error.message }));
+        request.end();
+    });
 }
 
-module.exports = { urlMcgValido, slugProfiloMcg, downloadHtmlPage, profiloSospeso, USER_AGENT };
+module.exports = { downloadHtmlPage, ping, USER_AGENT };

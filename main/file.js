@@ -8,4 +8,14 @@ async function scriviFileAtomico(percorso, contenuto) {
     await fs.rename(tmp, percorso);
 }
 
-module.exports = { scriviFileAtomico };
+// Testo di un file scritto da altri programmi: UTF-8 (con o senza BOM) oppure,
+// se non è UTF-8 valido, Windows-1252 (Excel in italiano salva i CSV così)
+function decodificaTesto(buffer) {
+    try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(buffer).replace(/^\uFEFF/, '');
+    } catch {
+        return new TextDecoder('windows-1252').decode(buffer);
+    }
+}
+
+module.exports = { scriviFileAtomico, decodificaTesto };

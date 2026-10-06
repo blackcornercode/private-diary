@@ -11,7 +11,7 @@ export async function esportaDati() {
     try {
         if (window.electronAPI && window.electronAPI.exportData) {
             // Il budget sta in localStorage: va passato perché finisca nel backup
-            const impostazioni = { monthly_budget: localStorage.getItem('monthly_budget') || '' };
+            const impostazioni = { monthly_budget: localStorage.getItem('monthly_budget') || '', sito_predefinito: localStorage.getItem('sito_predefinito') || '' };
             const esito = await window.electronAPI.exportData(impostazioni);
             if (esito && esito.success) {
                 logger.success("Dati esportati con successo.");
@@ -47,6 +47,7 @@ export async function importaDati() {
 
 // I backup vecchi non hanno impostazioni: in quel caso il budget attuale resta invariato
 export function ripristinaImpostazioniBackup(impostazioni) {
+    if (impostazioni?.sito_predefinito) localStorage.setItem('sito_predefinito', impostazioni.sito_predefinito);
     if (!impostazioni || impostazioni.monthly_budget === undefined) return;
     localStorage.setItem('monthly_budget', impostazioni.monthly_budget);
     const budgetInput = document.getElementById('monthlyBudgetInput');

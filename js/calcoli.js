@@ -10,17 +10,68 @@ import { dataDelloShow, annoDelloShow, timestampShow, minutiDelloShow, costoMedi
 
 export const chiaveModella = (nome) => String(nome || '').trim().toLowerCase();
 
-// Ultima foto e ultimo profilo noti per ogni modella (in ordine di data, vince il più recente)
+// Ultima foto e ultimo profilo noti per ogni modella (in ordine di data, vince il più recente).
+// urlPerSito: ultimo profilo della modella su ogni sito { chiave: { mcg: url, stripchat: url } },
+// per le funzioni che valgono solo per un sito (stato online, profili sospesi, foto)
 export function calcolaMappeModelle(shows) {
     const immagini = {};
     const url = {};
+    const urlPerSito = {};
     [...shows].sort((a, b) => timestampShow(a) - timestampShow(b)).forEach(show => {
         if (!show.nome) return;
         const chiave = chiaveModella(show.nome);
         if (show.immagine) immagini[chiave] = show.immagine;
-        if (show.urlProfilo) url[chiave] = show.urlProfilo;
+        if (show.urlProfilo) {
+            url[chiave] = show.urlProfilo;
+            if (show.sito) (urlPerSito[chiave] ??= {})[show.sito] = show.urlProfilo;
+        }
     });
-    return { immagini, url };
+    return { immagini, url, urlPerSito };
+}
+
+// Indirizzi dei profili di tutte le modelle su un sito { chiave: url }
+export function urlDelSito(urlPerSito, sito) {
+    const risultato = {};
+    Object.entries(urlPerSito).forEach(([chiave, perSito]) => { if (perSito[sito]) risultato[chiave] = perSito[sito]; });
+    return risultato;
+}
+
+// Profili della modella sui vari siti, dal sito con più show: ultimo indirizzo
+// del profilo, nomi con cui compare sul sito (nomeOriginale degli show uniti) e totali
+export function profiliPerSito(shows, nome) {
+    const perSito = new Map();
+    showsDiModella(shows, nome).forEach(show => {   // dal più recente
+        const sito = show.sito || '';
+        if (!perSito.has(sito)) perSito.set(sito, { sito, urlProfilo: '', nomi: new Set(), elenco: [] });
+        const voce = perSito.get(sito);
+        if (!voce.urlProfilo && show.urlProfilo) voce.urlProfilo = show.urlProfilo;
+        voce.nomi.add(String(show.nomeOriginale || show.nome).trim());
+        voce.elenco.push(show);
+    });
+    return [...perSito.values()]
+        .map(({ elenco, nomi, ...voce }) => ({ ...voce, nomi: [...nomi], ...riepilogoShow(elenco) }))
+        .sort((a, b) => b.totaleShow - a.totaleShow);
+}
+
+// Unisci / separa modelle: gli show di "daNome" (solo quelli del sito indicato,
+// se c'è) passano a "aNome". Ogni show ricorda il nome con cui è stato acquistato
+// (nomeOriginale): la sincronizzazione MCG lo usa per riconoscere gli show già
+// importati e dare il nome giusto a quelli nuovi. Restituisce { shows, modificati }.
+export function rinominaModella(shows, daNome, aNome, sito = null) {
+    const da = chiaveModella(daNome);
+    const nuovo = String(aNome || '').trim();
+    let modificati = 0;
+    if (!da || !nuovo) return { shows, modificati };
+    const risultato = shows.map(show => {
+        if (!show.nome || chiaveModella(show.nome) !== da || (sito && show.sito !== sito) || show.nome === nuovo) return show;
+        modificati++;
+        const copia = { ...show, nome: nuovo };
+        const originale = show.nomeOriginale || show.nome;
+        if (chiaveModella(originale) === chiaveModella(nuovo)) delete copia.nomeOriginale;
+        else copia.nomeOriginale = originale;
+        return copia;
+    });
+    return { shows: risultato, modificati };
 }
 
 // Una voce per modella con gli ultimi dati noti (autocompletamento del form,
@@ -75,7 +126,8 @@ export function riepilogoShow(shows) {
 }
 
 // Mini-scheda della modella nel form: totali, ultimo show vero (non regalo) per
-// "Ripeti ultimo show" e il costo suggerito, tag usati più spesso (al massimo 5).
+// "Ripeti ultimo show" e il costo suggerito, tag usati più spesso (al massimo 5),
+// sito dello show più recente (regali compresi) da proporre nel form.
 // null se la modella non ha show registrati.
 export function schedaRapidaModella(shows, nome) {
     const elenco = showsDiModella(shows, nome);
@@ -85,7 +137,8 @@ export function schedaRapidaModella(shows, nome) {
         totaleShow: riepilogo.totaleShow,
         mediaTxt: riepilogo.mediaTxt,
         ultimoShow: elenco.find(s => !s.isRegalo) || null,
-        tagFrequenti: conteggioTag(elenco).slice(0, 5).map(({ id }) => id)
+        tagFrequenti: conteggioTag(elenco).slice(0, 5).map(({ id }) => id),
+        sitoUltimo: elenco.find(s => s.sito)?.sito || null
     };
 }
 
@@ -167,6 +220,30 @@ export function spesaPerAnno(shows) {
     return risultato;
 }
 
+// Numero di show per sito (ID -> conteggio), per la gestione del catalogo
+export function conteggioPerSito(shows) {
+    const conteggi = new Map();
+    shows.forEach(s => { if (s.sito) conteggi.set(s.sito, (conteggi.get(s.sito) || 0) + 1); });
+    return conteggi;
+}
+
+// Spesa, numero di show e €/min medio per sito, dal sito con più spesa.
+// I siti senza show non compaiono; gli show senza sito vanno sotto "".
+export function spesaPerSito(shows) {
+    const gruppi = new Map();
+    shows.forEach(show => {
+        const sito = show.sito || '';
+        if (!gruppi.has(sito)) gruppi.set(sito, []);
+        gruppi.get(sito).push(show);
+    });
+    return [...gruppi].map(([sito, elenco]) => ({
+        sito,
+        spesa: elenco.reduce((totale, s) => totale + (parseFloat(s.costo) || 0), 0),
+        conteggio: elenco.length,
+        costoMedioMinuto: costoMedioAlMinuto(elenco)
+    })).sort((a, b) => b.spesa - a.spesa);
+}
+
 // Spesa del mese di calendario di "oggi"
 export function spesaMeseCorrente(shows, oggi = new Date()) {
     return shows.reduce((totale, show) => {
@@ -190,14 +267,15 @@ export function statoBudget(spesa, budget) {
 }
 
 // Filtri e ordinamento della cronologia: nome (contiene, senza maiuscole),
-// anni selezionati (nessuno = tutti), tag (ID; vuoto = tutti) e ordine per data ('asc' o 'desc')
-export function filtraOrdinaShows(shows, { nome = '', anni = [], ordine = 'desc', tag = '' } = {}) {
+// anni selezionati (nessuno = tutti), tag e sito (ID; vuoto = tutti) e ordine per data ('asc' o 'desc')
+export function filtraOrdinaShows(shows, { nome = '', anni = [], ordine = 'desc', tag = '', sito = '' } = {}) {
     const filtroNome = nome.trim().toLowerCase();
     const anniScelti = new Set(anni);
     const risultato = shows.filter(s =>
         (!filtroNome || (s.nome && s.nome.toLowerCase().includes(filtroNome))) &&
         (anniScelti.size === 0 || anniScelti.has(annoDelloShow(s))) &&
-        (!tag || (s.tag || []).includes(tag)));
+        (!tag || (s.tag || []).includes(tag)) &&
+        (!sito || s.sito === sito));
     risultato.sort((a, b) => {
         const diff = timestampShow(a) - timestampShow(b);
         return ordine === 'asc' ? diff : -diff;
@@ -234,6 +312,8 @@ export function applicaModificheMultiple(shows, ids, campi) {
         if (campi.recensione !== undefined) imposta('recensione', campi.recensione);
         if (campi.durata !== undefined) imposta('durata', campi.durata);
         if (campi.nickname !== undefined) imposta('nickname', campi.nickname);
+        // Il sito vale anche per i regali (anche un regalo si acquista su un sito)
+        if (campi.sito !== undefined) imposta('sito', campi.sito);
         if (campi.tagAggiungi || campi.tagTogli) {
             const attuali = show.tag || [];
             const nuovi = aggiornaElencoTag(attuali, campi.tagAggiungi, campi.tagTogli);

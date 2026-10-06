@@ -2,11 +2,14 @@ import { t } from './i18n.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
 import { escapeHtml } from './utils.js';
+import { SITO_MCG } from './siti.js';
+import { funzioneDisponibile, urlProfiloSulSito, FUNZIONI } from './connettori.js';
+import { slugProfiloMcg } from './connettore-mcg.js';
 
 /* ==========================================================================
    MODELLE ONLINE SU MONDO CAM GIRLS
    ==========================================================================
-   L'elenco delle modelle online arriva dal processo principale (get-modelle-online)
+   L'elenco delle modelle online arriva dal connettore MCG (funzione "online")
    come insieme di sottodomini dei profili (https://<slug>.mondocamgirls.com).
    Una modella risulta online se il sottodominio del suo profilo è nell'elenco. */
 export const INTERVALLO_ONLINE_MS = 3 * 60 * 1000;
@@ -14,17 +17,11 @@ export const INTERVALLO_ONLINE_MS = 3 * 60 * 1000;
 export let slugModelleOnline = null;      // Set dei profili online; null = stato non ancora noto
 export let oraAggiornamentoOnline = null; // Date dell'ultimo aggiornamento riuscito
 
-// Sottodominio del profilo MCG ("https://anna.mondocamgirls.com/it" -> "anna")
-export function slugProfiloMcg(url) {
-    const m = /^https?:\/\/([a-z0-9_-]+)\.mondocamgirls\.com/i.exec(String(url || ''));
-    return m && m[1].toLowerCase() !== 'www' ? m[1].toLowerCase() : null;
-}
-
 // true/false se lo stato è noto, null se non verificabile (stato non ancora letto
 // o modella senza indirizzo del profilo MCG)
 export function eModellaOnline(nome) {
     if (!slugModelleOnline) return null;
-    const slug = slugProfiloMcg(stato.mappaUrlModelle[String(nome || '').trim().toLowerCase()]);
+    const slug = slugProfiloMcg(urlProfiloSulSito(nome, SITO_MCG));
     return slug ? slugModelleOnline.has(slug) : null;
 }
 
@@ -37,9 +34,9 @@ export function badgeOnline(nome) {
 }
 
 export async function aggiornaStatoOnline() {
-    if (!window.electronAPI || !window.electronAPI.getModelleOnline) return;
+    if (!window.electronAPI?.modelleOnline || !funzioneDisponibile(SITO_MCG, FUNZIONI.ONLINE)) return;
     try {
-        const esito = await window.electronAPI.getModelleOnline();
+        const esito = await window.electronAPI.modelleOnline(SITO_MCG);
         if (!esito || !esito.success) {
             logger.warn('Stato online delle modelle non disponibile', esito && esito.error);
             return;

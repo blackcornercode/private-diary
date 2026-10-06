@@ -29,7 +29,7 @@ body:
     attributes:
       label: Versione / Version
       description: Menu ? › Informazioni
-      placeholder: "1.12.3"
+      placeholder: "2.0.0"
     validations:
       required: true
   - type: dropdown
