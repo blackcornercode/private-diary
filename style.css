@@ -985,9 +985,10 @@ td.costo-cell {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-md);
-    z-index: 100;
+    z-index: 1000;
     margin-top: 4px;
-    overflow: hidden;
+    max-height: 200px;
+    overflow: auto;
 }
 
 .custom-select-wrapper.active .custom-options,
@@ -2026,7 +2027,7 @@ button.voto-pulsante.scelto { border-color: currentColor; box-shadow: var(--shad
     border-radius: var(--radius-md);
     background: var(--bg-card);
     box-shadow: var(--shadow-sm);
-    overflow: hidden;
+    overflow: visible;
 }
 .dettagli-form > summary {
     display: flex;
