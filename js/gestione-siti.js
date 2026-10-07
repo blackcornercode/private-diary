@@ -2,7 +2,7 @@ import { salvaCatalogoSiti } from './archivio.js';
 import { conteggioPerSito } from './calcoli.js';
 import { t, linguaCorrente } from './i18n.js';
 import { logger } from './logger.js';
-import { sitoDaId, siglaSito, sitoPredefinito, impostaSitoPredefinito, sitiVisibili, mcgAttivo, SITO_MCG, VALUTE } from './siti.js';
+import { sitoDaId, siglaSito, sitoPredefinito, impostaSitoPredefinito, sitiVisibili, mcgAttivo, SITO_MCG, VALUTE, urlVerificaTasso } from './siti.js';
 import { stato } from './stato.js';
 import { COLORI_TAG } from './tag.js';
 import { escapeHtml } from './utils.js';
@@ -152,8 +152,11 @@ export function disegnaGestioneSiti() {
             <select class="valuta-gestione-sito" aria-label="${escapeHtml(t('sites.currency'))}" title="${escapeHtml(t('sites.currency'))}" data-al-cambio="valuta-sito" data-id="${id}">
                 ${VALUTE.map(v => `<option value="${v}"${v === sito.valuta ? ' selected' : ''}>${escapeHtml(t(`currency.${v}`))}</option>`).join('')}
             </select>
-            <input type="number" class="tasso-gestione-sito" min="0.0001" step="any" value="${sito.tasso ?? 1}"${sito.valuta === 'EUR' ? ' disabled' : ''}
-                aria-label="${escapeHtml(t('sites.rate'))}" title="${escapeHtml(t('sites.rate'))}" data-al-cambio="tasso-sito" data-id="${id}">
+            <span class="tasso-con-verifica">
+                <input type="number" class="tasso-gestione-sito" min="0.0001" step="any" value="${sito.tasso ?? 1}"${sito.valuta === 'EUR' ? ' disabled' : ''}
+                    aria-label="${escapeHtml(t('sites.rate'))}" title="${escapeHtml(t('sites.rate'))}" data-al-cambio="tasso-sito" data-id="${id}">
+                ${urlVerificaTasso(sito.valuta) ? `<a href="#" class="link-verifica-tasso" title="${escapeHtml(t('form.verify_rate_hint'))}" aria-label="${escapeHtml(t('form.verify_rate'))}" data-azione="apri-link" data-url="${escapeHtml(urlVerificaTasso(sito.valuta))}">🔎</a>` : ''}
+            </span>
             <span class="colori-tag">${colori}</span>
             <span class="uso-tag">${escapeHtml(testo('tags.usage', { n }))}</span>
             <button type="button" class="btn-delete" title="${escapeHtml(motivoBlocco || t('sites.delete'))}" aria-label="${escapeHtml(t('sites.delete'))}"

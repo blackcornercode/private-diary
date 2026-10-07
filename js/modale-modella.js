@@ -18,6 +18,19 @@ import { urlProfiloPredefinito } from './connettore-mcg.js';
 const testoModelle = (chiave, valori = {}) =>
     Object.entries(valori).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), t(chiave));
 
+// Cinque stelle per una media da 0 a 5 (mezza stella da .25 in su)
+function stelleHtml(valore) {
+    const intero = Math.floor(valore);
+    const resto = valore - intero;
+    let stelle = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= intero) stelle += '<span class="piena">★</span>';
+        else if (i === intero + 1 && resto >= 0.25) stelle += '<span class="meta"></span>';
+        else stelle += '<span class="vuota">★</span>';
+    }
+    return stelle;
+}
+
 export async function apriModalModella(nomeModella) {
     const modal = document.getElementById('modalModella');
     const header = document.getElementById('modalHeader');
@@ -41,8 +54,19 @@ export async function apriModalModella(nomeModella) {
         : `<div class="modella-avatar modella-avatar-vuoto">👤</div>`;
 
     // Riquadro statistico: etichetta sopra, valore sotto, entrambi senza andare a capo
-    const statBox = (etichetta, valore, extra = '') =>
-        `<div class="stat-box"${extra}><span class="stat-box-etichetta">${escapeHtml(etichetta)}</span><strong class="stat-box-valore">${valore}</strong></div>`;
+    const statBox = (etichetta, valore, extra = '', classe = '') =>
+        `<div class="stat-box${classe ? ' ' + classe : ''}"${extra}><span class="stat-box-etichetta">${escapeHtml(etichetta)}</span><strong class="stat-box-valore">${valore}</strong></div>`;
+
+    // €/min rispetto alla media personale: stessa fascia neutra del ±10% della tabella
+    const rif = stato.costoMinutoRiferimento;
+    const cpm = riepilogo.costoMedioMinuto;
+    const classeCosto = !rif || cpm === null ? ''
+        : cpm < rif * 0.9 ? 'stat-box-conv'
+        : cpm > rif * 1.1 ? 'stat-box-caro' : '';
+
+    const votoHtml = riepilogo.mediaTxt === 'N/D' || riepilogo.mediaValore < 0
+        ? 'N/D'
+        : `<span class="stelle-stat"><span class="stelle">${stelleHtml(riepilogo.mediaValore)}</span><span class="voto-n">${escapeHtml(riepilogo.mediaTxt)}</span></span>`;
 
     // Profili della modella sui vari siti (fase 4): con un solo sito resta il solo indirizzo
     const profili = profiliPerSito(stato.tuttiGliShow, nomeModella);
@@ -57,20 +81,32 @@ export async function apriModalModella(nomeModella) {
 
     // Totali per sito, solo se la modella ha show su più siti
     const nomeCorrente = chiave;
+    // Una scheda per sito: badge e nome, quota degli show della modella in barra, statistiche
+    const cellaSito = (etichetta, valore) =>
+        `<div class="sito-stat"><span class="sito-stat-etichetta">${escapeHtml(etichetta)}</span><strong>${valore}</strong></div>`;
     const perSitoHtml = piuSiti ? `
         <div class="modella-per-sito">
             <span class="modella-tipi-etichetta">${escapeHtml(t('models.per_site'))}</span>
-            <table class="tabella-per-sito">
-                <thead><tr><th>${escapeHtml(t('sites.label'))}</th><th>${escapeHtml(t('table.total_shows'))}</th><th>${escapeHtml(t('table.total_duration'))}</th>
-                    <th>${escapeHtml(t('table.total_spent'))}</th><th>${escapeHtml(t('table.avg_cost_per_minute'))}</th><th>${escapeHtml(t('table.avg_rating'))}</th></tr></thead>
-                <tbody>${profili.map(p => {
-                    // Nomi diversi da quello attuale con cui la modella compare sul sito (show uniti)
-                    const altriNomi = p.nomi.filter(n => chiaveModella(n) !== nomeCorrente);
-                    const comeNome = altriNomi.length ? ` <small class="modella-altri-nomi">${escapeHtml(testoModelle('models.as_name', { nomi: altriNomi.join(', ') }))}</small>` : '';
-                    return `<tr><td title="${escapeHtml(sitoDaId(p.sito)?.nome || p.sito)}">${badgeSito(p.sito)}${comeNome}</td><td>${p.totaleShow}</td><td>${formattaDurata(p.totaleDurata)}</td>
-                        <td>€ ${p.spesaTotale.toFixed(2)}</td><td>${formattaCostoAlMinuto(p.costoMedioMinuto)}</td><td>${p.mediaTxt !== 'N/D' ? p.mediaTxt + ' / 5' : 'N/D'}</td></tr>`;
-                }).join('')}</tbody>
-            </table>
+            <div class="schede-per-sito">${profili.map(p => {
+                // Nomi diversi da quello attuale con cui la modella compare sul sito (show uniti)
+                const altriNomi = p.nomi.filter(n => chiaveModella(n) !== nomeCorrente);
+                const comeNome = altriNomi.length ? `<small class="modella-altri-nomi">${escapeHtml(testoModelle('models.as_name', { nomi: altriNomi.join(', ') }))}</small>` : '';
+                const quota = riepilogo.totaleShow ? Math.round((p.totaleShow / riepilogo.totaleShow) * 100) : 0;
+                return `<div class="scheda-sito">
+                    <div class="scheda-sito-testa">
+                        <span class="scheda-sito-badge">${badgeSito(p.sito)}</span>
+                        <div class="scheda-sito-nome"><strong>${escapeHtml(sitoDaId(p.sito)?.nome || p.sito)}</strong>${comeNome}</div>
+                    </div>
+                    <div class="scheda-sito-quota" title="${quota}%"><div class="scheda-sito-quota-barra" style="width:${quota}%"></div></div>
+                    <div class="scheda-sito-stat">
+                        ${cellaSito(t('table.total_shows'), `${p.totaleShow} <small>(${quota}%)</small>`)}
+                        ${cellaSito(t('table.total_duration'), formattaDurata(p.totaleDurata))}
+                        ${cellaSito(t('table.total_spent'), `€ ${p.spesaTotale.toFixed(2)}`)}
+                        ${cellaSito(t('table.avg_cost_per_minute'), formattaCostoAlMinuto(p.costoMedioMinuto))}
+                        ${cellaSito(t('table.avg_rating'), p.mediaTxt !== 'N/D' ? `<span class="voto-medio">${p.mediaTxt} / 5</span>` : 'N/D')}
+                    </div>
+                </div>`;
+            }).join('')}</div>
         </div>` : '';
 
     // Unisci con un'altra modella; separa solo se ci sono show su più siti
@@ -101,8 +137,8 @@ export async function apriModalModella(nomeModella) {
                 ${statBox(t('table.total_shows'), riepilogo.totaleShow)}
                 ${statBox(t('table.total_duration'), formattaDurata(riepilogo.totaleDurata))}
                 ${statBox(t('table.total_spent'), `€ ${riepilogo.spesaTotale.toFixed(2)}`)}
-                ${statBox(t('table.avg_cost_per_minute'), formattaCostoAlMinuto(riepilogo.costoMedioMinuto), ` title="${escapeHtml(t('table.cost_per_minute_hint'))}"`)}
-                ${statBox(t('table.avg_rating'), `<span class="voto-medio">${riepilogo.mediaTxt !== 'N/D' ? riepilogo.mediaTxt + ' / 5' : 'N/D'}</span>`)}
+                ${statBox(t('table.avg_cost_per_minute'), formattaCostoAlMinuto(riepilogo.costoMedioMinuto), ` title="${escapeHtml(t('table.cost_per_minute_hint'))}"`, classeCosto)}
+                ${statBox(t('table.avg_rating'), votoHtml, '', 'stat-box-rating')}
             </div>
         </div>
         ${tipiShowHtml}
@@ -120,6 +156,13 @@ export async function apriModalModella(nomeModella) {
     if (intestazione) intestazione.innerHTML = intestazioneShow(COLONNE_SCHEDA);
     listaBody.innerHTML = righeShow(showsModella, COLONNE_SCHEDA);
 
+    // Riavvia l'animazione di apertura a ogni apertura della scheda
+    const contenuto = modal.querySelector('.modal-content');
+    if (contenuto) {
+        contenuto.style.animation = 'none';
+        void contenuto.offsetWidth;
+        contenuto.style.animation = '';
+    }
     modal.style.display = 'block';
 }
 

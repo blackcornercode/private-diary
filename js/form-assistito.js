@@ -2,7 +2,7 @@ import { chiaveModella, schedaRapidaModella } from './calcoli.js';
 import { t } from './i18n.js';
 import { suggerisciSitoForm, sitoSceltoForm } from './gestione-siti.js';
 import { badgeSospesa } from './profili-sospesi.js';
-import { sitoDaId } from './siti.js';
+import { sitoDaId, urlVerificaTasso } from './siti.js';
 import { badgeOnline } from './stato-online.js';
 import { stato } from './stato.js';
 import { tagDaId, etichettaTag, impostaTagSuggeriti } from './tag.js';
@@ -199,6 +199,12 @@ export function aggiornaConvertitoreValuta() {
     const valuta = t(`currency.${sito.valuta}`);
     el('etichettaImportoValuta').textContent = maiuscola(t('form.amount_in').replace('{valuta}', valuta));
     el('tassoImportoValuta').textContent = t('form.amount_rate').replace('{unita}', t(`currency_unit.${sito.valuta}`)).replace('{tasso}', euro(sito.tasso).replace('.00', '')).replace('{sito}', sito.nome);
+    const urlVerifica = urlVerificaTasso(sito.valuta);
+    const linkVerifica = el('linkVerificaTasso');
+    linkVerifica.hidden = !urlVerifica;
+    el('separatoreVerificaTasso').hidden = !urlVerifica;
+    linkVerifica.dataset.url = urlVerifica || '';
+    linkVerifica.textContent = t('form.verify_rate');
     el('linkCostoEuro').textContent = costoInEuro ? t('form.enter_in_currency').replace('{valuta}', valuta) : t('form.enter_in_euro');
     aggiornaEquivalenteEuro();
 }

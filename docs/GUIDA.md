@@ -30,7 +30,7 @@ Sotto il nome dell'app, nell'intestazione, una riga ne riassume lo scopo: *Ogni 
 
 L'interfaccia si sviluppa in tre sezioni principali accessibili dalla barra superiore:
 
-### 1. Form & Cronologia
+### 1. Show & Cronologia
 Consente l'inserimento manuale, la modifica e la consultazione dell'archivio storico degli show.
 
 Il form è chiuso di default per lasciare spazio alla cronologia: si apre con **＋ Nuovo show** oppure con il pulsante ✏️ (Modifica) di una riga. Dopo il salvataggio si richiude; chiudendolo durante una modifica, la modifica viene annullata, mentre una bozza di nuovo show resta compilata.

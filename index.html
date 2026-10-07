@@ -152,7 +152,7 @@
         </div>
 
         <nav class="tabs-nav">
-            <button type="button" class="tab-btn active" data-azione="apri-tab" data-tab="tabDashboard" data-i18n="tabs.dashboard">📝 Form & Cronologia</button>
+            <button type="button" class="tab-btn active" data-azione="apri-tab" data-tab="tabDashboard" data-i18n="tabs.dashboard">📹 Show & Cronologia</button>
             <button type="button" class="tab-btn" data-azione="apri-tab" data-tab="tabClassifica" data-i18n="tabs.ranking">🏆 Classifica Modelle</button>
             <button type="button" class="tab-btn" data-azione="apri-tab" data-tab="tabStatistiche" style="display: inline-flex; align-items: center; gap: 8px;">
                 <span data-i18n="tabs.stats">📈 Statistiche Mensili</span>
@@ -169,7 +169,7 @@
             <!-- Il form è chiuso di default: si apre con "Nuovo show" o con "Modifica" -->
             <section class="card-section form-chiuso" id="sezioneForm">
                 <div class="form-intestazione">
-                    <h2 id="titoloForm" data-i18n="form.title">Aggiungi show</h2>
+                    <h2 id="titoloForm" data-i18n="form.title">📹 Aggiungi show</h2>
                     <!-- Tipo (show o regalo): visibile solo a form aperto. La casella nascosta
                          isRegalo (nel form) resta il valore usato dal salvataggio -->
                     <div class="selettore-vista selettore-tipo" role="group" aria-label="Tipo">
@@ -244,6 +244,8 @@
                 </div>
                 <small id="notaValuta" class="nota-valuta" hidden>
                     <span id="tassoImportoValuta"></span> ·
+                    <a href="#" id="linkVerificaTasso" class="link-web" data-azione="apri-link" data-url="" hidden></a>
+                    <span id="separatoreVerificaTasso" hidden>·</span>
                     <a href="#" id="linkCostoEuro" class="link-web" data-azione="alterna-costo-euro"></a>
                 </small>
             </div>
@@ -353,7 +355,7 @@
 
     <!-- Pulsanti d'azione: barra sempre visibile in fondo allo schermo mentre si compila -->
     <div class="form-actions">
-        <small class="suggerimento-scorciatoie"><kbd>Ctrl</kbd> + <kbd data-i18n="form.key_enter">Invio</kbd> <span data-i18n="form.shortcut_save">salva</span> · <kbd>Esc</kbd> <span data-i18n="form.shortcut_close">chiude</span></small>
+        <small class="suggerimento-scorciatoie"><kbd>Esc</kbd> <span data-i18n="form.shortcut_close">chiude</span></small>
         <button type="button" class="btn-data" data-azione="svuota-form" title="Svuota tutti i campi" data-i18n="form.clear">🧹 Svuota</button>
         <button type="button" id="btnAnnulla" class="btn-secondary" style="display: none;" data-azione="annulla-modifica" data-i18n="form.btn_cancel">Annulla</button>
         <button type="submit" id="btnSalva" class="btn-primary" data-i18n="form.btn_save">💾 Salva show</button>
@@ -422,11 +424,12 @@
                     </span>
                 </div>
 
-                <div class="table-container">
+                <div class="table-container table-cronologia">
                     <table>
                         <!-- Intestazione generata da js/righe-show.js (COLONNE_CRONOLOGIA) -->
                         <thead id="intestazioneCronologia"></thead>
                         <tbody id="listaShow"></tbody>
+                        <tfoot id="piedeCronologia"></tfoot>
                     </table>
                 </div>
 
@@ -512,6 +515,7 @@
 								<th class="col-centro" data-i18n="table.total_spent">Spesa Totale</th>
 								<th class="col-centro" data-i18n="table.avg_cost_per_minute">€/min Medio</th>
 								<th class="col-centro" data-i18n="table.avg_rating">Media Voti</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody id="listaMedie"></tbody>

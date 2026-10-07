@@ -58,6 +58,11 @@
     --voto4-bg: #ccfbf1;  --voto4-text: #0f766e;
     --voto3-bg: #fef3c7;  --voto3-text: #92400e;
     --voto-basso-bg: #fee2e2;  --voto-basso-text: #b91c1c;
+
+    /* Medaglie classifica: oro / argento / bronzo */
+    --rank1-tint: rgba(251,191,36,0.13);  --rank1-bordo: #fbbf24;  --rank1-txt: #92400e;
+    --rank2-tint: rgba(148,163,184,0.13); --rank2-bordo: #94a3b8;  --rank2-txt: #475569;
+    --rank3-tint: rgba(217,119,6,0.10);   --rank3-bordo: #d97706;  --rank3-txt: #92400e;
 }
 
 /* --- TEMA GRIGIO (Ultra Chiaro & Elegante) --- */
@@ -134,6 +139,10 @@ body.theme-dark {
     --voto4-bg: #134e4a;  --voto4-text: #5eead4;
     --voto3-bg: #422006;  --voto3-text: #fcd34d;
     --voto-basso-bg: #450a0a;  --voto-basso-text: #fca5a5;
+
+    --rank1-tint: rgba(251,191,36,0.14);  --rank1-bordo: #854d0e;  --rank1-txt: #fbbf24;
+    --rank2-tint: rgba(148,163,184,0.12); --rank2-bordo: #475569;  --rank2-txt: #94a3b8;
+    --rank3-tint: rgba(217,119,6,0.12);   --rank3-bordo: #78350f;  --rank3-txt: #fcd34d;
 }
 
 /* ==========================================================================
@@ -530,6 +539,9 @@ button {
 .btn-edit { background: var(--warning-color); color: #fff; padding: 5px 10px; font-size: 0.8rem; }
 .btn-edit:hover { background: var(--warning-hover); }
 
+.btn-scheda { background: var(--primary-color); color: #fff; padding: 5px 10px; font-size: 0.8rem; }
+.btn-scheda:hover { background: var(--primary-hover); }
+
 .btn-delete { background: var(--danger-color); color: #fff; padding: 5px 10px; font-size: 0.8rem; }
 .btn-delete:hover { background: var(--danger-hover); }
 
@@ -615,8 +627,21 @@ tbody tr:last-child td {
     border-bottom: none;
 }
 
+/* ① Transizione percepibile al passaggio del mouse */
+tbody tr {
+    transition: background-color 0.12s ease;
+}
+
 tbody tr:hover {
-    background-color: rgba(0,0,0,0.02);
+    background-color: rgba(0,0,0,0.045);
+}
+
+/* ③ Zebratura: sfondo alternato sulle righe pari per facilitare la lettura orizzontale */
+tbody tr:nth-child(even) {
+    background-color: rgba(0,0,0,0.022);
+}
+tbody tr:nth-child(even):hover {
+    background-color: rgba(0,0,0,0.045);
 }
 
 /* Le colonne si stilizzano con classi e non per posizione (nth-child):
@@ -631,9 +656,10 @@ td.col-centro {
     text-align: center;
 }
 
+/* ④ Avatar 40 px: più leggibile delle iniziali nel placeholder */
 .thumb-img {
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid var(--border-color);
@@ -641,8 +667,8 @@ td.col-centro {
 }
 
 .no-img {
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background-color: var(--border-color);
     color: var(--text-muted);
@@ -756,8 +782,48 @@ td.testo-attenuato {
 .badge-origine.auto { background-color: var(--info-bg); color: var(--info-text); }
 .badge-origine.manuale { background-color: var(--neutral-bg); color: var(--neutral-text); font-weight: 600; }
 
-/* Data sopra e ora sotto (righe-show.js, cellaData) */
+/* ② Cronologia: scroll verticale interno con thead fisso ─────────────────── */
+.table-cronologia {
+    max-height: 68vh;
+    overflow-y: auto;
+}
+/* Il th è già sticky per posizione (top:0), ma serve z-index per passare sopra
+   alle celle durante lo scroll */
+.table-cronologia thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* ⑥ Pulsanti Modifica/Elimina: quasi invisibili a riposo, visibili sull'hover riga */
+td.col-azioni button {
+    opacity: 0.12;
+    transition: opacity 0.15s ease;
+}
+tbody tr:hover td.col-azioni button {
+    opacity: 1;
+}
+
+/* ⑦ Riga dei totali a piè di pagina (tfoot) */
+tfoot td {
+    background-color: var(--bg-main);
+    border-top: 2px solid var(--border-color);
+    padding: 7px 6px !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+tfoot .piede-etichetta {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ⑤ Giorno della settimana sopra la data (righe-show.js, cellaData) */
 td.col-data { white-space: nowrap; }
+td.col-data .data-dow { display: block; font-size: 0.68rem; font-weight: 800; color: var(--primary-color); letter-spacing: 0.03em; text-transform: uppercase; }
 td.col-data .data-giorno { display: block; }
 td.col-data .data-ora { display: block; font-size: 0.8rem; color: var(--text-muted); }
 td.col-data .badge-origine { font-size: 0.66rem; padding: 1px 6px; margin-left: 2px; }
@@ -823,11 +889,90 @@ td.col-data .badge-origine { font-size: 0.66rem; padding: 1px 6px; margin-left: 
     text-decoration: none !important;
 }
 
+/* ① Medaglie classifica: righe top 3 con sfondo tintato e bordo sinistro */
+tbody tr.rank-1 { background-color: var(--rank1-tint) !important; }
+tbody tr.rank-2 { background-color: var(--rank2-tint) !important; }
+tbody tr.rank-3 { background-color: var(--rank3-tint) !important; }
+tbody tr.rank-1:hover,
+tbody tr.rank-2:hover,
+tbody tr.rank-3:hover { filter: brightness(0.97); }
+
+tbody tr.rank-1 td:first-child { border-left: 3px solid var(--rank1-bordo); }
+tbody tr.rank-2 td:first-child { border-left: 3px solid var(--rank2-bordo); }
+tbody tr.rank-3 td:first-child { border-left: 3px solid var(--rank3-bordo); }
+
+.badge-medaglia {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 800;
+    border: 1.5px solid;
+    white-space: nowrap;
+}
+.badge-medaglia-1 { background-color: var(--rank1-tint); color: var(--rank1-txt); border-color: var(--rank1-bordo); }
+.badge-medaglia-2 { background-color: var(--rank2-tint); color: var(--rank2-txt); border-color: var(--rank2-bordo); }
+.badge-medaglia-3 { background-color: var(--rank3-tint); color: var(--rank3-txt); border-color: var(--rank3-bordo); }
+.badge-pos-n { color: var(--text-muted); font-weight: 600; font-size: 0.82rem; }
+
+/* ② Stelle visive per la media voti (classifica) */
+.stelle-voto { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.stelle-voto .stelle { font-size: 0.80rem; letter-spacing: -0.01em; line-height: 1; }
+.stelle-voto .piena { color: var(--rating-color); }
+.stelle-voto .vuota { color: var(--border-color); }
+.stelle-voto .meta  { position: relative; display: inline-block; }
+.stelle-voto .meta::before { content: '★'; color: var(--border-color); }
+.stelle-voto .meta::after  {
+    content: '★';
+    position: absolute; left: 0; top: 0;
+    width: 55%; overflow: hidden; white-space: nowrap;
+    color: var(--rating-color);
+}
+.stelle-voto .voto-num { font-weight: 700; font-size: 0.82rem; color: var(--rating-color); }
+
+/* La .voto-medio resta per compatibilità con il codice esistente */
 .voto-medio {
     text-align: center;
     font-weight: bold;
     color: var(--rating-color);
 }
+
+/* ③ Mini barra proporzionale per Show Totali (classifica) */
+.barra-show {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    min-width: 64px;
+}
+.barra-show-track {
+    flex: 1;
+    max-width: 48px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--border-color);
+    overflow: hidden;
+}
+.barra-show-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--primary-color);
+    opacity: 0.55;
+}
+.barra-show-num { font-weight: 700; font-size: 0.82rem; min-width: 16px; }
+
+/* ④ Freccia navigazione: emerge sull'hover della riga cliccabile */
+.nav-arrow {
+    color: var(--text-muted);
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    display: inline-block;
+}
+tbody tr:hover .nav-arrow { opacity: 1; transform: translateX(3px); }
 
 .costo-container, 
 td.costo-cell {
@@ -922,7 +1067,39 @@ td.costo-cell {
 }
 
 /* Scheda della modella un po' più larga delle altre finestre */
-#modalModella .modal-content { max-width: 1200px; width: 94%; }
+#modalModella .modal-content { max-width: 1200px; width: 94%; animation: modalIn 0.18s ease-out both; }
+
+/* ④ Apertura morbida (l'animazione è riavviata da apriModalModella) */
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.97) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    #modalModella .modal-content { animation: none; }
+}
+
+/* ⑥ Titoli di sezione della scheda come divisori con etichetta centrale */
+#modalModella .modal-content > h3,
+#sezioneGalleriaModella h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 14px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+#modalModella .modal-content > h3::before,
+#modalModella .modal-content > h3::after,
+#sezioneGalleriaModella h3::before,
+#sezioneGalleriaModella h3::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
 
 #changelogModal .modal-content {
     color: var(--text-color);
@@ -1258,25 +1435,29 @@ details[open] > summary .riquadro-freccia { transform: rotate(180deg); }
 /* ==========================================================================
    INTESTAZIONE DEL MODALE MODELLA (tutto su una riga)
    ========================================================================== */
+/* ① Header "hero": gradiente leggero sul colore primario e avatar grande */
 .modella-header-card {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    background: var(--bg-card-secondary);
+    gap: 18px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--primary-color) 8%, var(--bg-card)) 0%,
+        var(--bg-card-secondary) 60%);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
 }
 
 .modella-avatar {
     flex-shrink: 0;
-    width: 56px;
-    height: 56px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--accent-color);
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.14);
     cursor: pointer;
 }
 
@@ -1284,9 +1465,10 @@ details[open] > summary .riquadro-freccia { transform: rotate(180deg); }
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 2rem;
     background-color: var(--border-color);
     border: none;
+    box-shadow: none;
     cursor: default;
 }
 
@@ -1346,6 +1528,38 @@ a.modella-url:hover { text-decoration: underline; }
     font-size: 1.05rem;
     color: var(--text-color);
 }
+
+/* ② Riquadri con colore semantico: media voti ambra, €/min verde o rosso */
+.stat-box.stat-box-rating {
+    background: color-mix(in srgb, var(--voto3-bg) 60%, var(--bg-card));
+    border-color: color-mix(in srgb, var(--rating-color) 25%, var(--border-color));
+}
+.stat-box.stat-box-rating .stat-box-etichetta { color: var(--rating-color); }
+.stat-box.stat-box-conv {
+    background: color-mix(in srgb, var(--voto5-bg) 55%, var(--bg-card));
+    border-color: color-mix(in srgb, var(--conveniente-text) 22%, var(--border-color));
+}
+.stat-box.stat-box-conv .stat-box-etichetta { color: var(--conveniente-text); }
+.stat-box.stat-box-caro {
+    background: color-mix(in srgb, var(--voto-basso-bg) 55%, var(--bg-card));
+    border-color: color-mix(in srgb, var(--caro-text) 22%, var(--border-color));
+}
+.stat-box.stat-box-caro .stat-box-etichetta { color: var(--caro-text); }
+
+/* ③ Stelle nel riquadro della media voti (stesso disegno della classifica) */
+.stelle-stat { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.stelle-stat .stelle { font-size: 0.80rem; line-height: 1; }
+.stelle-stat .piena { color: var(--rating-color); }
+.stelle-stat .vuota { color: var(--border-color); }
+.stelle-stat .meta  { position: relative; display: inline-block; }
+.stelle-stat .meta::before { content: '★'; color: var(--border-color); }
+.stelle-stat .meta::after  {
+    content: '★';
+    position: absolute; left: 0; top: 0;
+    width: 55%; overflow: hidden; white-space: nowrap;
+    color: var(--rating-color);
+}
+.stelle-stat .voto-n { font-size: 1.05rem; font-weight: 800; color: var(--rating-color); }
 
 /* ==========================================================================
    MENU A TENDINA DELL'HEADER (Impostazioni / Dati)
@@ -1731,12 +1945,18 @@ button.etichetta-tag.tag-togli { text-decoration: line-through; }
 .campo-tag-multipla { margin-top: 8px; }
 
 /* Scheda modella: tipi di show proposti */
+/* ⑤ Barra dei tipi di show su sfondo tintato */
 .modella-tipi-show {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 0;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: color-mix(in srgb, var(--primary-color) 5%, var(--bg-card-secondary));
+    border: 1px solid color-mix(in srgb, var(--primary-color) 18%, var(--border-color));
+    border-radius: var(--radius-sm);
 }
 .modella-tipi-show .etichetta-tag { font-size: 0.8rem; padding: 2px 10px; }
 .modella-tipi-etichetta {
@@ -2224,7 +2444,7 @@ kbd.tasto-rapido.in-registrazione { border-color: var(--primary-color); color: v
 }
 .riga-gestione-sito {
     display: grid;
-    grid-template-columns: 88px minmax(110px, 1fr) 64px 92px 78px auto 64px auto;
+    grid-template-columns: 88px minmax(110px, 1fr) 64px 92px 118px auto 64px auto;
     align-items: center;
     gap: 10px;
     padding-bottom: 8px;
@@ -2241,6 +2461,10 @@ kbd.tasto-rapido.in-registrazione { border-color: var(--primary-color); color: v
 /* Valute dei siti (gestione-siti.js) e convertitore del form (form-assistito.js) */
 .modal-gestione-tag:has(.riga-gestione-sito) { max-width: 960px; }
 .tasso-gestione-sito:disabled { opacity: 0.5; }
+/* Campo del tasso con, accanto, l'icona che apre la verifica su Google */
+.tasso-con-verifica { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tasso-con-verifica .tasso-gestione-sito { flex: 1 1 auto; min-width: 0; width: 100%; }
+.link-verifica-tasso { flex: 0 0 auto; text-decoration: none; font-size: 1rem; line-height: 1; }
 .segno-valuta { color: var(--text-muted); font-size: 0.75em; }
 
 /* Importazione CSV (importa-csv.js) */
@@ -2282,27 +2506,61 @@ body.senza-mcg .menu-sezione-mcg + .menu-sezione { padding-top: 0; border-top: n
     gap: 2px 14px;
 }
 .modella-profili .modella-url { max-width: 100%; }
-.modella-per-sito { margin-top: 12px; }
-.tabella-per-sito {
-    width: auto;
-    margin-top: 6px;
-    border-collapse: collapse;
-    font-size: 0.85rem;
+.modella-per-sito { margin-top: 12px; margin-bottom: 14px; }
+
+/* Una scheda per sito, affiancate e a capo se lo spazio manca */
+.schede-per-sito {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    margin-top: 8px;
 }
-.tabella-per-sito th,
-.tabella-per-sito td {
-    padding: 4px 12px 4px 0;
-    text-align: left;
-    white-space: nowrap;
-    border-bottom: 1px solid var(--border-color);
+.scheda-sito {
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 }
-.tabella-per-sito th {
+.scheda-sito-testa { display: flex; align-items: center; gap: 10px; }
+.scheda-sito-badge .badge-sito {
+    margin-left: 0;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+}
+.scheda-sito-nome { display: flex; flex-direction: column; min-width: 0; }
+.scheda-sito-nome strong { font-size: 0.95rem; }
+
+/* Quota degli show della modella svolti su questo sito */
+.scheda-sito-quota {
+    height: 5px;
+    margin: 10px 0;
+    border-radius: 3px;
+    background: var(--border-color);
+    overflow: hidden;
+}
+.scheda-sito-quota-barra {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--primary-color);
+    opacity: 0.6;
+}
+.scheda-sito-stat {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+    gap: 8px 10px;
+}
+.sito-stat { display: flex; flex-direction: column; font-size: 0.88rem; white-space: nowrap; }
+.sito-stat small { color: var(--text-muted); font-weight: 400; }
+.sito-stat-etichetta {
     color: var(--text-muted);
+    font-size: 0.66rem;
     font-weight: 600;
-    font-size: 0.75rem;
     text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
-.modella-altri-nomi { color: var(--text-muted); }
+.modella-altri-nomi { color: var(--text-muted); font-size: 0.75rem; }
 .modella-azioni {
     display: flex;
     gap: 8px;

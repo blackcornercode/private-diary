@@ -45,12 +45,12 @@
     "sync_all_hint": "Reads every page of your MCG transactions, from newest to oldest, and imports everything that is missing. Use it the first time or to recover old shows: it can take a few minutes and shows a summary to confirm before saving. You need to log in in the MCG window."
   },
   "tabs": {
-    "dashboard": "📝 Form & History",
+    "dashboard": "📹 Shows & History",
     "ranking": "🏆 Models Ranking",
     "stats": "📈 Monthly Stats"
   },
   "form": {
-    "title": "Add show",
+    "title": "📹 Add show",
     "title_add": "Add / Edit Show",
     "date": "Date and time",
     "model_name": "Model",
@@ -91,8 +91,10 @@
     "shortcuts": "Ctrl+Enter saves · Esc closes",
     "clear": "🧹 Clear",
     "amount_in": "{valuta} paid",
-    "amount_rate": "1 {unita} = {tasso} on {sito}",
-    "title_edit": "Edit show",
+    "verify_rate": "check the rate on Google",
+    "verify_rate_hint": "Opens Google with the current exchange rate: compare it with the site's rate",
+    "amount_rate":"1 {unita} = {tasso} on {sito}",
+    "title_edit": "📹 Edit show",
     "editing": "✏️ You are editing the show of {data} with {nome}",
     "section_who": "Who and when",
     "section_show": "The show",
@@ -383,6 +385,7 @@
     "review_short": "Rev.",
     "notes": "Notes",
     "actions": "Actions",
+    "open_model": "Open the model's profile",
     "select": "Select",
     "tags_notes": "Tags & notes"
   },

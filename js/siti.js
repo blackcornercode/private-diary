@@ -20,6 +20,14 @@ const CHIAVE_SITO_PREDEFINITO = 'sito_predefinito';
 // Stesso elenco di main/catalogo-siti.js: valute in cui un sito può far pagare
 export const VALUTE = ['EUR', 'USD', 'GBP', 'token', 'crediti'];
 
+// Ricerca Google del cambio ufficiale (es. "1 USD in EUR") per controllare il tasso
+// di un sito; token e crediti non hanno un cambio di mercato, quindi null
+const VALUTE_CON_CAMBIO = ['USD', 'GBP'];
+export function urlVerificaTasso(valuta) {
+    if (!VALUTE_CON_CAMBIO.includes(valuta)) return null;
+    return `https://www.google.com/search?q=${encodeURIComponent(`1 ${valuta} in EUR`)}`;
+}
+
 export function sitoDaId(id) {
     return stato.catalogoSiti.find(sito => sito.id === id) || null;
 }

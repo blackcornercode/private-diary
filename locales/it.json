@@ -45,12 +45,12 @@
     "sync_all_hint": "Legge tutte le pagine delle transazioni di MCG, dalla più recente alla più vecchia, e importa tutto ciò che manca. Usala la prima volta o per recuperare show vecchi: può richiedere qualche minuto e prima di salvare mostra un riepilogo da confermare. Serve il login nella finestra di MCG."
   },
   "tabs": {
-    "dashboard": "📝 Form & Cronologia",
+    "dashboard": "📹 Show & Cronologia",
     "ranking": "🏆 Classifica Modelle",
     "stats": "📈 Statistiche Mensili"
   },
   "form": {
-    "title": "Aggiungi show",
+    "title": "📹 Aggiungi show",
     "title_add": "Aggiungi / Modifica Show",
     "date": "Data e ora",
     "model_name": "Modella",
@@ -92,7 +92,9 @@
     "clear": "🧹 Svuota",
     "amount_in": "{valuta} pagati",
     "amount_rate": "1 {unita} = {tasso} su {sito}",
-    "title_edit": "Modifica show",
+    "verify_rate": "verifica il cambio su Google",
+    "verify_rate_hint": "Apre Google con il cambio attuale: confrontalo con il tasso del sito",
+    "title_edit": "📹 Modifica show",
     "editing": "✏️ Stai modificando lo show del {data} con {nome}",
     "section_who": "Chi e quando",
     "section_show": "Lo show",
@@ -383,6 +385,7 @@
     "review_short": "Rec.",
     "notes": "Note",
     "actions": "Azioni",
+    "open_model": "Apri la scheda della modella",
     "select": "Seleziona",
     "tags_notes": "Tag e note"
   },

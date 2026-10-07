@@ -4,6 +4,7 @@ import { logger } from './logger.js';
 import { COLONNE_CRONOLOGIA, intestazioneShow, righeShow } from './righe-show.js';
 import { aggiornaBarraSelezione } from './selezione.js';
 import { stato } from './stato.js';
+import { costoMedioAlMinuto, minutiDelloShow, formattaTempo, formattaEuro } from './utils.js';
 
 /* ==========================================================================
    CRONOLOGIA: FILTRI PER ANNO E NOME
@@ -109,6 +110,7 @@ export function caricaCronologia(shows) {
     stato.idPaginaCronologia = elementi.map(s => String(s.id));
     stato.idFiltratiCronologia = filtrati.map(s => String(s.id));
     listaShow.innerHTML = righeShow(elementi, COLONNE_CRONOLOGIA);
+    aggiornaPiedeCronologia(elementi, filtrati.length, totalePagine, limite === 'all');
     aggiornaBarraSelezione();
     aggiornaControlliPaginazione(totalePagine, limite === 'all');
 }
@@ -170,4 +172,35 @@ export function resetFiltriCronologia() {
 export function filtraCronologiaPerNome() {
     stato.paginaCorrente = 1;
     caricaCronologia(stato.tuttiGliShow);
+}
+
+/* ⑦ Riga dei totali sotto la tabella: durata e costo della pagina corrente */
+function aggiornaPiedeCronologia(elementi, totFiltrati, totalePagine, mostraTutti) {
+    const piede = document.getElementById('piedeCronologia');
+    if (!piede) return;
+    if (elementi.length === 0) { piede.innerHTML = ''; return; }
+
+    const minutiTot = elementi.reduce((s, show) => s + (minutiDelloShow(show) || 0), 0);
+    const costoTot  = elementi.reduce((s, show) => s + (parseFloat(show.costo) || 0), 0);
+    const mediaMin  = costoMedioAlMinuto(elementi);
+
+    const labelPagina = mostraTutti
+        ? `${totFiltrati} show`
+        : `${t('pagination.page_of').replace('{page}', stato.paginaCorrente).replace('{total}', totalePagine)} · ${totFiltrati} show`;
+
+    const colSpanSx = COLONNE_CRONOLOGIA.indexOf('durata');   // celle prima di durata
+    const durHTML   = minutiTot > 0 ? `<strong>${formattaTempo(minutiTot)}</strong>` : '–';
+    const costoHTML = `<strong>${formattaEuro(costoTot)}</strong>`;
+    const medHTML   = mediaMin !== null ? `<strong>€ ${mediaMin.toFixed(2)}</strong>` : '–';
+
+    // Le colonne a destra di €/min (voto, recensione, note, azioni) riempiono il resto
+    const colSpanDx = COLONNE_CRONOLOGIA.length - COLONNE_CRONOLOGIA.indexOf('costoMinuto') - 1;
+
+    piede.innerHTML = `<tr>
+        <td colspan="${colSpanSx}" class="piede-etichetta">${labelPagina}</td>
+        <td class="col-centro">${durHTML}</td>
+        <td>${costoHTML}</td>
+        <td class="col-centro">${medHTML}</td>
+        <td colspan="${colSpanDx}" class="piede-etichetta">durata · costo · €/min medi</td>
+    </tr>`;
 }

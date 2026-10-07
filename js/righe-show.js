@@ -65,10 +65,13 @@ export function cellaTagNote(show) {
 }
 
 // Data sopra e, sotto, ora e badge del sito (sigla colorata, 🤖 se importato,
-// 👤 se inserito a mano): più stretta di "gg/mm/aaaa hh:mm" su una riga
+// 👤 se inserito a mano): più stretta di "gg/mm/aaaa hh:mm" su una riga.
+// ⑤ Prima della data mostra il giorno della settimana abbreviato (Lun, Mar…)
 function cellaData(show) {
     const [giorno, ora = ''] = String(show.dataFormattata || '').split(' ');
-    return `<td class="col-data"><span class="data-giorno">${escapeHtml(giorno)}</span><span class="data-ora">${escapeHtml(ora)} ${badgeSitoShow(show)}</span></td>`;
+    const d = show.dataOraISO ? new Date(show.dataOraISO) : null;
+    const dow = d && !isNaN(d) ? d.toLocaleDateString('it-IT', { weekday: 'short' }) : '';
+    return `<td class="col-data">${dow ? `<span class="data-dow">${escapeHtml(dow)}</span>` : ''}<span class="data-giorno">${escapeHtml(giorno)}</span><span class="data-ora">${escapeHtml(ora)} ${badgeSitoShow(show)}</span></td>`;
 }
 
 const selezionato = (show) => stato.selezioneCronologia.has(String(show.id));
@@ -96,6 +99,7 @@ export const COLONNE_SHOW = {
     // col-note: la colonna prende tutto lo spazio che avanza (style.css)
     note:          ['table.tags_notes', 'col-note', cellaTagNote],
     azioni:        ['table.actions', '', s => `<td class="col-azioni">
+                        <button class="btn-scheda" title="${escapeHtml(t('table.open_model'))}" aria-label="${escapeHtml(t('table.open_model'))}" data-azione="apri-scheda-modella" data-nome="${escapeHtml(s.nome)}"><i class="fa-solid fa-user"></i></button>
                         <button class="btn-edit" title="Modifica" aria-label="Modifica" data-azione="modifica-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn-delete" title="Elimina" aria-label="Elimina" data-azione="elimina-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-trash"></i></button>
                     </td>`]

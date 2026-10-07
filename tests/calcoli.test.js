@@ -321,6 +321,13 @@ test('siti in uso: elenco per form e filtri, funzioni di Mondo Cam Girls solo se
     f.stato.catalogoSiti = [];
 });
 
+test('verifica del tasso su Google: solo per le valute con un cambio di mercato', async () => {
+    const { urlVerificaTasso } = await import('../js/siti.js');
+    assert.equal(urlVerificaTasso('USD'), 'https://www.google.com/search?q=1%20USD%20in%20EUR');
+    assert.equal(urlVerificaTasso('GBP'), 'https://www.google.com/search?q=1%20GBP%20in%20EUR');
+    ['EUR', 'token', 'crediti', undefined].forEach(v => assert.equal(urlVerificaTasso(v), null));
+});
+
 test('connettori: una funzione è disponibile solo se il sito è in uso e il suo connettore la offre', async () => {
     const { funzioneDisponibile, FUNZIONI } = await import('../js/connettori.js');
     f.stato.connettori = { mcg: ['online', 'foto'] };
