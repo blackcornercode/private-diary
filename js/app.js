@@ -32,7 +32,7 @@ import { verificaStatoMCG, aggiornaTestoStatoMCG } from './stato-mcg.js';
 import { disegnaSelettoreTagForm, alternaTagForm, creaTagDaForm, disegnaTagModificaMultipla, alternaTagModificaMultipla, aggiornaFiltroTag, apriGestioneTag, chiudiGestioneTag, disegnaGestioneTag, creaTagDaGestione, rinominaTag, cambiaColoreTag, eliminaTag, inizializzaTag } from './tag.js';
 import { inizializzaStatoOnline } from './stato-online.js';
 import { popolaSelettoreAnni, caricaStatisticheMensili, aggiornaStatisticheMensili, selezionaMeseDettaglio, aggiornaIndicatoreBudgetHomepage } from './statistiche.js';
-import { apriLinkEsterno, espandiNota } from './utils.js';
+import { apriLinkEsterno, copiaEApriTeams, espandiNota } from './utils.js';
 
 /* --------------------------------------------------------------------------
    AZIONI DELL'INTERFACCIA: nome usato negli attributi data-* -> funzione
@@ -150,6 +150,7 @@ registraAzioni({
     // Foto, link e lightbox
     'ingrandisci-foto': (el) => apriModalImmagine(el.dataset.url),
     'apri-link': (el, e) => { e.preventDefault(); apriLinkEsterno(el.dataset.url); },
+    'copia-apri-teams': (el, e) => { e.preventDefault(); copiaEApriTeams(el.dataset.nick); },
     'chiudi-lightbox': () => chiudiModalImmagine(),
     'naviga-galleria': (el) => navigaGalleria(Number(el.dataset.direzione)),
     // Clic sull'immagine ingrandita: non deve chiudere il lightbox

@@ -53,7 +53,14 @@
     ],
     "electronLanguages": [
       "it",
-      "en-US"
+      "en-US",
+      "es",
+      "fr",
+      "de",
+      "pt-BR",
+      "pt-PT",
+      "ro",
+      "ru"
     ],
     "portable": {
       "useZip": false,
@@ -79,7 +86,13 @@
       "multiLanguageInstaller": true,
       "installerLanguages": [
         "it_IT",
-        "en_US"
+        "en_US",
+        "es_ES",
+        "fr_FR",
+        "de_DE",
+        "pt_BR",
+        "ro_RO",
+        "ru_RU"
       ],
       "installerIcon": "icon.ico",
       "uninstallerIcon": "icon.ico"

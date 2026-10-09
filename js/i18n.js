@@ -2,16 +2,34 @@
    TRADUZIONI (i18n)
    ========================================================================== */
 export let traduzioniCorrenti = {};
-// Senza una scelta salvata (primissimo avvio) si parte dalla lingua del sistema:
-// italiano se è l'italiano, altrimenti inglese
-export const linguaDiSistema = () => (String(globalThis.navigator?.language || '').toLowerCase().startsWith('it') ? 'it' : 'en');
-export let linguaCorrente = localStorage.getItem('appLang') || linguaDiSistema();
+// Lingue disponibili (un file locales/<codice>.json per ognuna) con il formato
+// usato per date e giorni della settimana. I nomi compaiono nei selettori di index.html.
+export const LINGUE = {
+    it: { nome: 'Italiano', locale: 'it-IT' },
+    en: { nome: 'English', locale: 'en-GB' },
+    es: { nome: 'Español', locale: 'es-ES' },
+    fr: { nome: 'Français', locale: 'fr-FR' },
+    de: { nome: 'Deutsch', locale: 'de-DE' },
+    pt: { nome: 'Português', locale: 'pt-BR' },
+    ro: { nome: 'Română', locale: 'ro-RO' },
+    ru: { nome: 'Русский', locale: 'ru-RU' }
+};
+
+// Senza una scelta salvata (primissimo avvio) si parte dalla lingua del sistema,
+// se è tra quelle tradotte, altrimenti dall'inglese
+export const linguaDiSistema = () => {
+    const codice = String(globalThis.navigator?.language || '').toLowerCase().split('-')[0];
+    return Object.hasOwn(LINGUE, codice) ? codice : 'en';
+};
+const linguaSalvata = localStorage.getItem('appLang');
+export let linguaCorrente = Object.hasOwn(LINGUE, linguaSalvata || '') ? linguaSalvata : linguaDiSistema();
 
 // Formato di date e giorni della settimana mostrati nell'interfaccia (es. "lun" / "Mon")
-export const localeCorrente = () => (linguaCorrente === 'it' ? 'it-IT' : 'en-GB');
+export const localeCorrente = () => LINGUE[linguaCorrente]?.locale || 'en-GB';
 
 // Carica il file JSON della lingua
 export async function caricaLingua(lang) {
+    if (!Object.hasOwn(LINGUE, lang)) lang = 'en';
     try {
         const response = await fetch(`./locales/${lang}.json`);
         traduzioniCorrenti = await response.json();

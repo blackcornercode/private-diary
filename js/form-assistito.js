@@ -6,7 +6,7 @@ import { sitoDaId, urlVerificaTasso } from './siti.js';
 import { badgeOnline } from './stato-online.js';
 import { stato } from './stato.js';
 import { tagDaId, etichettaTag, impostaTagSuggeriti } from './tag.js';
-import { escapeHtml, costoAlMinuto, formattaCostoAlMinuto } from './utils.js';
+import { escapeHtml, costoAlMinuto, formattaCostoAlMinuto, eUsernameTeams } from './utils.js';
 
 /* ==========================================================================
    FORM "AGGIUNGI / MODIFICA SHOW": PARTI ASSISTITE
@@ -173,6 +173,10 @@ export function aggiornaRiepilogoDettagli() {
     if (el('urlProfilo')?.value.trim()) parti.push(`🌐 ${t('form.details_profile')}`);
     if (el('immagine')?.value.trim()) parti.push(`🖼️ ${t('form.details_photo')}`);
     box.innerHTML = parti.map(parte => `<span class="pillola-dettaglio">${escapeHtml(parte)}</span>`).join('');
+
+    // Teams apre la chat con un clic solo se il nickname è l'email della modella
+    const notaTeams = el('notaNicknameTeams');
+    if (notaTeams) notaTeams.hidden = Boolean(el('isRegalo')?.checked) || !eUsernameTeams(el('piattaforma')?.value, el('nickname')?.value);
 }
 
 // Allinea tutte le parti assistite ai valori dei campi (dopo modifica, reset, autocompilazione)

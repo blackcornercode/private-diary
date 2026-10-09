@@ -1,4 +1,4 @@
-import { t } from './i18n.js';
+import { t, localeCorrente } from './i18n.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
 import { slugProfiloMcg } from './connettore-mcg.js';
@@ -52,7 +52,7 @@ export function badgeSospesa(nome) {
     const slug = slugDellaModella(nome);
     const esito = slug && profili[slug];
     if (!esito || !(esito.sospeso || esito.rimosso)) return '';
-    const data = new Date(esito.verificato).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const data = new Date(esito.verificato).toLocaleString(localeCorrente(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
     const tipo = esito.rimosso ? 'removed' : 'tooltip';
     const titolo = t(`suspended.${tipo}`).replace('{data}', data);
     const [classe, testo] = esito.rimosso ? ['badge-sospesa badge-rimossa', t('suspended.badge_removed')] : ['badge-sospesa', t('suspended.badge')];

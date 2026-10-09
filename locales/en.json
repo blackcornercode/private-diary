@@ -108,7 +108,8 @@
     "enter_in_currency": "enter in {valuta}",
     "shortcut_save": "saves",
     "shortcut_close": "closes",
-    "key_enter": "Enter"
+    "key_enter": "Enter",
+    "teams_email_hint": "With the model's Teams email, a click on the nickname opens the chat directly; with a username the click copies it and opens Teams, where you search for it."
   },
   "options": {
     "other": "Other",
@@ -447,5 +448,11 @@
     "same_model": "It is the same model.",
     "note": "Every show remembers the name it was bought under: the Mondo Cam Girls sync recognises shows already imported and assigns new ones to the right model.",
     "confirm": "Confirm"
+  },
+  "chat": {
+    "open": "Open the chat with {nick}",
+    "teams_copy_hint": "{nick}: click to copy the name and open Teams, then paste it in the search (with the email the chat opens directly)",
+    "teams_copied": "📋 \"{nick}\" copied to the clipboard.\n\nTeams is opening: paste the name in the search bar at the top or in the \"To:\" field of the new chat.",
+    "teams_not_copied": "\"{nick}\" could not be copied to the clipboard.\n\nTeams is opening: search for the name in the search bar at the top."
   }
 }

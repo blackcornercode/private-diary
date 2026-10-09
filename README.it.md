@@ -27,7 +27,7 @@
 - 📊 **Budget e grafici**: budget mensile con badge OK/KO, grafico della spesa per mese o per anno, dettaglio mese per mese.
 - 🔄 **Sincronizzazione con Mondo Cam Girls**: importa le tue transazioni (rimborsi compresi) con il tuo login, mostra chi è **online**, segnala i profili **sospesi** o **rimossi**.
 - 🔒 **Privacy prima di tutto**: PIN con blocco automatico, foto sfocate, nome e icona neutri della finestra («Agenda»), un tasto rapido personalizzabile per nascondere subito l'app.
-- 🎨 **Quattro temi**, tra cui *Bordeaux & Oro* ispirato a mondocamgirls.com, dimensione del testo regolabile, interfaccia in italiano e in inglese.
+- 🎨 **Quattro temi**, tra cui *Bordeaux & Oro* ispirato a mondocamgirls.com, dimensione del testo regolabile, interfaccia in italiano, inglese, spagnolo, francese, tedesco, portoghese, rumeno e russo.
 - 💾 **I tuoi dati restano tuoi**: tutto è salvato sul tuo computer, con salvataggi sicuri, copie di backup automatiche ed esportazione/importazione in JSON.
 
 ## 📸 Screenshot

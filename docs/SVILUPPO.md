@@ -36,7 +36,7 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
 | Modulo | Contenuto |
 | :--- | :--- |
 | `logger.js` | Log a console, a file e nel pannello log. |
-| `i18n.js` | Caricamento lingue, funzione `t()` e `localeCorrente()` per le date formattate nella lingua dell'interfaccia. |
+| `i18n.js` | Elenco delle lingue (`LINGUE`), caricamento, funzione `t()` e `localeCorrente()` per le date formattate nella lingua dell'interfaccia. |
 | `stato.js` | Stato condiviso: l'oggetto `stato` (archivio in memoria, filtri, pagina corrente, classifica…). |
 | `azioni.js` | Esecuzione delle azioni dichiarate negli attributi `data-azione`/`data-al-cambio`/`data-al-input`, e sostituzione delle foto che non si caricano. |
 | `utils.js` | Funzioni comuni: escape HTML, ID univoci, lettura delle date (anche formato italiano `gg/mm/aaaa`), normalizzazione dei record vecchi (`normalizzaShow`), formattazione importi, voti e durate, link esterni. |
@@ -92,7 +92,7 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
    npm run dist
    ```
    Vengono creati due file in `dist/`:
-   - `PrivateDiary-<versione>-setup.exe`: installer NSIS **per utente** (in `%LOCALAPPDATA%\Programs\Private Diary`, senza permessi di amministratore), con scelta della cartella, collegamenti nel menu Start e sul desktop, in italiano o in inglese secondo la lingua di Windows. Il disinstallatore non tocca i dati (`deleteAppDataOnUninstall: false`).
+   - `PrivateDiary-<versione>-setup.exe`: installer NSIS **per utente** (in `%LOCALAPPDATA%\Programs\Private Diary`, senza permessi di amministratore), con scelta della cartella, collegamenti nel menu Start e sul desktop, nella lingua di Windows se è tra quelle dell'app (`installerLanguages`), altrimenti in inglese. Il disinstallatore non tocca i dati (`deleteAppDataOnUninstall: false`).
    - `PrivateDiary-<versione>-portable.exe`: versione portable. A ogni avvio si estrae sempre nella stessa cartella, `%TEMP%\PrivateDiary` (`portable.unpackDirName`), invece che in una cartella con nome casuale: l'estrazione in cartelle temporanee sempre diverse è uno dei comportamenti che gli antivirus (es. AVG con *IDP.ALEXA*) giudicano sospetti.
 
    L'eseguibile non è firmato digitalmente, quindi SmartScreen e alcuni antivirus possono segnalarlo come sconosciuto: vedi la sezione sugli avvisi antivirus del README. La soluzione definitiva sarebbe un certificato di firma del codice.
@@ -106,15 +106,24 @@ Esegue i test in `tests/` con il test runner integrato di Node (nessuna dipenden
 - **funzioni dell'interfaccia** (`utils.js`, `calcoli.js`, `righe-show.js`, `archivio.js`, parte di `sincronizzazione.js`): date, normalizzazione dei record vecchi, €/min, voti, durate, importi e tipi delle transazioni MCG. I moduli ES di `js/` vengono importati in Node con sostituti minimi di `document` e `localStorage` (`js/package.json` indica a Node che sono moduli ES);
 - **struttura dei moduli** (`moduli.test.js`): ogni nome importato esiste nel modulo di origine, ogni funzione di un altro modulo usata nel codice è importata, ogni azione usata nell'HTML è registrata in `app.js`, e l'HTML non contiene JavaScript inline;
 - **funzioni del processo principale** (`main/connettori/mcg/indirizzi.js`, `main/connettori/mcg/pagine.js`, registro dei connettori);
-- **coerenza dei canali IPC**: ogni canale usato in `preload.js` deve essere definito in `main/canali.js` e avere un gestore registrato (il preload, in sandbox, non può importare `canali.js`).
+- **coerenza dei canali IPC**: ogni canale usato in `preload.js` deve essere definito in `main/canali.js` e avere un gestore registrato (il preload, in sandbox, non può importare `canali.js`);
+- **traduzioni** (`traduzioni.test.js`): ogni lingua di `LINGUE` ha il suo file in `locales/` con le stesse chiavi e gli stessi segnaposto (`{n}`, `{nome}`…) di `it.json`, e compare in entrambi i selettori della lingua di `index.html`.
 
 `npm run dist` esegue automaticamente i test prima della build (`predist`): se un test fallisce, l'eseguibile non viene creato.
+
+### Aggiungere una lingua
+1. Copiare `locales/en.json` in `locales/<codice>.json` e tradurre i testi, lasciando invariati chiavi, segnaposto tra graffe ed emoji. Il nome dell'app resta «Private Diary» (in italiano «Diario Privato»).
+2. Aggiungere la lingua a `LINGUE` in `js/i18n.js` (nome e formato delle date, es. `'de-DE'`) e un `<option>` ai due selettori `selectLingua` e `linguaBenvenuto` di `index.html`.
+3. In `package.json` aggiungere il codice a `build.electronLanguages` (senza, la lingua di Windows non viene riconosciuta al primo avvio) e a `build.nsis.installerLanguages`.
+4. `npm test` segnala chiavi mancanti, segnaposto diversi o selettori incompleti.
+
+Restano solo in italiano i menu della finestra (File, Finestra, ?), le finestre Informazioni e Contatti e i messaggi di avviso (`alert`/`confirm`) scritti direttamente nel codice.
 
 ### Cosa include la build
 La configurazione è nella sezione `build` di `package.json` ed è pensata per tenere l'eseguibile leggero:
 - **Solo i file dell'app**: `files` elenca esplicitamente i file necessari (`main.js`, `preload.js`, pagine, stili, `js/`, `locales/`, `changelog.json`, icona). File di sviluppo come `.vscode/`, `AVVIA.bat`, `docs/`, `tools/` e i README restano fuori. Un nuovo file usato dall'app va aggiunto a questo elenco.
 - **Dipendenze ridotte al necessario**: di Font Awesome vengono inclusi solo il CSS e i font `.woff2`; del font Inter solo i pesi usati (400, 500, 600, 700), senza corsivo e solo in formato `.woff2`.
-- **Lingue di Chromium**: `electronLanguages` mantiene solo italiano e inglese invece di 55 lingue.
+- **Lingue di Chromium**: `electronLanguages` mantiene solo le lingue dell'interfaccia invece di 55 (servono anche a riconoscere la lingua di Windows al primo avvio; per il portoghese sia `pt-BR` sia `pt-PT`). I valori della tabella sono stati misurati con le sole italiano e inglese: ogni lingua in più aggiunge circa 0,5-1 MB.
 
 | | Prima | Dopo |
 | :--- | ---: | ---: |

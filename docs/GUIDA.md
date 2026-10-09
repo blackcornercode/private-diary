@@ -6,7 +6,7 @@ Guida completa di tutte le funzioni dell'app. Per una presentazione rapida vedi 
 
 - **Storicizzazione e Monitoraggio Show**: Registrazione dettagliata di ciascuna sessione con camgirl (data/ora, performer, piattaforma utilizzata, costi, valutazioni e recensioni).
 - **Integrazione Mondo Cam Girls**: Sincronizzazione remota integrata per l'importazione automatica delle transazioni direttamente dall'area clienti web del sito Mondo Cam Girls.
-- **Internazionalizzazione (i18n)**: Supporto nativo multilingua (Italiano 🇮🇹 ed Inglese 🇬🇧) con caricamento dinamico e persistenza della lingua selezionata.
+- **Internazionalizzazione (i18n)**: Supporto nativo multilingua (italiano, inglese, spagnolo, francese, tedesco, portoghese, rumeno e russo) con caricamento dinamico e persistenza della lingua selezionata.
 - **Classifica Automatica Performer**: Elaborazione automatica delle metriche e delle valutazioni delle modella/camgirl in base a frequenza e punteggio medio.
 - **Controllo Finanziario e Budget**: Monitoraggio della spesa mensile con soglie configurabili, avvisi di sforamento e barre di avanzamento grafiche.
 - **Personalizzazione Visiva**: Supporto per temi multipli (*Neve & Nebbia*, *Luce Chiara*, *Eclissi Scura*, *Bordeaux & Oro*) e ridimensionamento dinamico del font.
@@ -17,7 +17,7 @@ Guida completa di tutte le funzioni dell'app. Per una presentazione rapida vedi 
 
 ## 👋 Primo avvio e siti in uso
 
-Diario Privato funziona con **qualsiasi sito di cam**. Al primo avvio, con l'archivio vuoto, una finestra di benvenuto chiede la **lingua** (proposta in base a quella di Windows: italiano se il sistema è in italiano, altrimenti inglese; cambiandola la finestra si traduce subito), **su quali siti acquisti gli show** e qual è il **sito principale** (predefinito per gli show nuovi). La scelta si cambia in qualsiasi momento in **⚙️ Impostazioni › 🌐 Gestisci siti** con la casella accanto alla sigla di ogni sito:
+Diario Privato funziona con **qualsiasi sito di cam**. Al primo avvio, con l'archivio vuoto, una finestra di benvenuto chiede la **lingua** (proposta in base a quella di Windows se è tra le otto disponibili, altrimenti inglese; cambiandola la finestra si traduce subito), **su quali siti acquisti gli show** e qual è il **sito principale** (predefinito per gli show nuovi). La scelta si cambia in qualsiasi momento in **⚙️ Impostazioni › 🌐 Gestisci siti** con la casella accanto alla sigla di ogni sito:
 - nel form compaiono solo i **siti in uso** (più quello dello show che stai modificando); nei filtri anche i siti che hanno già degli show;
 - le funzioni collegate a **Mondo Cam Girls** (indicatore «MCG: Online», sezione *Importa da Mondo Cam Girls* del menu Dati, filtro *Solo online*, badge Online/Sospesa, galleria foto della scheda) compaiono e contattano il sito **solo se Mondo Cam Girls è in uso**; la galleria della scheda solo per le modelle con show su MCG;
 - per gli altri siti lo storico si importa da **CSV** (vedi sotto).
@@ -55,6 +55,7 @@ Scorciatoie: **Ctrl+Invio** salva, **Esc** chiude il form (in modifica equivale 
 - **Sito di provenienza**: ogni show ricorda il sito su cui è stato acquistato; gli show registrati prima dell'introduzione dei siti sono di Mondo Cam Girls. Il sito è distinto dalla *piattaforma* (Teams, Telegram…), che indica dove lo show si è svolto. Vedi anche la [roadmap](ROADMAP.md) verso il supporto completo a più siti.
 - **Spazio per tag e note**: in tutte le tabelle degli show (cronologia, dettaglio del mese, scheda modella) data e ora stanno su due righe e la colonna **Tag e note** prende tutto lo spazio che avanza, quindi le note troncate si leggono molto di più.
 - **Righe compatte**: Modifica (✏️) ed Elimina (🗑️) sono pulsanti a icona; nickname e note lunghi sono troncati con "…" e il testo completo compare al passaggio del mouse. Cliccando su una nota (o premendo Invio quando è selezionata) la si espande per leggerla tutta; un secondo clic la richiude. Se la finestra è stretta, la tabella scorre in orizzontale invece di tagliare le colonne.
+- **Chat con un clic**: sotto la piattaforma compare il nickname. Con **💬** il clic apre direttamente la chat: su Telegram con lo username, su Teams solo se il nickname è l'**email** della modella (Teams non permette di aprire una chat partendo dallo username). Con **📋** (username di Teams) il clic copia il nome negli appunti e apre Teams, dove va incollato nella ricerca o nel campo «A:» della nuova chat. Nel form, scegliendo Teams e scrivendo uno username, una nota sotto il nickname ricorda che con l'email la chat si apre direttamente.
 - **Selezione multipla**: una casella all'inizio di ogni riga seleziona lo show; quella nell'intestazione seleziona l'intera pagina. La selezione resta valida cambiando pagina, ordine o filtri. Con almeno uno show selezionato compare una barra con il conteggio (e quanti selezionati sono nascosti dai filtri attuali) e i pulsanti:
   - **Seleziona tutti i risultati**: tutti gli show che passano i filtri, anche nelle altre pagine.
   - **✏️ Modifica selezionati**: **sito**, piattaforma, voto, recensione, durata e nickname impostati in un colpo solo; i campi lasciati su «non modificare» restano invariati. Come nel form, piattaforma e voto non vengono applicati ai regali.
@@ -130,7 +131,7 @@ L'intestazione mostra l'indicatore di raggiungibilità di Mondo Cam Girls; le fu
 
 I menu si chiudono con un clic fuori o con `Esc`.
 
-- **🌍 Selezione Lingua (i18n)**: Switch istantaneo tra Italiano (`it`) e Inglese (`en`), dal menu Impostazioni.
+- **🌍 Selezione Lingua (i18n)**: Switch istantaneo, dal menu Impostazioni, tra italiano (`it`), inglese (`en`), spagnolo (`es`), francese (`fr`), tedesco (`de`), portoghese brasiliano (`pt`), rumeno (`ro`) e russo (`ru`). Anche i giorni della settimana, gli orari nei tooltip e le cifre del grafico seguono la lingua scelta; le date restano nel formato gg/mm/aaaa.
 - **🔄 Sincronizzazione Automatica MCG**: Scarica e importa in automatico le transazioni dal profilo Mondo Cam Girls non ancora registrate localmente.
   - **Anti-duplicato**: una transazione è considerata già salvata se esiste uno show con la stessa modella e la stessa data/ora (al minuto). Se nella pagina ci sono più transazioni con la stessa modella nello stesso minuto, vengono importate tutte quelle non ancora presenti.
   - Le righe della tabella senza una data valida (intestazioni, totali) vengono ignorate.

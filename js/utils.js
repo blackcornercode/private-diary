@@ -6,6 +6,9 @@ import { SITO_MCG } from './siti.js';
 /* ==========================================================================
    UTILITIES ED HELPER
    ========================================================================== */
+// Link che apre direttamente la chat con la modella, o null se la piattaforma non lo
+// permette. Teams apre una chat solo con l'email dell'account (non con lo username:
+// per quello c'è copiaEApriTeams); Skype è stato chiuso, Zoom non ha link alle chat.
 export function generaLinkChat(piattaforma, nickname) {
     if (!nickname) return null;
     const nick = nickname.trim().replace(/^@/, '');
@@ -14,15 +17,34 @@ export function generaLinkChat(piattaforma, nickname) {
         case 'Telegram':
             return `https://t.me/${nick}`;
         case 'Teams':
-            if (nick.includes('@')) {
-                return `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(nick)}`;
-            }
-            return `https://teams.microsoft.com/l/call/0/0?with=${encodeURIComponent(nick)}`;
-        case 'Skype':
-        case 'Altro':
+            return eEmailTeams(nick) ? `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(nick)}` : null;
         default:
             return null;
     }
+}
+
+const eEmailTeams = (nick) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nick);
+
+// Nickname di Teams che non è un'email: il clic non può aprire la chat, solo
+// copiare il nome e aprire Teams (form-assistito.js suggerisce di usare l'email)
+export function eUsernameTeams(piattaforma, nickname) {
+    const nick = String(nickname || '').trim();
+    return piattaforma === 'Teams' && Boolean(nick) && !eEmailTeams(nick.replace(/^@/, ''));
+}
+
+// Copia lo username negli appunti e apre Teams sulla nuova chat, dove va cercato
+export async function copiaEApriTeams(nickname) {
+    const nick = String(nickname || '').trim().replace(/^@/, '');
+    if (!nick) return;
+    let copiato = true;
+    try {
+        await navigator.clipboard.writeText(nick);
+    } catch (err) {
+        copiato = false;
+        logger.warn('Nickname non copiato negli appunti', err?.message);
+    }
+    apriLinkEsterno('https://teams.microsoft.com/l/chat/0/0');
+    alert(t(copiato ? 'chat.teams_copied' : 'chat.teams_not_copied').replace('{nick}', nick));
 }
 
 export function escapeHtml(str) {
@@ -222,22 +244,6 @@ export function formattaDurata(minuti) {
 // clic su href="#" lo fa l'azione "apri-link" registrata in app.js.
 export function apriLinkEsterno(url) {
     if (!url) return;
-
-    if (url.includes('teams.microsoft.com/l/call/')) {
-        try {
-            const urlObj = new URL(url);
-            const nickname = urlObj.searchParams.get('with');
-
-            if (nickname) {
-                navigator.clipboard.writeText(nickname).then(() => {
-                    alert(`📋 Nickname "${nickname}" copiato negli appunti!\n\nSi sta aprendo Teams: incolla il nome nella barra di ricerca in alto.`);
-                }).catch(() => {});
-            }
-        } catch (e) {
-            logger.error("URL Teams non valido", e);
-        }
-    }
-
     if (window.electronAPI && window.electronAPI.openExternal) {
         window.electronAPI.openExternal(url);
     } else {

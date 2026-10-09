@@ -140,7 +140,7 @@ test('tasto rapido per nascondere l\'app: combinazione dal tasto premuto e combi
     assert.equal(p.tastoRapido(), p.TASTO_RAPIDO_PREDEFINITO);
 });
 
-test('lingua del primo avvio: italiano se il sistema è in italiano, altrimenti inglese', async () => {
+test('lingua del primo avvio: quella del sistema se tradotta, altrimenti inglese', async () => {
     const { linguaDiSistema } = await import('../js/i18n.js');
     const originale = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
     const prova = (lingua) => { Object.defineProperty(globalThis, 'navigator', { value: { language: lingua }, configurable: true }); return linguaDiSistema(); };
@@ -148,9 +148,31 @@ test('lingua del primo avvio: italiano se il sistema è in italiano, altrimenti 
         assert.equal(prova('it-IT'), 'it');
         assert.equal(prova('it'), 'it');
         assert.equal(prova('en-US'), 'en');
-        assert.equal(prova('de-DE'), 'en', 'lingue non tradotte: inglese');
+        assert.equal(prova('de-DE'), 'de');
+        assert.equal(prova('pt-BR'), 'pt');
+        assert.equal(prova('pt-PT'), 'pt');
+        assert.equal(prova('ro'), 'ro');
+        assert.equal(prova('ru-RU'), 'ru');
+        assert.equal(prova('es-419'), 'es');
+        assert.equal(prova('fr-CA'), 'fr');
+        assert.equal(prova('ja-JP'), 'en', 'lingue non tradotte: inglese');
         assert.equal(prova(undefined), 'en');
     } finally {
         if (originale) Object.defineProperty(globalThis, 'navigator', originale);
     }
+});
+
+test('link della chat: Teams apre la chat solo con l\'email, lo username si copia', () => {
+    assert.equal(f.generaLinkChat('Teams', 'anna@example.com'), 'https://teams.microsoft.com/l/chat/0/0?users=anna%40example.com');
+    assert.equal(f.generaLinkChat('Teams', 'AnnaRossi'), null);
+    assert.equal(f.generaLinkChat('Teams', '@AnnaRossi'), null);
+    assert.equal(f.generaLinkChat('Telegram', '@anna_r'), 'https://t.me/anna_r');
+    assert.equal(f.generaLinkChat('Skype', 'anna'), null);
+    assert.equal(f.generaLinkChat('Teams', ''), null);
+
+    assert.equal(f.eUsernameTeams('Teams', 'AnnaRossi'), true);
+    assert.equal(f.eUsernameTeams('Teams', '@AnnaRossi'), true);
+    assert.equal(f.eUsernameTeams('Teams', 'anna@example.com'), false);
+    assert.equal(f.eUsernameTeams('Teams', '  '), false);
+    assert.equal(f.eUsernameTeams('Telegram', 'AnnaRossi'), false);
 });

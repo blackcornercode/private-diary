@@ -1,5 +1,5 @@
 import { spesaPerAnno, spesaPerSito } from './calcoli.js';
-import { t } from './i18n.js';
+import { t, localeCorrente } from './i18n.js';
 import { sitoDaId, siglaSito } from './siti.js';
 import { COLORI_TAG } from './tag.js';
 import { escapeHtml, formattaCostoAlMinuto } from './utils.js';
@@ -33,7 +33,7 @@ export function impostaVistaGraficoSpesa(vista) {
     } catch { /* preferenza non salvata: resta la vista predefinita */ }
 }
 
-const euro = (valore) => `€ ${Math.round(valore).toLocaleString('it-IT')}`;
+const euro = (valore) => `€ ${Math.round(valore).toLocaleString(localeCorrente())}`;
 
 // Valore "tondo" per la scala verticale (1, 2, 2.5, 5 × 10^n), almeno pari a massimo
 function scalaTonda(massimo) {

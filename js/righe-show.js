@@ -3,7 +3,7 @@ import { t, localeCorrente } from './i18n.js';
 import { badgeSitoShow } from './gestione-siti.js';
 import { stato, iconePiattaformaHTML } from './stato.js';
 import { tagDelloShow, etichettaTag } from './tag.js';
-import { generaLinkChat, escapeHtml, cellaCosto, costoAlMinuto, cellaNote, formattaCostoAlMinuto, formattaVoto, formattaDurata } from './utils.js';
+import { generaLinkChat, eUsernameTeams, escapeHtml, cellaCosto, costoAlMinuto, cellaNote, formattaCostoAlMinuto, formattaVoto, formattaDurata } from './utils.js';
 
 /* ==========================================================================
    RIGHE DEGLI SHOW (disegnatore unico)
@@ -26,9 +26,12 @@ export function getPiattaformaFormatted(show) {
         // I nickname sono spesso email lunghe: troncati con "…", completi nel tooltip
         const nick = escapeHtml(show.nickname);
         const urlChat = generaLinkChat(nomePiattaforma, show.nickname);
+        // 💬 apre la chat; 📋 (username di Teams) copia il nome e apre Teams, dove va cercato
         const nickHtml = urlChat
-            ? `<a href="#" class="link-web nick-troncato nick-chat" title="${nick}" data-azione="apri-link" data-url="${escapeHtml(urlChat)}">💬 ${nick}</a>`
-            : `<small class="nick-troncato" title="${nick}">${nick}</small>`;
+            ? `<a href="#" class="link-web nick-troncato nick-chat" title="${escapeHtml(t('chat.open').replace('{nick}', show.nickname))}" data-azione="apri-link" data-url="${escapeHtml(urlChat)}">💬 ${nick}</a>`
+            : eUsernameTeams(nomePiattaforma, show.nickname)
+                ? `<a href="#" class="link-web nick-troncato nick-chat" title="${escapeHtml(t('chat.teams_copy_hint').replace('{nick}', show.nickname))}" data-azione="copia-apri-teams" data-nick="${nick}">📋 ${nick}</a>`
+                : `<small class="nick-troncato" title="${nick}">${nick}</small>`;
         return `<div class="piattaforma-con-nick">
             <span>${iconaHtml}</span>
             ${nickHtml}

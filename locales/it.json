@@ -108,7 +108,8 @@
     "enter_in_currency": "inserisci in {valuta}",
     "shortcut_save": "salva",
     "shortcut_close": "chiude",
-    "key_enter": "Invio"
+    "key_enter": "Invio",
+    "teams_email_hint": "Con l'email della modella su Teams, un clic sul nickname apre direttamente la chat; con lo username il clic lo copia e apre Teams, dove va cercato."
   },
   "options": {
     "other": "Altro",
@@ -447,5 +448,11 @@
     "same_model": "È la stessa modella.",
     "note": "Ogni show ricorda il nome con cui è stato acquistato: la sincronizzazione con Mondo Cam Girls riconosce gli show già importati e assegna quelli nuovi alla modella giusta.",
     "confirm": "Conferma"
+  },
+  "chat": {
+    "open": "Apri la chat con {nick}",
+    "teams_copy_hint": "{nick}: clic per copiare il nome e aprire Teams, poi incollalo nella ricerca (con l'email si apre direttamente la chat)",
+    "teams_copied": "📋 «{nick}» copiato negli appunti.\n\nSi sta aprendo Teams: incolla il nome nella barra di ricerca in alto o nel campo «A:» della nuova chat.",
+    "teams_not_copied": "Non è stato possibile copiare «{nick}» negli appunti.\n\nSi sta aprendo Teams: cerca il nome nella barra di ricerca in alto."
   }
 }

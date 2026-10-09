@@ -28,12 +28,14 @@ L'eseguibile non ha una firma digitale e, essendo nuovo, non ha ancora una «rep
 - Al primo avvio, con l'archivio vuoto, una finestra di benvenuto chiede la lingua (proposta in base a quella di Windows), su quali siti acquisti gli show e qual è il sito principale
 - Modelle su più siti: la scheda mostra il profilo della modella su ogni sito e una tabella con show, spesa, €/min e voti per sito; nel form l'indirizzo del profilo segue il sito scelto
 - Unisci / Separa nella scheda della modella: unisci gli show registrati con un altro nome (la stessa modella su un altro sito) o separa gli show di un sito quando lo stesso nome indica persone diverse. La sincronizzazione con Mondo Cam Girls ricorda il nome originale e non crea doppioni
+- Interfaccia anche in spagnolo, francese, tedesco, portoghese (Brasile), rumeno e russo, oltre a italiano e inglese; al primo avvio viene proposta la lingua di Windows se è tra queste, e anche l'installer parla la lingua del sistema
 
 ## 🎨 Interfaccia
 
 - Form Aggiungi / Modifica show più leggibile: quattro sezioni con un titolo (Chi e quando, Lo show, Com'è andata, Tag e note), modella, sito e data sulla stessa riga, durata in una barra unica, costo al minuto in evidenza, voti, siti e tag con un contorno ben visibile finché non sono scelti, recensione con un interruttore, sezione Dettagli in un riquadro ben visibile con il riepilogo a pillole, barra dei pulsanti sempre visibile e, in modifica, una striscia che ricorda quale show stai modificando
 - Sui siti che fanno pagare in token o in un'altra valuta il campo principale del costo è l'importo pagato, con l'equivalente in euro accanto; «inserisci in euro» permette di scrivere direttamente il costo in euro
 - Sotto il titolo dell'app un sottotitolo riassume in una riga a cosa serve
+- Il nickname di Teams indica cosa fa il clic: 💬 apre direttamente la chat (con l'email della modella), 📋 copia lo username e apre Teams per cercarlo; nel form una nota suggerisce di usare l'email per aprire la chat con un clic
 - Testi generici al posto dei riferimenti a Mondo Cam Girls fuori dalla sua sezione (nome del tema Bordeaux & Oro, finestra Informazioni)
 - Al primo avvio dopo l'installazione non compare la finestra delle novità, ma solo il benvenuto
 

@@ -1,4 +1,4 @@
-import { t } from './i18n.js';
+import { t, localeCorrente } from './i18n.js';
 import { logger } from './logger.js';
 import { stato } from './stato.js';
 import { escapeHtml } from './utils.js';
@@ -28,7 +28,7 @@ export function eModellaOnline(nome) {
 // Badge "Online" da mettere accanto al nome; stringa vuota se non è online
 export function badgeOnline(nome) {
     if (eModellaOnline(nome) !== true) return '';
-    const ora = oraAggiornamentoOnline ? oraAggiornamentoOnline.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '';
+    const ora = oraAggiornamentoOnline ? oraAggiornamentoOnline.toLocaleTimeString(localeCorrente(), { hour: '2-digit', minute: '2-digit' }) : '';
     const titolo = t('online.tooltip').replace('{ora}', ora);
     return ` <span class="badge-online" title="${escapeHtml(titolo)}">${escapeHtml(t('online.badge'))}</span>`;
 }

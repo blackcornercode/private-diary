@@ -27,7 +27,7 @@
 - 📊 **Budget and charts**: monthly budget with OK/KO badge, spending chart by month or by year, monthly breakdown.
 - 🔄 **Mondo Cam Girls sync**: imports your transactions (refunds included) with your own login, shows who is **online**, flags **suspended** or **removed** profiles.
 - 🔒 **Privacy first**: PIN lock with auto-lock, blurred photos, neutral window name and icon ("Agenda"), a customisable hotkey to hide the app instantly.
-- 🎨 **Four themes**, including *Burgundy & Gold* inspired by mondocamgirls.com, adjustable text size, Italian and English interface.
+- 🎨 **Four themes**, including *Burgundy & Gold* inspired by mondocamgirls.com, adjustable text size, interface in Italian, English, Spanish, French, German, Portuguese, Romanian and Russian.
 - 💾 **Your data stays with you**: everything is stored locally, with atomic saves, automatic backup copies and JSON export/import.
 
 ## 📸 Screenshots
