@@ -128,7 +128,9 @@
     "results": "risultati",
     "all": "Tutti",
     "reset": "Reset Filtri",
-    "no_years": "Nessun anno disponibile"
+    "no_years": "Nessun anno disponibile",
+    "footer_count": "{n} show",
+    "footer_totals": "durata · costo · €/min medi"
   },
   "selection": {
     "select_page": "Seleziona tutti gli show della pagina",
@@ -387,7 +389,9 @@
     "actions": "Azioni",
     "open_model": "Apri la scheda della modella",
     "select": "Seleziona",
-    "tags_notes": "Tag e note"
+    "tags_notes": "Tag e note",
+    "edit": "Modifica",
+    "delete": "Elimina"
   },
   "modal": {
     "gallery": "🖼️ Galleria Foto Profilo",

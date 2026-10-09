@@ -69,6 +69,12 @@ export function impostaPiattaformaCustom(valorePiattaforma) {
     }
 }
 
+// Ultimi valori scritti dall'autocompilazione in profilo, foto e nickname. Il nome
+// si scrive lettera per lettera: passando da "Anna" (già in archivio) ad "Annabella"
+// i dati di Anna restavano nei campi e finivano nello show di Annabella. Un campo
+// che contiene ancora il valore automatico segue il nome; uno scritto a mano resta.
+const autocompilati = {};
+
 export function autocompilaDatiModella() {
     aggiornaMiniScheda();
     const editIdInput = document.getElementById('editId');
@@ -78,33 +84,22 @@ export function autocompilaDatiModella() {
     if (!inputNome) return;
 
     const nomeInserito = inputNome.value.trim().toLowerCase();
-    if (!nomeInserito) return;
+    const modellaTrovata = nomeInserito ? stato.elencoModelleUniche.find(m => m.nome.toLowerCase() === nomeInserito) : null;
 
-    const modellaTrovata = stato.elencoModelleUniche.find(m => m.nome.toLowerCase() === nomeInserito);
+    const valori = {
+        // Profilo della modella sul sito scelto nel form (una modella può averne uno per sito)
+        urlProfilo: nomeInserito ? urlProfiloSulSito(nomeInserito, sitoSceltoForm()) : '',
+        immagine: modellaTrovata?.immagine || '',
+        nickname: modellaTrovata?.nickname || ''
+    };
+    Object.entries(valori).forEach(([id, valore]) => {
+        const campo = document.getElementById(id);
+        if (!campo || (campo.value && campo.value !== autocompilati[id])) return;
+        campo.value = valore;
+        autocompilati[id] = valore;
+    });
 
-    const inputImmagine = document.getElementById('immagine');
-    const inputUrlProfilo = document.getElementById('urlProfilo');
-    const inputNickname = document.getElementById('nickname');
-
-    // Profilo della modella sul sito scelto nel form (una modella può averne uno per sito)
-    const urlSulSito = urlProfiloSulSito(nomeInserito, sitoSceltoForm());
-    if (urlSulSito && inputUrlProfilo) inputUrlProfilo.value = urlSulSito;
-
-    if (modellaTrovata) {
-        if (modellaTrovata.immagine && inputImmagine) {
-            inputImmagine.value = modellaTrovata.immagine;
-        }
-        if (modellaTrovata.nickname && inputNickname) {
-            inputNickname.value = modellaTrovata.nickname;
-        }
-        if (modellaTrovata.piattaforma) {
-            impostaPiattaformaCustom(modellaTrovata.piattaforma);
-        }
-    } else {
-        if (stato.mappaImmaginiModelle[nomeInserito] && inputImmagine) {
-            inputImmagine.value = stato.mappaImmaginiModelle[nomeInserito];
-        }
-    }
+    if (modellaTrovata?.piattaforma) impostaPiattaformaCustom(modellaTrovata.piattaforma);
     aggiornaRiepilogoDettagli();
 }
 
@@ -117,6 +112,7 @@ function aggiornaUrlProfiloPerSito() {
     const profiliNoti = Object.values(stato.mappaUrlPerSito[nome.toLowerCase()] || {});
     if (inputUrlProfilo.value && !profiliNoti.includes(inputUrlProfilo.value)) return;   // scritto a mano
     inputUrlProfilo.value = urlProfiloSulSito(nome, sitoSceltoForm());
+    autocompilati.urlProfilo = inputUrlProfilo.value;
     aggiornaRiepilogoDettagli();
 }
 

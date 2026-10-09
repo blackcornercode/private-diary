@@ -36,7 +36,7 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
 | Modulo | Contenuto |
 | :--- | :--- |
 | `logger.js` | Log a console, a file e nel pannello log. |
-| `i18n.js` | Caricamento lingue e funzione `t()`. |
+| `i18n.js` | Caricamento lingue, funzione `t()` e `localeCorrente()` per le date formattate nella lingua dell'interfaccia. |
 | `stato.js` | Stato condiviso: l'oggetto `stato` (archivio in memoria, filtri, pagina corrente, classifica…). |
 | `azioni.js` | Esecuzione delle azioni dichiarate negli attributi `data-azione`/`data-al-cambio`/`data-al-input`, e sostituzione delle foto che non si caricano. |
 | `utils.js` | Funzioni comuni: escape HTML, ID univoci, lettura delle date (anche formato italiano `gg/mm/aaaa`), normalizzazione dei record vecchi (`normalizzaShow`), formattazione importi, voti e durate, link esterni. |

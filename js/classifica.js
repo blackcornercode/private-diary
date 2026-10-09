@@ -75,7 +75,7 @@ export function mostraClassifica(lista) {
             : `<div class="no-img">${escapeHtml(t('table.no_photo'))}</div>`;
 
         const linkWebHtml = item.urlProfilo
-            ? `<a href="#" class="link-web link-profilo" title="Profilo Web" aria-label="Profilo Web" data-azione="apri-link" data-url="${escapeHtml(item.urlProfilo)}">🌐</a>`
+            ? `<a href="#" class="link-web link-profilo" title="${escapeHtml(t('table.website'))}" aria-label="${escapeHtml(t('table.website'))}" data-azione="apri-link" data-url="${escapeHtml(item.urlProfilo)}">🌐</a>`
             : `-`;
 
         // Stesso formato della cronologia: piattaforma e, sotto, il nickname

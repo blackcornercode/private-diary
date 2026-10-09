@@ -151,6 +151,7 @@ export async function apriModalModella(nomeModella) {
     const sezioneGalleria = document.getElementById('sezioneGalleriaModella');
     if (sezioneGalleria) sezioneGalleria.hidden = !sitoGalleria;
     if (sitoGalleria) caricaFotoDinamicheModella(nomeModella, urlModelleDelSito(sitoGalleria), sitoGalleria);
+    else richiestaFoto++;   // le foto ancora in arrivo per la scheda precedente non servono più
 
     const intestazione = document.getElementById('intestazioneScheda');
     if (intestazione) intestazione.innerHTML = intestazioneShow(COLONNE_SCHEDA);
@@ -179,10 +180,15 @@ export function aggiornaBadgeSchedaModella() {
     span.innerHTML = badgeOnline(modal.dataset.nomeModella) + badgeSospesa(modal.dataset.nomeModella);
 }
 
+// Numero dell'ultima richiesta di foto: aprendo in fretta due schede, le foto della
+// prima (più lente) finivano nella galleria della seconda
+let richiestaFoto = 0;
+
 // L'indirizzo dedotto dal nome vale per MCG, l'unico connettore che offre le foto
 export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl, sito = SITO_MCG) {
     const contenitoreFoto = document.getElementById('contenitoreFotoDinamiche');
     if (!contenitoreFoto) return;
+    const richiesta = ++richiestaFoto;
 
     contenitoreFoto.innerHTML = `<span class="galleria-messaggio">${escapeHtml(t('modal.loading_photos_mcg'))}</span>`;
 
@@ -191,9 +197,16 @@ export async function caricaFotoDinamicheModella(nomeChiave, mappaUrl, sito = SI
     let targetUrlFoto = `${profileUrl}/?pag=0#mp-foto`;
 
     if (window.electronAPI?.fotoModella) {
-        const result = await window.electronAPI.fotoModella(sito, profileUrl);
+        let result;
+        try {
+            result = await window.electronAPI.fotoModella(sito, profileUrl);
+        } catch {
+            // Senza risposta la galleria restava su "Caricamento..." per sempre
+            result = { success: false };
+        }
+        if (richiesta !== richiestaFoto) return;
 
-        if (result.success && result.images && result.images.length > 0) {
+        if (result?.success && result.images && result.images.length > 0) {
             contenitoreFoto.innerHTML = '';
             result.images.forEach((imgUrl, index) => {
                 const img = document.createElement('img');

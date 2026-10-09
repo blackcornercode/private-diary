@@ -7,6 +7,9 @@ export let traduzioniCorrenti = {};
 export const linguaDiSistema = () => (String(globalThis.navigator?.language || '').toLowerCase().startsWith('it') ? 'it' : 'en');
 export let linguaCorrente = localStorage.getItem('appLang') || linguaDiSistema();
 
+// Formato di date e giorni della settimana mostrati nell'interfaccia (es. "lun" / "Mon")
+export const localeCorrente = () => (linguaCorrente === 'it' ? 'it-IT' : 'en-GB');
+
 // Carica il file JSON della lingua
 export async function caricaLingua(lang) {
     try {

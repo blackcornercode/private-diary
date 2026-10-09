@@ -33,6 +33,13 @@ export function inizializzaFiltroAnni(shows) {
     }
 
     const anni = anniDisponibili(shows);
+    // Un anno scelto che non ha più show (es. eliminati tutti) resterebbe nel filtro
+    // senza una casella da togliere, e la cronologia sembrerebbe vuota
+    const sceltiValidi = [...stato.anniSelezionati].filter(anno => anni.includes(anno));
+    if (sceltiValidi.length !== stato.anniSelezionati.size) {
+        stato.anniSelezionati = new Set(sceltiValidi);
+        localStorage.setItem('anniSelezionatiFiltro', JSON.stringify(sceltiValidi));
+    }
     if (anni.length === 0) {
         container.innerHTML = `<span class="filtro-anni-vuoto">${t('history.no_years')}</span>`;
         return;
@@ -184,9 +191,10 @@ function aggiornaPiedeCronologia(elementi, totFiltrati, totalePagine, mostraTutt
     const costoTot  = elementi.reduce((s, show) => s + (parseFloat(show.costo) || 0), 0);
     const mediaMin  = costoMedioAlMinuto(elementi);
 
+    const conteggio = t('history.footer_count').replace('{n}', totFiltrati);
     const labelPagina = mostraTutti
-        ? `${totFiltrati} show`
-        : `${t('pagination.page_of').replace('{page}', stato.paginaCorrente).replace('{total}', totalePagine)} · ${totFiltrati} show`;
+        ? conteggio
+        : `${t('pagination.page_of').replace('{page}', stato.paginaCorrente).replace('{total}', totalePagine)} · ${conteggio}`;
 
     const colSpanSx = COLONNE_CRONOLOGIA.indexOf('durata');   // celle prima di durata
     const durHTML   = minutiTot > 0 ? `<strong>${formattaTempo(minutiTot)}</strong>` : '–';
@@ -201,6 +209,6 @@ function aggiornaPiedeCronologia(elementi, totFiltrati, totalePagine, mostraTutt
         <td class="col-centro">${durHTML}</td>
         <td>${costoHTML}</td>
         <td class="col-centro">${medHTML}</td>
-        <td colspan="${colSpanDx}" class="piede-etichetta">durata · costo · €/min medi</td>
+        <td colspan="${colSpanDx}" class="piede-etichetta">${t('history.footer_totals')}</td>
     </tr>`;
 }

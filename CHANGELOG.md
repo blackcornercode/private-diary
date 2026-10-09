@@ -29,6 +29,11 @@ Generato da `changelog.json` con `npm run changelog`: per modificarlo, modificar
 ### 🐛 Correzioni
 
 - «Nessun anno disponibile» nel filtro per anno restava in italiano con l'interfaccia in inglese
+- Scrivendo nel form il nome di una modella nuova che inizia come quello di una già registrata (es. «Annabella» dopo «Anna»), profilo, foto e nickname della prima restavano nei Dettagli e venivano salvati nello show; ora i valori compilati da soli seguono il nome, quelli scritti a mano restano
+- Eliminando tutti gli show dell'anno scelto nel filtro, la cronologia restava vuota senza nessuna casella da togliere; ora l'anno esce da solo dal filtro
+- Aprendo di seguito le schede di due modelle, la galleria della seconda poteva mostrare le foto della prima; se il recupero delle foto falliva restava «Caricamento…» per sempre
+- Nella mini-scheda del form la data dell'ultimo show importato da Mondo Cam Girls compariva tagliata (es. «02/10/26 1»)
+- Con l'interfaccia in inglese restavano in italiano la riga dei totali sotto la cronologia, il giorno della settimana accanto alla data e i tooltip di Modifica, Elimina, foto e profilo web
 
 ### 🛠️ Tecnico
 

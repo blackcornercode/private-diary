@@ -146,7 +146,8 @@ export function aggiornaMiniScheda() {
         : `<div class="no-img mini-scheda-foto">${escapeHtml(t('table.no_photo'))}</div>`;
     const media = schedaCorrente.mediaTxt !== 'N/D' ? `${schedaCorrente.mediaTxt} / 5` : 'N/D';
     const ultimoHtml = ultimo ? escapeHtml(t('form.mini_last')
-        .replace('{data}', (ultimo.dataFormattata || '').slice(0, 10))
+        // Solo il giorno: per gli show importati da MCG ("02/10/26 18:17") slice(0, 10) dava "02/10/26 1"
+        .replace('{data}', (ultimo.dataFormattata || '').split(' ')[0])
         .replace('{costo}', euro(ultimo.costo || 0))
         .replace('{durata}', ultimo.durata ? `${ultimo.durata} min` : '–')
         .replace('{piattaforma}', ultimo.piattaforma || '–')) : '';

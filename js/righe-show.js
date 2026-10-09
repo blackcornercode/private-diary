@@ -1,5 +1,5 @@
 import { chiaveModella } from './calcoli.js';
-import { t } from './i18n.js';
+import { t, localeCorrente } from './i18n.js';
 import { badgeSitoShow } from './gestione-siti.js';
 import { stato, iconePiattaformaHTML } from './stato.js';
 import { tagDelloShow, etichettaTag } from './tag.js';
@@ -43,7 +43,7 @@ export function cellaFoto(show) {
     const testoSenzaFoto = escapeHtml(t('table.no_photo'));
     if (!fotoUrl) return `<td><div class="no-img">${testoSenzaFoto}</div></td>`;
     // data-sostituto: se l'immagine non si carica viene sostituita dal riquadro "No Foto" (azioni.js)
-    return `<td><img src="${escapeHtml(fotoUrl)}" class="thumb-img cliccabile" alt="foto" title="Clicca per ingrandire"
+    return `<td><img src="${escapeHtml(fotoUrl)}" class="thumb-img cliccabile" alt="foto" title="${escapeHtml(t('modal.click_to_enlarge'))}"
         data-azione="ingrandisci-foto" data-url="${escapeHtml(fotoUrl)}" data-sostituto="${testoSenzaFoto}"></td>`;
 }
 
@@ -70,7 +70,7 @@ export function cellaTagNote(show) {
 function cellaData(show) {
     const [giorno, ora = ''] = String(show.dataFormattata || '').split(' ');
     const d = show.dataOraISO ? new Date(show.dataOraISO) : null;
-    const dow = d && !isNaN(d) ? d.toLocaleDateString('it-IT', { weekday: 'short' }) : '';
+    const dow = d && !isNaN(d) ? d.toLocaleDateString(localeCorrente(), { weekday: 'short' }) : '';
     return `<td class="col-data">${dow ? `<span class="data-dow">${escapeHtml(dow)}</span>` : ''}<span class="data-giorno">${escapeHtml(giorno)}</span><span class="data-ora">${escapeHtml(ora)} ${badgeSitoShow(show)}</span></td>`;
 }
 
@@ -100,8 +100,8 @@ export const COLONNE_SHOW = {
     note:          ['table.tags_notes', 'col-note', cellaTagNote],
     azioni:        ['table.actions', '', s => `<td class="col-azioni">
                         <button class="btn-scheda" title="${escapeHtml(t('table.open_model'))}" aria-label="${escapeHtml(t('table.open_model'))}" data-azione="apri-scheda-modella" data-nome="${escapeHtml(s.nome)}"><i class="fa-solid fa-user"></i></button>
-                        <button class="btn-edit" title="Modifica" aria-label="Modifica" data-azione="modifica-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-delete" title="Elimina" aria-label="Elimina" data-azione="elimina-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn-edit" title="${escapeHtml(t('table.edit'))}" aria-label="${escapeHtml(t('table.edit'))}" data-azione="modifica-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-delete" title="${escapeHtml(t('table.delete'))}" aria-label="${escapeHtml(t('table.delete'))}" data-azione="elimina-show" data-id="${escapeHtml(s.id)}"><i class="fa-solid fa-trash"></i></button>
                     </td>`]
 };
 

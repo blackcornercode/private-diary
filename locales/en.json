@@ -93,7 +93,7 @@
     "amount_in": "{valuta} paid",
     "verify_rate": "check the rate on Google",
     "verify_rate_hint": "Opens Google with the current exchange rate: compare it with the site's rate",
-    "amount_rate":"1 {unita} = {tasso} on {sito}",
+    "amount_rate": "1 {unita} = {tasso} on {sito}",
     "title_edit": "📹 Edit show",
     "editing": "✏️ You are editing the show of {data} with {nome}",
     "section_who": "Who and when",
@@ -128,7 +128,9 @@
     "results": "results",
     "all": "All",
     "reset": "Reset Filters",
-    "no_years": "No years available"
+    "no_years": "No years available",
+    "footer_count": "{n} shows",
+    "footer_totals": "duration · cost · avg €/min"
   },
   "selection": {
     "select_page": "Select all shows on this page",
@@ -387,7 +389,9 @@
     "actions": "Actions",
     "open_model": "Open the model's profile",
     "select": "Select",
-    "tags_notes": "Tags & notes"
+    "tags_notes": "Tags & notes",
+    "edit": "Edit",
+    "delete": "Delete"
   },
   "modal": {
     "gallery": "🖼️ Profile Photo Gallery",

@@ -18,7 +18,12 @@
     "Tecnico: primo passo verso il supporto a più siti di cam (docs/ROADMAP.md, fase 1): ogni show ricorda il sito di provenienza (per gli show esistenti Mondo Cam Girls) e da quale sito è stato importato; nuovo catalogo dei siti incluso nel backup (formato versione 2, i backup precedenti restano importabili)",
     "Tecnico: all'avvio della 2.0 una copia dell'archivio delle versioni precedenti viene salvata in shows_data.prima-2.0.json prima della conversione al nuovo formato",
     "Tecnico: il codice che contatta Mondo Cam Girls diventa il primo «connettore» (docs/ROADMAP.md, fase 3): ogni sito dichiara le funzioni che offre (importazione, modelle online, profili sospesi, foto, raggiungibilità) e badge, galleria e indicatore compaiono solo per i siti che le supportano. Nessun cambiamento per chi usa Mondo Cam Girls",
-    "Fix: «Nessun anno disponibile» nel filtro per anno restava in italiano con l'interfaccia in inglese"
+    "Fix: «Nessun anno disponibile» nel filtro per anno restava in italiano con l'interfaccia in inglese",
+    "Fix: scrivendo nel form il nome di una modella nuova che inizia come quello di una già registrata (es. «Annabella» dopo «Anna»), profilo, foto e nickname della prima restavano nei Dettagli e venivano salvati nello show; ora i valori compilati da soli seguono il nome, quelli scritti a mano restano",
+    "Fix: eliminando tutti gli show dell'anno scelto nel filtro, la cronologia restava vuota senza nessuna casella da togliere; ora l'anno esce da solo dal filtro",
+    "Fix: aprendo di seguito le schede di due modelle, la galleria della seconda poteva mostrare le foto della prima; se il recupero delle foto falliva restava «Caricamento…» per sempre",
+    "Fix: nella mini-scheda del form la data dell'ultimo show importato da Mondo Cam Girls compariva tagliata (es. «02/10/26 1»)",
+    "Fix: con l'interfaccia in inglese restavano in italiano la riga dei totali sotto la cronologia, il giorno della settimana accanto alla data e i tooltip di Modifica, Elimina, foto e profilo web"
   ],
   "1.12.3": [
     "Interfaccia: Sincronizza MCG e Cronologia completa MCG sono nel menu Dati, in una sezione evidenziata «Importa da Mondo Cam Girls», con una descrizione sotto ogni voce e un tooltip che spiega la differenza; il pulsante Sincronizza MCG non è più nell'intestazione",
