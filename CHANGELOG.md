@@ -17,7 +17,7 @@ Generato da `changelog.json` con `npm run changelog`: per modificarlo, modificar
 - Al primo avvio, con l'archivio vuoto, una finestra di benvenuto chiede la lingua (proposta in base a quella di Windows), su quali siti acquisti gli show e qual è il sito principale
 - Modelle su più siti: la scheda mostra il profilo della modella su ogni sito e una tabella con show, spesa, €/min e voti per sito; nel form l'indirizzo del profilo segue il sito scelto
 - Unisci / Separa nella scheda della modella: unisci gli show registrati con un altro nome (la stessa modella su un altro sito) o separa gli show di un sito quando lo stesso nome indica persone diverse. La sincronizzazione con Mondo Cam Girls ricorda il nome originale e non crea doppioni
-- Interfaccia anche in spagnolo, francese, tedesco, portoghese (Brasile), rumeno e russo, oltre a italiano e inglese; al primo avvio viene proposta la lingua di Windows se è tra queste, e anche l'installer parla la lingua del sistema
+- Interfaccia anche in spagnolo, francese, tedesco, portoghese (Brasile), rumeno e russo, oltre a italiano e inglese; al primo avvio viene proposta la lingua di Windows se è tra queste, e anche l'installer parla la lingua del sistema (per il rumeno resta in inglese)
 
 ### 🎨 Interfaccia
 

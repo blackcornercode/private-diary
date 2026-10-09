@@ -92,7 +92,7 @@ I file di `js/` sono **moduli ES** (`import`/`export`): `index.html` carica solo
    npm run dist
    ```
    Vengono creati due file in `dist/`:
-   - `PrivateDiary-<versione>-setup.exe`: installer NSIS **per utente** (in `%LOCALAPPDATA%\Programs\Private Diary`, senza permessi di amministratore), con scelta della cartella, collegamenti nel menu Start e sul desktop, nella lingua di Windows se è tra quelle dell'app (`installerLanguages`), altrimenti in inglese. Il disinstallatore non tocca i dati (`deleteAppDataOnUninstall: false`).
+   - `PrivateDiary-<versione>-setup.exe`: installer NSIS **per utente** (in `%LOCALAPPDATA%\Programs\Private Diary`, senza permessi di amministratore), con scelta della cartella, collegamenti nel menu Start e sul desktop, nella lingua di Windows se è tra quelle dell'app (`installerLanguages`), altrimenti in inglese. Il rumeno manca: l'NSIS di electron-builder non ha tutti i suoi testi e la build si ferma (gli avvisi valgono come errori), quindi per chi ha Windows in rumeno l'installer è in inglese e l'app in rumeno. Il disinstallatore non tocca i dati (`deleteAppDataOnUninstall: false`).
    - `PrivateDiary-<versione>-portable.exe`: versione portable. A ogni avvio si estrae sempre nella stessa cartella, `%TEMP%\PrivateDiary` (`portable.unpackDirName`), invece che in una cartella con nome casuale: l'estrazione in cartelle temporanee sempre diverse è uno dei comportamenti che gli antivirus (es. AVG con *IDP.ALEXA*) giudicano sospetti.
 
    L'eseguibile non è firmato digitalmente, quindi SmartScreen e alcuni antivirus possono segnalarlo come sconosciuto: vedi la sezione sugli avvisi antivirus del README. La soluzione definitiva sarebbe un certificato di firma del codice.
@@ -114,7 +114,7 @@ Esegue i test in `tests/` con il test runner integrato di Node (nessuna dipenden
 ### Aggiungere una lingua
 1. Copiare `locales/en.json` in `locales/<codice>.json` e tradurre i testi, lasciando invariati chiavi, segnaposto tra graffe ed emoji. Il nome dell'app resta «Private Diary» (in italiano «Diario Privato»).
 2. Aggiungere la lingua a `LINGUE` in `js/i18n.js` (nome e formato delle date, es. `'de-DE'`) e un `<option>` ai due selettori `selectLingua` e `linguaBenvenuto` di `index.html`.
-3. In `package.json` aggiungere il codice a `build.electronLanguages` (senza, la lingua di Windows non viene riconosciuta al primo avvio) e a `build.nsis.installerLanguages`.
+3. In `package.json` aggiungere il codice a `build.electronLanguages` (senza, la lingua di Windows non viene riconosciuta al primo avvio) e a `build.nsis.installerLanguages`, poi verificare con `npm run dist`: se l'NSIS non ha tutti i testi della lingua la build si ferma con «warning treated as error», e la lingua va tolta da `installerLanguages` (come il rumeno).
 4. `npm test` segnala chiavi mancanti, segnaposto diversi o selettori incompleti.
 
 Restano solo in italiano i menu della finestra (File, Finestra, ?), le finestre Informazioni e Contatti e i messaggi di avviso (`alert`/`confirm`) scritti direttamente nel codice.
@@ -123,7 +123,7 @@ Restano solo in italiano i menu della finestra (File, Finestra, ?), le finestre 
 La configurazione è nella sezione `build` di `package.json` ed è pensata per tenere l'eseguibile leggero:
 - **Solo i file dell'app**: `files` elenca esplicitamente i file necessari (`main.js`, `preload.js`, pagine, stili, `js/`, `locales/`, `changelog.json`, icona). File di sviluppo come `.vscode/`, `AVVIA.bat`, `docs/`, `tools/` e i README restano fuori. Un nuovo file usato dall'app va aggiunto a questo elenco.
 - **Dipendenze ridotte al necessario**: di Font Awesome vengono inclusi solo il CSS e i font `.woff2`; del font Inter solo i pesi usati (400, 500, 600, 700), senza corsivo e solo in formato `.woff2`.
-- **Lingue di Chromium**: `electronLanguages` mantiene solo le lingue dell'interfaccia invece di 55 (servono anche a riconoscere la lingua di Windows al primo avvio; per il portoghese sia `pt-BR` sia `pt-PT`). I valori della tabella sono stati misurati con le sole italiano e inglese: ogni lingua in più aggiunge circa 0,5-1 MB.
+- **Lingue di Chromium**: `electronLanguages` mantiene solo le lingue dell'interfaccia invece di 55 (servono anche a riconoscere la lingua di Windows al primo avvio; per il portoghese sia `pt-BR` sia `pt-PT`). I valori della tabella sono stati misurati con le sole italiano e inglese; con le otto lingue della 2.0.0 le lingue di Chromium occupano 6.6 MB, `app.asar` 2.9 MB e l'eseguibile portable 105 MB.
 
 | | Prima | Dopo |
 | :--- | ---: | ---: |
